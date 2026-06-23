@@ -48,7 +48,7 @@ jobs:
           "
 
       - name: Expo prebuild
-        run: sh node_modules/.bin/expo prebuild --platform ios --non-interactive --clean
+        run: npx expo prebuild --platform ios --non-interactive --clean
 
       - name: Force newArchEnabled=false in Podfile.properties.json
         working-directory: ios
