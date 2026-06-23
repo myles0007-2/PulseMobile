@@ -1,0 +1,3485 @@
+[
+  {
+    "name": "Country",
+    "id": "sp_6vDEYzFuB76GZt8tUWC7Gi",
+    "tracks": [
+      {
+        "title": "Bottoms Up",
+        "artist": "Brantley Gilbert",
+        "album": "Just As I Am"
+      },
+      {
+        "title": "Save a Horse (Ride a Cowboy)",
+        "artist": "Big & Rich",
+        "album": "Horse of a Different Color"
+      },
+      {
+        "title": "Something in the Orange",
+        "artist": "Zach Bryan",
+        "album": "Something in the Orange"
+      },
+      {
+        "title": "Stuck",
+        "artist": "Redferrin",
+        "album": "Stuck"
+      },
+      {
+        "title": "Memory to Drown",
+        "artist": "Bryan Martin",
+        "album": "Self Inflicted Scars"
+      },
+      {
+        "title": "Dirt Road Anthem",
+        "artist": "Jason Aldean",
+        "album": "My Kinda Party"
+      },
+      {
+        "title": "Read Me My Rights",
+        "artist": "Brantley Gilbert",
+        "album": "Just As I Am (Platinum Edition)"
+      },
+      {
+        "title": "Drunk Driving",
+        "artist": "Koe Wetzel",
+        "album": "Sellout"
+      },
+      {
+        "title": "That's My Kind Of Night",
+        "artist": "Luke Bryan",
+        "album": null
+      },
+      {
+        "title": "Ain’t That Some",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Champagne In The Morning",
+        "artist": "Redferrin",
+        "album": "Old No. 7"
+      },
+      {
+        "title": "New To Country",
+        "artist": "Bailey Zimmerman",
+        "album": "Different Night Same Rodeo"
+      },
+      {
+        "title": "She's Country",
+        "artist": "Jason Aldean",
+        "album": "Wide Open"
+      },
+      {
+        "title": "Kick It In The Sticks",
+        "artist": "Brantley Gilbert",
+        "album": "Halfway To Heaven (Deluxe)"
+      },
+      {
+        "title": "High Road (feat. Jessie Murph)",
+        "artist": "Koe Wetzel",
+        "album": "High Road (feat. Jessie Murph)"
+      },
+      {
+        "title": "Kiss My Country Ass",
+        "artist": "Blake Shelton",
+        "album": null
+      },
+      {
+        "title": "Neon Grave",
+        "artist": "Tyler Braden",
+        "album": "Neon Grave"
+      },
+      {
+        "title": "Jack and Diet Coke",
+        "artist": "Redferrin",
+        "album": "Jack and Diet Coke"
+      },
+      {
+        "title": "Never Comin' Home",
+        "artist": "Bailey Zimmerman",
+        "album": "Never Comin' Home"
+      },
+      {
+        "title": "The Only Way I Know",
+        "artist": "Jason Aldean",
+        "album": null
+      },
+      {
+        "title": "Last Of My Kind",
+        "artist": "Shaboozey",
+        "album": null
+      },
+      {
+        "title": "Sweet Dreams",
+        "artist": "Koe Wetzel",
+        "album": "Sweet Dreams"
+      },
+      {
+        "title": "Lost",
+        "artist": "Bryan Martin",
+        "album": "Self Inflicted Scars"
+      },
+      {
+        "title": "I'm the Worst",
+        "artist": "Treaty Oak Revival",
+        "album": "Have A Nice Day"
+      },
+      {
+        "title": "Red In My Last Name",
+        "artist": "Redferrin",
+        "album": "Red In My Last Name"
+      },
+      {
+        "title": "Religiously",
+        "artist": "Bailey Zimmerman",
+        "album": "Religiously. The Album."
+      },
+      {
+        "title": "Whiskey Lullaby",
+        "artist": "Brad Paisley",
+        "album": null
+      },
+      {
+        "title": "Ride the Lightning",
+        "artist": "Warren Zeiders",
+        "album": "Ride the Lightning"
+      },
+      {
+        "title": "That's Why We Fight",
+        "artist": "Ella Langley",
+        "album": null
+      },
+      {
+        "title": "Goin For Broke",
+        "artist": "Bryan Martin",
+        "album": "Years In The Making"
+      },
+      {
+        "title": "Country Must Be Country Wide",
+        "artist": "Brantley Gilbert",
+        "album": "Halfway To Heaven (Deluxe)"
+      },
+      {
+        "title": "Tell 'Em Why",
+        "artist": "Redferrin",
+        "album": "Tell 'Em Why"
+      },
+      {
+        "title": "Holy Smokes",
+        "artist": "Bailey Zimmerman",
+        "album": "Different Night Same Rodeo"
+      },
+      {
+        "title": "Night Shift",
+        "artist": "Jon Pardi",
+        "album": "California Sunrise"
+      },
+      {
+        "title": "International Harvester",
+        "artist": "Craig Morgan",
+        "album": "Little Bit Of Life"
+      },
+      {
+        "title": "Hard To Love",
+        "artist": "Lee Brice",
+        "album": "Hard 2 Love"
+      },
+      {
+        "title": "Better Off",
+        "artist": "Hayden Coffman",
+        "album": "Better Off"
+      },
+      {
+        "title": "Small Town Throwdown",
+        "artist": "Brantley Gilbert",
+        "album": "Just As I Am"
+      },
+      {
+        "title": "Wouldn't Hurt",
+        "artist": "Redferrin",
+        "album": "Wouldn't Hurt"
+      },
+      {
+        "title": "Dicked Down in Dallas",
+        "artist": "Trey Lewis",
+        "album": "Dicked Down in Dallas"
+      },
+      {
+        "title": "As Good As I Once Was",
+        "artist": "Toby Keith",
+        "album": "Honkytonk University"
+      },
+      {
+        "title": "Pretty Little Poison",
+        "artist": "Warren Zeiders",
+        "album": null
+      },
+      {
+        "title": "Cattleman's Gun",
+        "artist": "Dean Brody",
+        "album": null
+      },
+      {
+        "title": "'Til You Can't",
+        "artist": "Cody Johnson",
+        "album": "Human The Double Album"
+      },
+      {
+        "title": "Not Like Us",
+        "artist": "Brantley Gilbert",
+        "album": "Fire & Brimstone"
+      },
+      {
+        "title": "Where the Wild Things Are",
+        "artist": "Luke Combs",
+        "album": "Gettin' Old"
+      },
+      {
+        "title": "Flatliner",
+        "artist": "Cole Swindell",
+        "album": null
+      },
+      {
+        "title": "Downhome Dreams",
+        "artist": "Redferrin",
+        "album": null
+      },
+      {
+        "title": "Where It Ends",
+        "artist": "Bailey Zimmerman",
+        "album": "Religiously. The Album."
+      },
+      {
+        "title": "I Am Not Okay",
+        "artist": "Jelly Roll",
+        "album": "Beautifully Broken (Pickin’ Up The Pieces)"
+      },
+      {
+        "title": "The Weekend",
+        "artist": "Brantley Gilbert",
+        "album": "The Devil Don't Sleep"
+      },
+      {
+        "title": "Loud and Heavy",
+        "artist": "Cody Jinks",
+        "album": "Adobe Sessions"
+      },
+      {
+        "title": "Rearview Town",
+        "artist": "Jason Aldean",
+        "album": "Rearview Town"
+      },
+      {
+        "title": "Country Girl",
+        "artist": "Luke Bryan",
+        "album": null
+      },
+      {
+        "title": "Wasted On You",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Ol' Red",
+        "artist": "Blake Shelton",
+        "album": "Blake Shelton"
+      },
+      {
+        "title": "Choosin' Texas",
+        "artist": "Ella Langley",
+        "album": "Dandelion"
+      },
+      {
+        "title": "All The Way",
+        "artist": "BigXthaPlug",
+        "album": null
+      },
+      {
+        "title": "Can I Get an Outlaw",
+        "artist": "Luke Combs",
+        "album": "Can I Get an Outlaw"
+      },
+      {
+        "title": "Ladies Love Country Boys",
+        "artist": "Trace Adkins",
+        "album": "Dangerous Man"
+      },
+      {
+        "title": "Red Clay",
+        "artist": "Jawga Boyz",
+        "album": null
+      },
+      {
+        "title": "It Ain't My Fault",
+        "artist": "Brothers Osborne",
+        "album": "Pawn Shop"
+      },
+      {
+        "title": "Boondocks",
+        "artist": "Little Big Town",
+        "album": "The Road To Here"
+      },
+      {
+        "title": "23",
+        "artist": "Chayce Beckham",
+        "album": "Bad For Me"
+      },
+      {
+        "title": "Sideways",
+        "artist": "Dierks Bentley",
+        "album": "Feel That Fire"
+      },
+      {
+        "title": "Find My Peace Someday",
+        "artist": "Ozzy Higley",
+        "album": "Find My Peace Someday"
+      },
+      {
+        "title": "Cocaine and Whiskey",
+        "artist": "Them Dirty Roses",
+        "album": "Them Dirty Roses"
+      },
+      {
+        "title": "Black Creek",
+        "artist": "Brent Cobb",
+        "album": "No Place Left to Leave (2006)"
+      },
+      {
+        "title": "Heart-Shaped Box",
+        "artist": "Sam Donald",
+        "album": "Heart-Shaped Box"
+      },
+      {
+        "title": "(Make My) Country Rock",
+        "artist": "Cory Marks",
+        "album": null
+      },
+      {
+        "title": "Save Me",
+        "artist": "Jelly Roll",
+        "album": "Self Medicated"
+      },
+      {
+        "title": "Dirt On My Boots",
+        "artist": "Jon Pardi",
+        "album": "California Sunrise"
+      },
+      {
+        "title": "Lost Soul’s Prayer",
+        "artist": "Brantley Gilbert",
+        "album": "Fire & Brimstone"
+      },
+      {
+        "title": "Fast Hand",
+        "artist": "Cody Jinks",
+        "album": "Blacksheep"
+      },
+      {
+        "title": "Burnin' It Down",
+        "artist": "Jason Aldean",
+        "album": "Old Boots, New Dirt"
+      },
+      {
+        "title": "Move",
+        "artist": "Luke Bryan",
+        "album": "Kill The Lights (Deluxe)"
+      },
+      {
+        "title": "JACK",
+        "artist": "HARDY",
+        "album": "the mockingbird & THE CROW"
+      },
+      {
+        "title": "Came Here to Forget",
+        "artist": "Blake Shelton",
+        "album": "If I'm Honest"
+      },
+      {
+        "title": "Wild as Her",
+        "artist": "Corey Kent",
+        "album": "Blacktop"
+      },
+      {
+        "title": "We Ride",
+        "artist": "Bryan Martin",
+        "album": "Poets & Old Souls"
+      },
+      {
+        "title": "Change",
+        "artist": "Bailey Zimmerman",
+        "album": "Change"
+      },
+      {
+        "title": "Fuss and Fight",
+        "artist": "Koe Wetzel",
+        "album": "Noise Complaint"
+      },
+      {
+        "title": "Wrong Ones",
+        "artist": "Post Malone",
+        "album": null
+      },
+      {
+        "title": "Honky Tonk Badonkadonk",
+        "artist": "Trace Adkins",
+        "album": "Songs About Me"
+      },
+      {
+        "title": "LAME",
+        "artist": "Common Tribe",
+        "album": null
+      },
+      {
+        "title": "Mr Red White and Blue",
+        "artist": "Coffey Anderson",
+        "album": "Boots and Jeans"
+      },
+      {
+        "title": "Wine, Beer, Whiskey",
+        "artist": "Little Big Town",
+        "album": "Nightfall"
+      },
+      {
+        "title": "Nose On The Grindstone",
+        "artist": "Tyler Childers",
+        "album": null
+      },
+      {
+        "title": "5-1-5-0",
+        "artist": "Dierks Bentley",
+        "album": "Home"
+      },
+      {
+        "title": "Alabama",
+        "artist": "Bishop Gunn",
+        "album": "Natchez"
+      },
+      {
+        "title": "Rollin' Smoke",
+        "artist": "Bryan Andrews",
+        "album": "Carroll County Sessions"
+      },
+      {
+        "title": "Calloused Hands",
+        "artist": "Sam Donald",
+        "album": "Calloused Hands"
+      },
+      {
+        "title": "Rolex On A Redneck",
+        "artist": "Brantley Gilbert",
+        "album": null
+      },
+      {
+        "title": "TRUCK BED",
+        "artist": "HARDY",
+        "album": "the mockingbird & THE CROW"
+      },
+      {
+        "title": "Fall In Love",
+        "artist": "Bailey Zimmerman",
+        "album": "Religiously. The Album."
+      },
+      {
+        "title": "Everyone's An Outlaw",
+        "artist": "Bryan Martin",
+        "album": "Self Inflicted Scars"
+      },
+      {
+        "title": "GIVE HEAVEN SOME HELL",
+        "artist": "HARDY",
+        "album": "A ROCK"
+      },
+      {
+        "title": "E",
+        "artist": "Matt Mason",
+        "album": "The Writers Collection Volume One"
+      },
+      {
+        "title": "Something to Talk About",
+        "artist": "Koe Wetzel",
+        "album": "Noise Complaint"
+      },
+      {
+        "title": "What Was I Thinkin'",
+        "artist": "Dierks Bentley",
+        "album": "Dierks Bentley"
+      },
+      {
+        "title": "Must Be the Whiskey",
+        "artist": "Cody Jinks",
+        "album": "Lifers"
+      },
+      {
+        "title": "Parachute",
+        "artist": "Chris Stapleton",
+        "album": "Traveller"
+      },
+      {
+        "title": "He Went To Jared",
+        "artist": "HIXTAPE",
+        "album": null
+      },
+      {
+        "title": "How Country Feels",
+        "artist": "Randy Houser",
+        "album": "How Country Feels"
+      },
+      {
+        "title": "UNAPOLOGETICALLY COUNTRY AS HELL",
+        "artist": "HARDY",
+        "album": "A ROCK"
+      },
+      {
+        "title": "Chain Smokin'",
+        "artist": "Morgan Wallen",
+        "album": "Chain Smokin'"
+      },
+      {
+        "title": "The Way I Talk",
+        "artist": "Morgan Wallen",
+        "album": null
+      },
+      {
+        "title": "Creek Will Rise",
+        "artist": "Conner Smith",
+        "album": "Smoky Mountains"
+      },
+      {
+        "title": "REDNECKER",
+        "artist": "HARDY",
+        "album": "THIS OLE BOY"
+      },
+      {
+        "title": "My Kinda Party",
+        "artist": "Jason Aldean",
+        "album": "My Kinda Party"
+      },
+      {
+        "title": "Your Heart Or Mine",
+        "artist": "Jon Pardi",
+        "album": "Mr. Saturday Night"
+      },
+      {
+        "title": "Ain't Nothing 'Bout You",
+        "artist": "Brooks & Dunn",
+        "album": "Steers & Stripes"
+      },
+      {
+        "title": "Rock and A Hard Place",
+        "artist": "Bailey Zimmerman",
+        "album": "Religiously. The Album."
+      },
+      {
+        "title": "Livin’ The Dream",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Something Like That",
+        "artist": "Tim McGraw",
+        "album": "A Place In The Sun"
+      },
+      {
+        "title": "Hurricane",
+        "artist": "Luke Combs",
+        "album": "This One's for You"
+      },
+      {
+        "title": "Up To No Good",
+        "artist": "Warren Zeiders",
+        "album": "717 Tapes the Album"
+      },
+      {
+        "title": "red",
+        "artist": "HARDY",
+        "album": null
+      },
+      {
+        "title": "There Was This Girl",
+        "artist": "Riley Green",
+        "album": "Different 'Round Here"
+      },
+      {
+        "title": "Should've Been A Cowboy",
+        "artist": "Toby Keith",
+        "album": null
+      },
+      {
+        "title": "Thinkin’ Bout Me",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Whiskey Glasses",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "Up Down",
+        "artist": "Morgan Wallen",
+        "album": null
+      },
+      {
+        "title": "Spin You Around",
+        "artist": "Morgan Wallen",
+        "album": "Stand Alone (10th Anniversary Deluxe Edition)"
+      },
+      {
+        "title": "Wolves Cry",
+        "artist": "Bryan Martin",
+        "album": "Poets & Old Souls"
+      },
+      {
+        "title": "Aw Naw",
+        "artist": "Chris Young",
+        "album": "A.M."
+      },
+      {
+        "title": "Me On You",
+        "artist": "Muscadine Bloodline",
+        "album": "Teenage Dixie"
+      },
+      {
+        "title": "Ain't Doin' Jack",
+        "artist": "Josh Ross",
+        "album": "Ain't Doin' Jack"
+      },
+      {
+        "title": "Warning",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "She Got the Best of Me",
+        "artist": "Luke Combs",
+        "album": "This One's for You Too (Deluxe Edition)"
+      },
+      {
+        "title": "Beer Never Broke My Heart",
+        "artist": "Luke Combs",
+        "album": "What You See Is What You Get"
+      },
+      {
+        "title": "Buy Me a Boat",
+        "artist": "Chris Janson",
+        "album": null
+      },
+      {
+        "title": "Don't Come Lookin'",
+        "artist": "Jackson Dean",
+        "album": "Greenbroke"
+      },
+      {
+        "title": "You, Me, And Whiskey",
+        "artist": "Justin Moore",
+        "album": "Stray Dog"
+      },
+      {
+        "title": "Me and My Kind",
+        "artist": "Cody Johnson",
+        "album": "Cowboy Like Me"
+      },
+      {
+        "title": "Neon Eyes",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "More Than The Shine",
+        "artist": "Bryan Martin",
+        "album": "Self Inflicted Scars"
+      },
+      {
+        "title": "Whiskey On You",
+        "artist": "Nate Smith",
+        "album": "NATE SMITH (DELUXE)"
+      },
+      {
+        "title": "Bulletproof",
+        "artist": "Nate Smith",
+        "album": null
+      },
+      {
+        "title": "Play It Again",
+        "artist": "Luke Bryan",
+        "album": "Crash My Party"
+      },
+      {
+        "title": "Man Made A Bar",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "One Of Them Girls",
+        "artist": "Lee Brice",
+        "album": "Hey World"
+      },
+      {
+        "title": "Sunrise",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Fly over States",
+        "artist": "Jason Aldean",
+        "album": "My Kinda Party"
+      },
+      {
+        "title": "Good Die Young",
+        "artist": "Koe Wetzel",
+        "album": "Sellout"
+      },
+      {
+        "title": "BOOTS",
+        "artist": "HARDY",
+        "album": "A ROCK"
+      },
+      {
+        "title": "wait in the truck",
+        "artist": "HARDY",
+        "album": "the mockingbird & THE CROW"
+      },
+      {
+        "title": "Drink In My Hand",
+        "artist": "Eric Church",
+        "album": "Chief"
+      },
+      {
+        "title": "Dirt Cheap",
+        "artist": "Cody Johnson",
+        "album": "Leather"
+      },
+      {
+        "title": "I Don't Want This Night To End",
+        "artist": "Luke Bryan",
+        "album": "Tailgates & Tanlines"
+      },
+      {
+        "title": "Sand In My Boots",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Human",
+        "artist": "Cody Johnson",
+        "album": "Human The Double Album"
+      },
+      {
+        "title": "You Proof",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "When It Rains It Pours",
+        "artist": "Luke Combs",
+        "album": "This One's for You"
+      },
+      {
+        "title": "Deep End",
+        "artist": "Gavin Adcock",
+        "album": "Bonfire Blackout"
+      },
+      {
+        "title": "Even If It Breaks Your Heart",
+        "artist": "Eli Young Band",
+        "album": "Life At Best"
+      },
+      {
+        "title": "Son Of A Sinner",
+        "artist": "Jelly Roll",
+        "album": "Ballads Of The Broken"
+      },
+      {
+        "title": "Thought You Should Know",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Worst Way",
+        "artist": "Riley Green",
+        "album": "Way Out Here"
+      },
+      {
+        "title": "Runnin' Outta Moonlight",
+        "artist": "Randy Houser",
+        "album": "How Country Feels"
+      },
+      {
+        "title": "When She Says Baby",
+        "artist": "Jason Aldean",
+        "album": "Night Train"
+      },
+      {
+        "title": "Wild as You",
+        "artist": "Cody Johnson",
+        "album": "Gotta Be Me"
+      },
+      {
+        "title": "More Than My Hometown",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Watching You",
+        "artist": "Rodney Atkins",
+        "album": "If You're Going Through Hell"
+      },
+      {
+        "title": "Rain Is A Good Thing",
+        "artist": "Luke Bryan",
+        "album": "Doin' My Thing"
+      },
+      {
+        "title": "I Wish Grandpas Never Died",
+        "artist": "Riley Green",
+        "album": "Different 'Round Here"
+      },
+      {
+        "title": "Brokenheartsville",
+        "artist": "Joe Nichols",
+        "album": "Man With A Memory"
+      },
+      {
+        "title": "Cowgirls",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Cold As You",
+        "artist": "Luke Combs",
+        "album": "What You See Ain't Always What You Get (Deluxe Edition)"
+      },
+      {
+        "title": "Kiss Tomorrow Goodbye",
+        "artist": "Luke Bryan",
+        "album": "Tailgates & Tanlines"
+      },
+      {
+        "title": "TRUCK",
+        "artist": "HARDY",
+        "album": "A ROCK"
+      },
+      {
+        "title": "This Is How We Roll",
+        "artist": "Florida Georgia Line",
+        "album": "Here's To The Good Times...This Is How We Roll"
+      },
+      {
+        "title": "Your Bartender",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Cover Me Up",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Diamond In My Pocket",
+        "artist": "Cody Johnson",
+        "album": "A Different Day"
+      },
+      {
+        "title": "Every Storm",
+        "artist": "Gary Allan",
+        "album": null
+      },
+      {
+        "title": "Farmer's Daughter",
+        "artist": "Rodney Atkins",
+        "album": "It's America"
+      },
+      {
+        "title": "I Like It, I Love It",
+        "artist": "Tim McGraw",
+        "album": null
+      },
+      {
+        "title": "A ROCK",
+        "artist": "HARDY",
+        "album": null
+      },
+      {
+        "title": "The Kind of Love We Make",
+        "artist": "Luke Combs",
+        "album": "Growin' Up"
+      },
+      {
+        "title": "All Over The Road",
+        "artist": "Easton Corbin",
+        "album": "All Over The Road"
+      },
+      {
+        "title": "Drunk On A Plane",
+        "artist": "Dierks Bentley",
+        "album": "RISER"
+      },
+      {
+        "title": "Springsteen",
+        "artist": "Eric Church",
+        "album": "Chief"
+      },
+      {
+        "title": "Chasin' You",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "Tequila Makes Her Clothes Fall Off",
+        "artist": "Joe Nichols",
+        "album": "III"
+      },
+      {
+        "title": "Drunk On You",
+        "artist": "Luke Bryan",
+        "album": "Tailgates & Tanlines"
+      },
+      {
+        "title": "Silverado For Sale",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Not Good At Not",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "Going, Going, Gone",
+        "artist": "Luke Combs",
+        "album": "Growin' Up"
+      },
+      {
+        "title": "Crazy Girl",
+        "artist": "Eli Young Band",
+        "album": null
+      },
+      {
+        "title": "Alright",
+        "artist": "Darius Rucker",
+        "album": null
+      },
+      {
+        "title": "If I Know Me",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "This Bar",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "American Kids",
+        "artist": "Kenny Chesney",
+        "album": "The Big Revival"
+      },
+      {
+        "title": "Drink A Beer",
+        "artist": "Luke Bryan",
+        "album": "Crash My Party"
+      },
+      {
+        "title": "Lovin' On You",
+        "artist": "Luke Combs",
+        "album": "What You See Is What You Get"
+      },
+      {
+        "title": "5 Foot 9",
+        "artist": "Tyler Hubbard",
+        "album": null
+      },
+      {
+        "title": "Rumor",
+        "artist": "Lee Brice",
+        "album": "Lee Brice"
+      },
+      {
+        "title": "Pretty Good At Drinkin' Beer",
+        "artist": "Billy Currington",
+        "album": "Enjoy Yourself"
+      },
+      {
+        "title": "Country A$$ Shit",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Barefoot Blue Jean Night",
+        "artist": "Jake Owen",
+        "album": "Barefoot Blue Jean Night"
+      },
+      {
+        "title": "Love Like Crazy",
+        "artist": "Lee Brice",
+        "album": "Love Like Crazy"
+      },
+      {
+        "title": "Time Marches On",
+        "artist": "Tracy Lawrence",
+        "album": "Time Marches On"
+      },
+      {
+        "title": "Still Goin Down",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "865",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Memory I Don't Mess With",
+        "artist": "Lee Brice",
+        "album": "Hey World"
+      },
+      {
+        "title": "Everything I Love",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "I'm Gonna Miss Her",
+        "artist": "Brad Paisley",
+        "album": "Part II"
+      },
+      {
+        "title": "I'm Not For Everyone",
+        "artist": "Brothers Osborne",
+        "album": "Skeletons"
+      },
+      {
+        "title": "Bandaid On A Bullet Hole",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album (Bonus)"
+      },
+      {
+        "title": "Live Like You Were Dying",
+        "artist": "Tim McGraw",
+        "album": "Live Like You Were Dying"
+      },
+      {
+        "title": "Me On Whiskey",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "It Goes Like This",
+        "artist": "Thomas Rhett",
+        "album": "It Goes Like This"
+      },
+      {
+        "title": "We Didn't Have Much",
+        "artist": "Justin Moore",
+        "album": "Straight Outta The Country"
+      },
+      {
+        "title": "Little Rain",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "Somebody’s Problem",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Talkin' Tennessee",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "I Know She Ain't Ready",
+        "artist": "Luke Combs",
+        "album": "The Way She Rides"
+      },
+      {
+        "title": "February 28, 2016",
+        "artist": "Koe Wetzel",
+        "album": "Noise Complaint"
+      },
+      {
+        "title": "Heartless",
+        "artist": "Morgan Wallen",
+        "album": null
+      },
+      {
+        "title": "Boys 'Round Here",
+        "artist": "Blake Shelton",
+        "album": null
+      },
+      {
+        "title": "Happy Hour",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "I Deserve A Drink",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Shotgun Rider",
+        "artist": "Tim McGraw",
+        "album": "Sundown Heaven Town"
+      },
+      {
+        "title": "Wonderin’ Bout The Wind",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Crash My Party",
+        "artist": "Luke Bryan",
+        "album": "Crash My Party"
+      },
+      {
+        "title": "Kick The Dust Up",
+        "artist": "Luke Bryan",
+        "album": "Kill The Lights (Deluxe)"
+      },
+      {
+        "title": "Just Like Johnny",
+        "artist": "Redferrin",
+        "album": "Old No. 7"
+      }
+    ]
+  },
+  {
+    "name": "My Playlist",
+    "id": "sp_5TmhEG9pNaJfgpHkkNYzFe",
+    "tracks": [
+      {
+        "title": "Loud and Heavy",
+        "artist": "Cody Jinks",
+        "album": "Adobe Sessions"
+      },
+      {
+        "title": "Everyday (feat. Rod Stewart, Miguel & Mark Ronson)",
+        "artist": "A$AP Rocky",
+        "album": "AT.LONG.LAST.A$AP"
+      },
+      {
+        "title": "No Role Modelz",
+        "artist": "J. Cole",
+        "album": "2014 Forest Hills Drive"
+      },
+      {
+        "title": "679 (feat. Monty)",
+        "artist": "Fetty Wap",
+        "album": "Fetty Wap (Deluxe)"
+      },
+      {
+        "title": "Trap Queen",
+        "artist": "Fetty Wap",
+        "album": "Fetty Wap (Deluxe)"
+      },
+      {
+        "title": "Bleed It Out",
+        "artist": "Linkin Park",
+        "album": "Minutes to Midnight"
+      },
+      {
+        "title": "679 (feat. Remy Boyz)",
+        "artist": "Fetty Wap",
+        "album": "679 (feat. Remy Boyz)"
+      },
+      {
+        "title": "Fall In Love",
+        "artist": "Bailey Zimmerman",
+        "album": "Religiously. The Album."
+      },
+      {
+        "title": "The Weekend",
+        "artist": "Brantley Gilbert",
+        "album": "The Devil Don't Sleep"
+      },
+      {
+        "title": "Day 'N' Nite (nightmare)",
+        "artist": "Kid Cudi",
+        "album": "Man On The Moon: The End Of Day (Deluxe)"
+      },
+      {
+        "title": "Do I Wanna Know?",
+        "artist": "Arctic Monkeys",
+        "album": "AM"
+      },
+      {
+        "title": "Nobody Praying For Me",
+        "artist": "Seether",
+        "album": "Isolate And Medicate"
+      },
+      {
+        "title": "High Enough",
+        "artist": "K.Flay",
+        "album": "Every Where Is Some Where"
+      },
+      {
+        "title": "Monster",
+        "artist": "Skillet",
+        "album": "Awake"
+      },
+      {
+        "title": "Lydia",
+        "artist": "Highly Suspect",
+        "album": "Mister Asylum"
+      },
+      {
+        "title": "Not Strong Enough",
+        "artist": "Apocalyptica",
+        "album": "7th Symphony"
+      },
+      {
+        "title": "Blue on Black",
+        "artist": "Five Finger Death Punch",
+        "album": "And Justice for None"
+      },
+      {
+        "title": "I Don't Care - US Version",
+        "artist": "Apocalyptica",
+        "album": "I Don't Care"
+      },
+      {
+        "title": "No More Sorrow",
+        "artist": "Linkin Park",
+        "album": "Minutes to Midnight"
+      },
+      {
+        "title": "American Psycho II",
+        "artist": "D12",
+        "album": "D-12 World"
+      },
+      {
+        "title": "Gangsta's Paradise",
+        "artist": "Coolio",
+        "album": "Gangsta's Paradise"
+      },
+      {
+        "title": "The Fray",
+        "artist": "Staind",
+        "album": "Confessions Of The Fallen"
+      },
+      {
+        "title": "Rockstar (with Bailey Zimmerman) - Live From Nashville",
+        "artist": "Nickelback",
+        "album": "Live From Nashville"
+      },
+      {
+        "title": "Broken Pieces",
+        "artist": "Apocalyptica",
+        "album": "7th Symphony"
+      },
+      {
+        "title": "Boombastic",
+        "artist": "Shaggy",
+        "album": "Boombastic"
+      },
+      {
+        "title": "Butterfly",
+        "artist": "Crazy Town",
+        "album": "The Gift Of Game"
+      },
+      {
+        "title": "The Way I Am",
+        "artist": "Eminem",
+        "album": "The Marshall Mathers LP"
+      },
+      {
+        "title": "Gas Pedal",
+        "artist": "Slevpy808",
+        "album": "Gas Pedal"
+      },
+      {
+        "title": "45",
+        "artist": "Shinedown",
+        "album": "Leave a Whisper (Deluxe Edition)"
+      },
+      {
+        "title": "Life is Beautiful",
+        "artist": "Sixx:A.M.",
+        "album": "The Heroin Diaries Soundtrack"
+      },
+      {
+        "title": "San Quentin",
+        "artist": "Nickelback",
+        "album": "Get Rollin'"
+      },
+      {
+        "title": "Always",
+        "artist": "Saliva",
+        "album": "Back Into Your System"
+      },
+      {
+        "title": "So Cold - Remix",
+        "artist": "Breaking Benjamin",
+        "album": "We Are Not Alone"
+      },
+      {
+        "title": "Painkiller",
+        "artist": "Three Days Grace",
+        "album": "Human"
+      },
+      {
+        "title": "Voices",
+        "artist": "Motionless In White",
+        "album": "Graveyard Shift"
+      },
+      {
+        "title": "Time of Dying",
+        "artist": "Three Days Grace",
+        "album": null
+      },
+      {
+        "title": "Wait and Bleed - Demo",
+        "artist": "Slipknot",
+        "album": "Slipknot (25th Anniversary Edition)"
+      },
+      {
+        "title": "The Devil in I",
+        "artist": "Slipknot",
+        "album": ".5: The Gray Chapter (Special Edition)"
+      },
+      {
+        "title": "Go To War",
+        "artist": "NOTHING MORE",
+        "album": "The Stories We Tell Ourselves"
+      },
+      {
+        "title": "You're Going Down",
+        "artist": "SICK PUPPIES",
+        "album": "Tri-polar"
+      },
+      {
+        "title": "My Name Is Human",
+        "artist": "Highly Suspect",
+        "album": "The Boy Who Died Wolf"
+      },
+      {
+        "title": "Jenny",
+        "artist": "NOTHING MORE",
+        "album": "Nothing More"
+      },
+      {
+        "title": "DEVIL",
+        "artist": "Shinedown",
+        "album": "ATTENTION ATTENTION"
+      },
+      {
+        "title": "Dr0nched In Sw0t",
+        "artist": "KAMAARA",
+        "album": "TrenchBoy||"
+      },
+      {
+        "title": "Life",
+        "artist": "Venfex",
+        "album": "Life"
+      },
+      {
+        "title": "Homicide (feat. Eminem)",
+        "artist": "Logic",
+        "album": "Confessions of a Dangerous Mind"
+      },
+      {
+        "title": "$WERVIN",
+        "artist": "purge!",
+        "album": null
+      },
+      {
+        "title": "Counting Stars",
+        "artist": "OneRepublic",
+        "album": "Native"
+      },
+      {
+        "title": "Voice in My Head",
+        "artist": "Yates XV",
+        "album": "Voice in My Head"
+      },
+      {
+        "title": "soul eater",
+        "artist": "Savage Ga$p",
+        "album": "in my restless dreams, i see you"
+      },
+      {
+        "title": "stare at the sun",
+        "artist": "Max Fry",
+        "album": "more than dead to me"
+      },
+      {
+        "title": "Comatose",
+        "artist": "Skillet",
+        "album": "Comatose"
+      },
+      {
+        "title": "Hellraiser",
+        "artist": "Lil Revive",
+        "album": "Hellraiser"
+      },
+      {
+        "title": "MONSTERS",
+        "artist": "Shinedown",
+        "album": "ATTENTION ATTENTION"
+      },
+      {
+        "title": "Meet you at the Graveyard",
+        "artist": "Cleffy",
+        "album": "Clean Sheets, dirty walls"
+      },
+      {
+        "title": "Another Love",
+        "artist": "Tom Odell",
+        "album": "Long Way Down (Deluxe)"
+      },
+      {
+        "title": "snowfall",
+        "artist": "Øneheart",
+        "album": "snowfall"
+      },
+      {
+        "title": "Black Out Days",
+        "artist": "Phantogram",
+        "album": "Voices"
+      },
+      {
+        "title": "Blood // Water",
+        "artist": "grandson",
+        "album": "a modern tragedy vol. 1"
+      },
+      {
+        "title": "Somebody That I Used To Know",
+        "artist": "Gotye",
+        "album": "Making Mirrors"
+      },
+      {
+        "title": "Too Sweet",
+        "artist": "Hozier",
+        "album": "Unreal Unearth: Unaired"
+      },
+      {
+        "title": "House of Memories",
+        "artist": "Panic! At The Disco",
+        "album": "Death of a Bachelor"
+      },
+      {
+        "title": "I WANNA BE YOUR SLAVE",
+        "artist": "Måneskin",
+        "album": "Teatro d'ira - Vol. I"
+      },
+      {
+        "title": "Sweater Weather",
+        "artist": "The Neighbourhood",
+        "album": "I Love You."
+      },
+      {
+        "title": "Me and the Devil",
+        "artist": "Soap&Skin",
+        "album": "Sugarbread"
+      },
+      {
+        "title": "Fine Again",
+        "artist": "Seether",
+        "album": "Disclaimer"
+      },
+      {
+        "title": "Animals - Live From Nashville",
+        "artist": "Nickelback",
+        "album": "Live From Nashville"
+      },
+      {
+        "title": "San Quentin - Live From Nashville",
+        "artist": "Nickelback",
+        "album": "Live From Nashville"
+      },
+      {
+        "title": "I Walk the Line",
+        "artist": "Jfarrari",
+        "album": "Fear of the Unknown"
+      },
+      {
+        "title": "Temperature",
+        "artist": "Sean Paul",
+        "album": "The Trinity"
+      },
+      {
+        "title": "scars",
+        "artist": "Paycheck",
+        "album": "identity crisis"
+      },
+      {
+        "title": "Nightmare",
+        "artist": "Avenged Sevenfold",
+        "album": "Nightmare"
+      },
+      {
+        "title": "Turn So Cold",
+        "artist": "Drowning Pool",
+        "album": "Drowning Pool"
+      },
+      {
+        "title": "Words As Weapons",
+        "artist": "Seether",
+        "album": "Isolate And Medicate (Deluxe Edition)"
+      },
+      {
+        "title": "Viva La Vida",
+        "artist": "Coldplay",
+        "album": "Viva La Vida or Death and All His Friends"
+      },
+      {
+        "title": "B.Y.O.B.",
+        "artist": "System Of A Down",
+        "album": "Mezmerize"
+      },
+      {
+        "title": "Afterlife",
+        "artist": "Avenged Sevenfold",
+        "album": "Avenged Sevenfold"
+      },
+      {
+        "title": "The Unknowing",
+        "artist": "Jfarrari",
+        "album": "Fear of the Unknown"
+      },
+      {
+        "title": "NEGATIVE",
+        "artist": "KXLLSWXTCH",
+        "album": "NEGATIVE"
+      },
+      {
+        "title": "Smiles Are Weak",
+        "artist": "Grim Salvo",
+        "album": "Smiles Are Weak"
+      },
+      {
+        "title": "Cold Blood Warm Nights",
+        "artist": "Faceless 1-7",
+        "album": "Cut It Bleed It Breathe It"
+      },
+      {
+        "title": "The Heat From The Sun Is No",
+        "artist": "Istasha",
+        "album": "Wax Figures In The Sky"
+      },
+      {
+        "title": "BLACK RAINBOW",
+        "artist": "Grim Salvo",
+        "album": "MILDRED"
+      },
+      {
+        "title": "Blood. Cash.",
+        "artist": "Faceless 1-7",
+        "album": "Hollow Tape 666"
+      },
+      {
+        "title": "Kill Yourself (Part III)",
+        "artist": "$uicideboy$",
+        "album": "My Liver Will Handle What My Heart Can't"
+      },
+      {
+        "title": "Pumped Up Kicks",
+        "artist": "Foster The People",
+        "album": "Torches"
+      },
+      {
+        "title": "In the End",
+        "artist": "Linkin Park",
+        "album": "Hybrid Theory (Bonus Edition)"
+      },
+      {
+        "title": "We Will Rock You - Remastered 2011",
+        "artist": "Queen",
+        "album": "News Of The World (Deluxe Remastered Version)"
+      },
+      {
+        "title": "Lose Yourself",
+        "artist": "Eminem",
+        "album": "Curtain Call: The Hits (Deluxe Edition)"
+      },
+      {
+        "title": "Mask Off",
+        "artist": "Future",
+        "album": "FUTURE"
+      },
+      {
+        "title": "Beggin'",
+        "artist": "Måneskin",
+        "album": "Chosen"
+      },
+      {
+        "title": "Dangerous",
+        "artist": "Seether",
+        "album": "Si Vis Pacem, Para Bellum"
+      },
+      {
+        "title": "Rx (Medicate)",
+        "artist": "Theory of a Deadman",
+        "album": "Wake Up Call"
+      },
+      {
+        "title": "Need A Favor",
+        "artist": "Jelly Roll",
+        "album": "Whitsitt Chapel"
+      },
+      {
+        "title": "The Sound of Silence",
+        "artist": "Disturbed",
+        "album": "Immortalized"
+      },
+      {
+        "title": "Popular Monster",
+        "artist": "Falling In Reverse",
+        "album": "Popular Monster"
+      },
+      {
+        "title": "Paralyzer",
+        "artist": "Finger Eleven",
+        "album": "Them Vs. You Vs. Me (Deluxe Edition)"
+      },
+      {
+        "title": "Last Resort",
+        "artist": "Papa Roach",
+        "album": "Infest"
+      },
+      {
+        "title": "I Hate Everything About You",
+        "artist": "Three Days Grace",
+        "album": "Three Days Grace"
+      },
+      {
+        "title": "Bodies",
+        "artist": "Drowning Pool",
+        "album": "Sinner"
+      },
+      {
+        "title": "It Ain't My Fault",
+        "artist": "Brothers Osborne",
+        "album": "Pawn Shop"
+      },
+      {
+        "title": "All The Way (feat. Bailey Zimmerman)",
+        "artist": "BigXthaPlug",
+        "album": "I Hope You're Happy (Commentary Version)"
+      },
+      {
+        "title": "Find My Peace Someday",
+        "artist": "Ozzy Higley",
+        "album": "Find My Peace Someday"
+      },
+      {
+        "title": "Fuss and Fight",
+        "artist": "Koe Wetzel",
+        "album": "Noise Complaint"
+      },
+      {
+        "title": "LAME (remastered)",
+        "artist": "Common Tribe",
+        "album": "LAME (remastered)"
+      },
+      {
+        "title": "Rolex On A Redneck",
+        "artist": "Brantley Gilbert",
+        "album": null
+      },
+      {
+        "title": "Tell 'Em Why",
+        "artist": "Redferrin",
+        "album": "Tell 'Em Why"
+      },
+      {
+        "title": "Dysfunctional",
+        "artist": "Tech N9ne Collabos",
+        "album": "Sickology 101"
+      },
+      {
+        "title": "Aw Naw",
+        "artist": "Chris Young",
+        "album": "A.M."
+      },
+      {
+        "title": "Country A$$ Shit",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Memory I Don't Mess With",
+        "artist": "Lee Brice",
+        "album": "Hey World"
+      },
+      {
+        "title": "Up To No Good",
+        "artist": "Warren Zeiders",
+        "album": "717 Tapes the Album"
+      },
+      {
+        "title": "Happier",
+        "artist": "Marshmello",
+        "album": "Happier"
+      },
+      {
+        "title": "Just Like Johnny",
+        "artist": "Redferrin",
+        "album": "Old No. 7"
+      },
+      {
+        "title": "Red In My Last Name",
+        "artist": "Redferrin",
+        "album": "Red In My Last Name"
+      },
+      {
+        "title": "Rumor",
+        "artist": "Lee Brice",
+        "album": "Lee Brice"
+      }
+    ]
+  },
+  {
+    "name": "Entire Library",
+    "id": "local_1781988713250",
+    "tracks": [
+      {
+        "title": "Loud and Heavy",
+        "artist": "Cody Jinks",
+        "album": "Adobe Sessions"
+      },
+      {
+        "title": "Everyday (feat. Rod Stewart, Miguel & Mark Ronson)",
+        "artist": "A$AP Rocky",
+        "album": "AT.LONG.LAST.A$AP"
+      },
+      {
+        "title": "No Role Modelz",
+        "artist": "J. Cole",
+        "album": "2014 Forest Hills Drive"
+      },
+      {
+        "title": "679 (feat. Monty)",
+        "artist": "Fetty Wap",
+        "album": "Fetty Wap (Deluxe)"
+      },
+      {
+        "title": "Trap Queen",
+        "artist": "Fetty Wap",
+        "album": "Fetty Wap (Deluxe)"
+      },
+      {
+        "title": "Bleed It Out",
+        "artist": "Linkin Park",
+        "album": "Minutes to Midnight"
+      },
+      {
+        "title": "679 (feat. Remy Boyz)",
+        "artist": "Fetty Wap",
+        "album": "679 (feat. Remy Boyz)"
+      },
+      {
+        "title": "Fall In Love",
+        "artist": "Bailey Zimmerman",
+        "album": "Religiously. The Album."
+      },
+      {
+        "title": "The Weekend",
+        "artist": "Brantley Gilbert",
+        "album": "The Devil Don't Sleep"
+      },
+      {
+        "title": "Day 'N' Nite (nightmare)",
+        "artist": "Kid Cudi",
+        "album": "Man On The Moon: The End Of Day (Deluxe)"
+      },
+      {
+        "title": "Do I Wanna Know?",
+        "artist": "Arctic Monkeys",
+        "album": "AM"
+      },
+      {
+        "title": "Nobody Praying For Me",
+        "artist": "Seether",
+        "album": "Isolate And Medicate"
+      },
+      {
+        "title": "High Enough",
+        "artist": "K.Flay",
+        "album": "Every Where Is Some Where"
+      },
+      {
+        "title": "Monster",
+        "artist": "Skillet",
+        "album": "Awake"
+      },
+      {
+        "title": "Lydia",
+        "artist": "Highly Suspect",
+        "album": "Mister Asylum"
+      },
+      {
+        "title": "Not Strong Enough",
+        "artist": "Apocalyptica",
+        "album": "7th Symphony"
+      },
+      {
+        "title": "Blue on Black",
+        "artist": "Five Finger Death Punch",
+        "album": "And Justice for None"
+      },
+      {
+        "title": "I Don't Care - US Version",
+        "artist": "Apocalyptica",
+        "album": "I Don't Care"
+      },
+      {
+        "title": "No More Sorrow",
+        "artist": "Linkin Park",
+        "album": "Minutes to Midnight"
+      },
+      {
+        "title": "American Psycho II",
+        "artist": "D12",
+        "album": "D-12 World"
+      },
+      {
+        "title": "Gangsta's Paradise",
+        "artist": "Coolio",
+        "album": "Gangsta's Paradise"
+      },
+      {
+        "title": "The Fray",
+        "artist": "Staind",
+        "album": "Confessions Of The Fallen"
+      },
+      {
+        "title": "Rockstar (with Bailey Zimmerman) - Live From Nashville",
+        "artist": "Nickelback",
+        "album": "Live From Nashville"
+      },
+      {
+        "title": "Broken Pieces",
+        "artist": "Apocalyptica",
+        "album": "7th Symphony"
+      },
+      {
+        "title": "Boombastic",
+        "artist": "Shaggy",
+        "album": "Boombastic"
+      },
+      {
+        "title": "Butterfly",
+        "artist": "Crazy Town",
+        "album": "The Gift Of Game"
+      },
+      {
+        "title": "The Way I Am",
+        "artist": "Eminem",
+        "album": "The Marshall Mathers LP"
+      },
+      {
+        "title": "Gas Pedal",
+        "artist": "Slevpy808",
+        "album": "Gas Pedal"
+      },
+      {
+        "title": "45",
+        "artist": "Shinedown",
+        "album": "Leave a Whisper (Deluxe Edition)"
+      },
+      {
+        "title": "Life is Beautiful",
+        "artist": "Sixx:A.M.",
+        "album": "The Heroin Diaries Soundtrack"
+      },
+      {
+        "title": "San Quentin",
+        "artist": "Nickelback",
+        "album": "Get Rollin'"
+      },
+      {
+        "title": "Always",
+        "artist": "Saliva",
+        "album": "Back Into Your System"
+      },
+      {
+        "title": "So Cold - Remix",
+        "artist": "Breaking Benjamin",
+        "album": "We Are Not Alone"
+      },
+      {
+        "title": "Painkiller",
+        "artist": "Three Days Grace",
+        "album": "Human"
+      },
+      {
+        "title": "Voices",
+        "artist": "Motionless In White",
+        "album": "Graveyard Shift"
+      },
+      {
+        "title": "Time of Dying",
+        "artist": "Three Days Grace",
+        "album": null
+      },
+      {
+        "title": "Wait and Bleed - Demo",
+        "artist": "Slipknot",
+        "album": "Slipknot (25th Anniversary Edition)"
+      },
+      {
+        "title": "The Devil in I",
+        "artist": "Slipknot",
+        "album": ".5: The Gray Chapter (Special Edition)"
+      },
+      {
+        "title": "Go To War",
+        "artist": "NOTHING MORE",
+        "album": "The Stories We Tell Ourselves"
+      },
+      {
+        "title": "You're Going Down",
+        "artist": "SICK PUPPIES",
+        "album": "Tri-polar"
+      },
+      {
+        "title": "My Name Is Human",
+        "artist": "Highly Suspect",
+        "album": "The Boy Who Died Wolf"
+      },
+      {
+        "title": "Jenny",
+        "artist": "NOTHING MORE",
+        "album": "Nothing More"
+      },
+      {
+        "title": "DEVIL",
+        "artist": "Shinedown",
+        "album": "ATTENTION ATTENTION"
+      },
+      {
+        "title": "Dr0nched In Sw0t",
+        "artist": "KAMAARA",
+        "album": "TrenchBoy||"
+      },
+      {
+        "title": "Life",
+        "artist": "Venfex",
+        "album": "Life"
+      },
+      {
+        "title": "Homicide (feat. Eminem)",
+        "artist": "Logic",
+        "album": "Confessions of a Dangerous Mind"
+      },
+      {
+        "title": "$WERVIN",
+        "artist": "purge!",
+        "album": null
+      },
+      {
+        "title": "Counting Stars",
+        "artist": "OneRepublic",
+        "album": "Native"
+      },
+      {
+        "title": "Voice in My Head",
+        "artist": "Yates XV",
+        "album": "Voice in My Head"
+      },
+      {
+        "title": "soul eater",
+        "artist": "Savage Ga$p",
+        "album": "in my restless dreams, i see you"
+      },
+      {
+        "title": "stare at the sun",
+        "artist": "Max Fry",
+        "album": "more than dead to me"
+      },
+      {
+        "title": "Comatose",
+        "artist": "Skillet",
+        "album": "Comatose"
+      },
+      {
+        "title": "Hellraiser",
+        "artist": "Lil Revive",
+        "album": "Hellraiser"
+      },
+      {
+        "title": "MONSTERS",
+        "artist": "Shinedown",
+        "album": "ATTENTION ATTENTION"
+      },
+      {
+        "title": "Meet you at the Graveyard",
+        "artist": "Cleffy",
+        "album": "Clean Sheets, dirty walls"
+      },
+      {
+        "title": "Another Love",
+        "artist": "Tom Odell",
+        "album": "Long Way Down (Deluxe)"
+      },
+      {
+        "title": "snowfall",
+        "artist": "Øneheart",
+        "album": "snowfall"
+      },
+      {
+        "title": "Black Out Days",
+        "artist": "Phantogram",
+        "album": "Voices"
+      },
+      {
+        "title": "Blood // Water",
+        "artist": "grandson",
+        "album": "a modern tragedy vol. 1"
+      },
+      {
+        "title": "Somebody That I Used To Know",
+        "artist": "Gotye",
+        "album": "Making Mirrors"
+      },
+      {
+        "title": "Too Sweet",
+        "artist": "Hozier",
+        "album": "Unreal Unearth: Unaired"
+      },
+      {
+        "title": "House of Memories",
+        "artist": "Panic! At The Disco",
+        "album": "Death of a Bachelor"
+      },
+      {
+        "title": "I WANNA BE YOUR SLAVE",
+        "artist": "Måneskin",
+        "album": "Teatro d'ira - Vol. I"
+      },
+      {
+        "title": "Sweater Weather",
+        "artist": "The Neighbourhood",
+        "album": "I Love You."
+      },
+      {
+        "title": "Me and the Devil",
+        "artist": "Soap&Skin",
+        "album": "Sugarbread"
+      },
+      {
+        "title": "Fine Again",
+        "artist": "Seether",
+        "album": "Disclaimer"
+      },
+      {
+        "title": "Animals - Live From Nashville",
+        "artist": "Nickelback",
+        "album": "Live From Nashville"
+      },
+      {
+        "title": "San Quentin - Live From Nashville",
+        "artist": "Nickelback",
+        "album": "Live From Nashville"
+      },
+      {
+        "title": "I Walk the Line",
+        "artist": "Jfarrari",
+        "album": "Fear of the Unknown"
+      },
+      {
+        "title": "Temperature",
+        "artist": "Sean Paul",
+        "album": "The Trinity"
+      },
+      {
+        "title": "scars",
+        "artist": "Paycheck",
+        "album": "identity crisis"
+      },
+      {
+        "title": "Nightmare",
+        "artist": "Avenged Sevenfold",
+        "album": "Nightmare"
+      },
+      {
+        "title": "Turn So Cold",
+        "artist": "Drowning Pool",
+        "album": "Drowning Pool"
+      },
+      {
+        "title": "Words As Weapons",
+        "artist": "Seether",
+        "album": "Isolate And Medicate (Deluxe Edition)"
+      },
+      {
+        "title": "Viva La Vida",
+        "artist": "Coldplay",
+        "album": "Viva La Vida or Death and All His Friends"
+      },
+      {
+        "title": "B.Y.O.B.",
+        "artist": "System Of A Down",
+        "album": "Mezmerize"
+      },
+      {
+        "title": "Afterlife",
+        "artist": "Avenged Sevenfold",
+        "album": "Avenged Sevenfold"
+      },
+      {
+        "title": "The Unknowing",
+        "artist": "Jfarrari",
+        "album": "Fear of the Unknown"
+      },
+      {
+        "title": "NEGATIVE",
+        "artist": "KXLLSWXTCH",
+        "album": "NEGATIVE"
+      },
+      {
+        "title": "Smiles Are Weak",
+        "artist": "Grim Salvo",
+        "album": "Smiles Are Weak"
+      },
+      {
+        "title": "Cold Blood Warm Nights",
+        "artist": "Faceless 1-7",
+        "album": "Cut It Bleed It Breathe It"
+      },
+      {
+        "title": "The Heat From The Sun Is No",
+        "artist": "Istasha",
+        "album": "Wax Figures In The Sky"
+      },
+      {
+        "title": "BLACK RAINBOW",
+        "artist": "Grim Salvo",
+        "album": "MILDRED"
+      },
+      {
+        "title": "Blood. Cash.",
+        "artist": "Faceless 1-7",
+        "album": "Hollow Tape 666"
+      },
+      {
+        "title": "Kill Yourself (Part III)",
+        "artist": "$uicideboy$",
+        "album": "My Liver Will Handle What My Heart Can't"
+      },
+      {
+        "title": "Pumped Up Kicks",
+        "artist": "Foster The People",
+        "album": "Torches"
+      },
+      {
+        "title": "In the End",
+        "artist": "Linkin Park",
+        "album": "Hybrid Theory (Bonus Edition)"
+      },
+      {
+        "title": "We Will Rock You - Remastered 2011",
+        "artist": "Queen",
+        "album": "News Of The World (Deluxe Remastered Version)"
+      },
+      {
+        "title": "Lose Yourself",
+        "artist": "Eminem",
+        "album": "Curtain Call: The Hits (Deluxe Edition)"
+      },
+      {
+        "title": "Mask Off",
+        "artist": "Future",
+        "album": "FUTURE"
+      },
+      {
+        "title": "Beggin'",
+        "artist": "Måneskin",
+        "album": "Chosen"
+      },
+      {
+        "title": "Dangerous",
+        "artist": "Seether",
+        "album": "Si Vis Pacem, Para Bellum"
+      },
+      {
+        "title": "Rx (Medicate)",
+        "artist": "Theory of a Deadman",
+        "album": "Wake Up Call"
+      },
+      {
+        "title": "Need A Favor",
+        "artist": "Jelly Roll",
+        "album": "Whitsitt Chapel"
+      },
+      {
+        "title": "The Sound of Silence",
+        "artist": "Disturbed",
+        "album": "Immortalized"
+      },
+      {
+        "title": "Popular Monster",
+        "artist": "Falling In Reverse",
+        "album": "Popular Monster"
+      },
+      {
+        "title": "Paralyzer",
+        "artist": "Finger Eleven",
+        "album": "Them Vs. You Vs. Me (Deluxe Edition)"
+      },
+      {
+        "title": "Last Resort",
+        "artist": "Papa Roach",
+        "album": "Infest"
+      },
+      {
+        "title": "I Hate Everything About You",
+        "artist": "Three Days Grace",
+        "album": "Three Days Grace"
+      },
+      {
+        "title": "Bodies",
+        "artist": "Drowning Pool",
+        "album": "Sinner"
+      },
+      {
+        "title": "It Ain't My Fault",
+        "artist": "Brothers Osborne",
+        "album": "Pawn Shop"
+      },
+      {
+        "title": "All The Way (feat. Bailey Zimmerman)",
+        "artist": "BigXthaPlug",
+        "album": "I Hope You're Happy (Commentary Version)"
+      },
+      {
+        "title": "Find My Peace Someday",
+        "artist": "Ozzy Higley",
+        "album": "Find My Peace Someday"
+      },
+      {
+        "title": "Fuss and Fight",
+        "artist": "Koe Wetzel",
+        "album": "Noise Complaint"
+      },
+      {
+        "title": "LAME (remastered)",
+        "artist": "Common Tribe",
+        "album": "LAME (remastered)"
+      },
+      {
+        "title": "Rolex On A Redneck",
+        "artist": "Brantley Gilbert",
+        "album": null
+      },
+      {
+        "title": "Tell 'Em Why",
+        "artist": "Redferrin",
+        "album": "Tell 'Em Why"
+      },
+      {
+        "title": "Dysfunctional",
+        "artist": "Tech N9ne Collabos",
+        "album": "Sickology 101"
+      },
+      {
+        "title": "Aw Naw",
+        "artist": "Chris Young",
+        "album": "A.M."
+      },
+      {
+        "title": "Country A$$ Shit",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Memory I Don't Mess With",
+        "artist": "Lee Brice",
+        "album": "Hey World"
+      },
+      {
+        "title": "Up To No Good",
+        "artist": "Warren Zeiders",
+        "album": "717 Tapes the Album"
+      },
+      {
+        "title": "Happier",
+        "artist": "Marshmello",
+        "album": "Happier"
+      },
+      {
+        "title": "Just Like Johnny",
+        "artist": "Redferrin",
+        "album": "Old No. 7"
+      },
+      {
+        "title": "Red In My Last Name",
+        "artist": "Redferrin",
+        "album": "Red In My Last Name"
+      },
+      {
+        "title": "Rumor",
+        "artist": "Lee Brice",
+        "album": "Lee Brice"
+      },
+      {
+        "title": "Bottoms Up",
+        "artist": "Brantley Gilbert",
+        "album": "Just As I Am"
+      },
+      {
+        "title": "Save a Horse (Ride a Cowboy)",
+        "artist": "Big & Rich",
+        "album": "Horse of a Different Color"
+      },
+      {
+        "title": "Something in the Orange",
+        "artist": "Zach Bryan",
+        "album": "Something in the Orange"
+      },
+      {
+        "title": "Stuck",
+        "artist": "Redferrin",
+        "album": "Stuck"
+      },
+      {
+        "title": "Memory to Drown",
+        "artist": "Bryan Martin",
+        "album": "Self Inflicted Scars"
+      },
+      {
+        "title": "Dirt Road Anthem",
+        "artist": "Jason Aldean",
+        "album": "My Kinda Party"
+      },
+      {
+        "title": "Read Me My Rights",
+        "artist": "Brantley Gilbert",
+        "album": "Just As I Am (Platinum Edition)"
+      },
+      {
+        "title": "Drunk Driving",
+        "artist": "Koe Wetzel",
+        "album": "Sellout"
+      },
+      {
+        "title": "That's My Kind Of Night",
+        "artist": "Luke Bryan",
+        "album": null
+      },
+      {
+        "title": "Ain’t That Some",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Champagne In The Morning",
+        "artist": "Redferrin",
+        "album": "Old No. 7"
+      },
+      {
+        "title": "New To Country",
+        "artist": "Bailey Zimmerman",
+        "album": "Different Night Same Rodeo"
+      },
+      {
+        "title": "She's Country",
+        "artist": "Jason Aldean",
+        "album": "Wide Open"
+      },
+      {
+        "title": "Kick It In The Sticks",
+        "artist": "Brantley Gilbert",
+        "album": "Halfway To Heaven (Deluxe)"
+      },
+      {
+        "title": "High Road (feat. Jessie Murph)",
+        "artist": "Koe Wetzel",
+        "album": "High Road (feat. Jessie Murph)"
+      },
+      {
+        "title": "Kiss My Country Ass",
+        "artist": "Blake Shelton",
+        "album": null
+      },
+      {
+        "title": "Neon Grave",
+        "artist": "Tyler Braden",
+        "album": "Neon Grave"
+      },
+      {
+        "title": "Jack and Diet Coke",
+        "artist": "Redferrin",
+        "album": "Jack and Diet Coke"
+      },
+      {
+        "title": "Never Comin' Home",
+        "artist": "Bailey Zimmerman",
+        "album": "Never Comin' Home"
+      },
+      {
+        "title": "The Only Way I Know",
+        "artist": "Jason Aldean",
+        "album": null
+      },
+      {
+        "title": "Last Of My Kind",
+        "artist": "Shaboozey",
+        "album": null
+      },
+      {
+        "title": "Sweet Dreams",
+        "artist": "Koe Wetzel",
+        "album": "Sweet Dreams"
+      },
+      {
+        "title": "Lost",
+        "artist": "Bryan Martin",
+        "album": "Self Inflicted Scars"
+      },
+      {
+        "title": "I'm the Worst",
+        "artist": "Treaty Oak Revival",
+        "album": "Have A Nice Day"
+      },
+      {
+        "title": "Religiously",
+        "artist": "Bailey Zimmerman",
+        "album": "Religiously. The Album."
+      },
+      {
+        "title": "Whiskey Lullaby",
+        "artist": "Brad Paisley",
+        "album": null
+      },
+      {
+        "title": "Ride the Lightning",
+        "artist": "Warren Zeiders",
+        "album": "Ride the Lightning"
+      },
+      {
+        "title": "That's Why We Fight",
+        "artist": "Ella Langley",
+        "album": null
+      },
+      {
+        "title": "Goin For Broke",
+        "artist": "Bryan Martin",
+        "album": "Years In The Making"
+      },
+      {
+        "title": "Country Must Be Country Wide",
+        "artist": "Brantley Gilbert",
+        "album": "Halfway To Heaven (Deluxe)"
+      },
+      {
+        "title": "Holy Smokes",
+        "artist": "Bailey Zimmerman",
+        "album": "Different Night Same Rodeo"
+      },
+      {
+        "title": "Night Shift",
+        "artist": "Jon Pardi",
+        "album": "California Sunrise"
+      },
+      {
+        "title": "International Harvester",
+        "artist": "Craig Morgan",
+        "album": "Little Bit Of Life"
+      },
+      {
+        "title": "Hard To Love",
+        "artist": "Lee Brice",
+        "album": "Hard 2 Love"
+      },
+      {
+        "title": "Better Off",
+        "artist": "Hayden Coffman",
+        "album": "Better Off"
+      },
+      {
+        "title": "Small Town Throwdown",
+        "artist": "Brantley Gilbert",
+        "album": "Just As I Am"
+      },
+      {
+        "title": "Wouldn't Hurt",
+        "artist": "Redferrin",
+        "album": "Wouldn't Hurt"
+      },
+      {
+        "title": "Dicked Down in Dallas",
+        "artist": "Trey Lewis",
+        "album": "Dicked Down in Dallas"
+      },
+      {
+        "title": "As Good As I Once Was",
+        "artist": "Toby Keith",
+        "album": "Honkytonk University"
+      },
+      {
+        "title": "Pretty Little Poison",
+        "artist": "Warren Zeiders",
+        "album": null
+      },
+      {
+        "title": "Cattleman's Gun",
+        "artist": "Dean Brody",
+        "album": null
+      },
+      {
+        "title": "'Til You Can't",
+        "artist": "Cody Johnson",
+        "album": "Human The Double Album"
+      },
+      {
+        "title": "Not Like Us",
+        "artist": "Brantley Gilbert",
+        "album": "Fire & Brimstone"
+      },
+      {
+        "title": "Where the Wild Things Are",
+        "artist": "Luke Combs",
+        "album": "Gettin' Old"
+      },
+      {
+        "title": "Flatliner",
+        "artist": "Cole Swindell",
+        "album": null
+      },
+      {
+        "title": "Downhome Dreams",
+        "artist": "Redferrin",
+        "album": null
+      },
+      {
+        "title": "Where It Ends",
+        "artist": "Bailey Zimmerman",
+        "album": "Religiously. The Album."
+      },
+      {
+        "title": "I Am Not Okay",
+        "artist": "Jelly Roll",
+        "album": "Beautifully Broken (Pickin’ Up The Pieces)"
+      },
+      {
+        "title": "Rearview Town",
+        "artist": "Jason Aldean",
+        "album": "Rearview Town"
+      },
+      {
+        "title": "Country Girl",
+        "artist": "Luke Bryan",
+        "album": null
+      },
+      {
+        "title": "Wasted On You",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Ol' Red",
+        "artist": "Blake Shelton",
+        "album": "Blake Shelton"
+      },
+      {
+        "title": "Choosin' Texas",
+        "artist": "Ella Langley",
+        "album": "Dandelion"
+      },
+      {
+        "title": "All The Way",
+        "artist": "BigXthaPlug",
+        "album": null
+      },
+      {
+        "title": "Can I Get an Outlaw",
+        "artist": "Luke Combs",
+        "album": "Can I Get an Outlaw"
+      },
+      {
+        "title": "Ladies Love Country Boys",
+        "artist": "Trace Adkins",
+        "album": "Dangerous Man"
+      },
+      {
+        "title": "Red Clay",
+        "artist": "Jawga Boyz",
+        "album": null
+      },
+      {
+        "title": "Boondocks",
+        "artist": "Little Big Town",
+        "album": "The Road To Here"
+      },
+      {
+        "title": "23",
+        "artist": "Chayce Beckham",
+        "album": "Bad For Me"
+      },
+      {
+        "title": "Sideways",
+        "artist": "Dierks Bentley",
+        "album": "Feel That Fire"
+      },
+      {
+        "title": "Cocaine and Whiskey",
+        "artist": "Them Dirty Roses",
+        "album": "Them Dirty Roses"
+      },
+      {
+        "title": "Black Creek",
+        "artist": "Brent Cobb",
+        "album": "No Place Left to Leave (2006)"
+      },
+      {
+        "title": "Heart-Shaped Box",
+        "artist": "Sam Donald",
+        "album": "Heart-Shaped Box"
+      },
+      {
+        "title": "(Make My) Country Rock",
+        "artist": "Cory Marks",
+        "album": null
+      },
+      {
+        "title": "Save Me",
+        "artist": "Jelly Roll",
+        "album": "Self Medicated"
+      },
+      {
+        "title": "Dirt On My Boots",
+        "artist": "Jon Pardi",
+        "album": "California Sunrise"
+      },
+      {
+        "title": "Lost Soul’s Prayer",
+        "artist": "Brantley Gilbert",
+        "album": "Fire & Brimstone"
+      },
+      {
+        "title": "Fast Hand",
+        "artist": "Cody Jinks",
+        "album": "Blacksheep"
+      },
+      {
+        "title": "Burnin' It Down",
+        "artist": "Jason Aldean",
+        "album": "Old Boots, New Dirt"
+      },
+      {
+        "title": "Move",
+        "artist": "Luke Bryan",
+        "album": "Kill The Lights (Deluxe)"
+      },
+      {
+        "title": "JACK",
+        "artist": "HARDY",
+        "album": "the mockingbird & THE CROW"
+      },
+      {
+        "title": "Came Here to Forget",
+        "artist": "Blake Shelton",
+        "album": "If I'm Honest"
+      },
+      {
+        "title": "Wild as Her",
+        "artist": "Corey Kent",
+        "album": "Blacktop"
+      },
+      {
+        "title": "We Ride",
+        "artist": "Bryan Martin",
+        "album": "Poets & Old Souls"
+      },
+      {
+        "title": "Change",
+        "artist": "Bailey Zimmerman",
+        "album": "Change"
+      },
+      {
+        "title": "Wrong Ones",
+        "artist": "Post Malone",
+        "album": null
+      },
+      {
+        "title": "Honky Tonk Badonkadonk",
+        "artist": "Trace Adkins",
+        "album": "Songs About Me"
+      },
+      {
+        "title": "LAME",
+        "artist": "Common Tribe",
+        "album": null
+      },
+      {
+        "title": "Mr Red White and Blue",
+        "artist": "Coffey Anderson",
+        "album": "Boots and Jeans"
+      },
+      {
+        "title": "Wine, Beer, Whiskey",
+        "artist": "Little Big Town",
+        "album": "Nightfall"
+      },
+      {
+        "title": "Nose On The Grindstone",
+        "artist": "Tyler Childers",
+        "album": null
+      },
+      {
+        "title": "5-1-5-0",
+        "artist": "Dierks Bentley",
+        "album": "Home"
+      },
+      {
+        "title": "Alabama",
+        "artist": "Bishop Gunn",
+        "album": "Natchez"
+      },
+      {
+        "title": "Rollin' Smoke",
+        "artist": "Bryan Andrews",
+        "album": "Carroll County Sessions"
+      },
+      {
+        "title": "Calloused Hands",
+        "artist": "Sam Donald",
+        "album": "Calloused Hands"
+      },
+      {
+        "title": "TRUCK BED",
+        "artist": "HARDY",
+        "album": "the mockingbird & THE CROW"
+      },
+      {
+        "title": "Everyone's An Outlaw",
+        "artist": "Bryan Martin",
+        "album": "Self Inflicted Scars"
+      },
+      {
+        "title": "GIVE HEAVEN SOME HELL",
+        "artist": "HARDY",
+        "album": "A ROCK"
+      },
+      {
+        "title": "E",
+        "artist": "Matt Mason",
+        "album": "The Writers Collection Volume One"
+      },
+      {
+        "title": "Something to Talk About",
+        "artist": "Koe Wetzel",
+        "album": "Noise Complaint"
+      },
+      {
+        "title": "What Was I Thinkin'",
+        "artist": "Dierks Bentley",
+        "album": "Dierks Bentley"
+      },
+      {
+        "title": "Must Be the Whiskey",
+        "artist": "Cody Jinks",
+        "album": "Lifers"
+      },
+      {
+        "title": "Parachute",
+        "artist": "Chris Stapleton",
+        "album": "Traveller"
+      },
+      {
+        "title": "He Went To Jared",
+        "artist": "HIXTAPE",
+        "album": null
+      },
+      {
+        "title": "How Country Feels",
+        "artist": "Randy Houser",
+        "album": "How Country Feels"
+      },
+      {
+        "title": "UNAPOLOGETICALLY COUNTRY AS HELL",
+        "artist": "HARDY",
+        "album": "A ROCK"
+      },
+      {
+        "title": "Chain Smokin'",
+        "artist": "Morgan Wallen",
+        "album": "Chain Smokin'"
+      },
+      {
+        "title": "The Way I Talk",
+        "artist": "Morgan Wallen",
+        "album": null
+      },
+      {
+        "title": "Creek Will Rise",
+        "artist": "Conner Smith",
+        "album": "Smoky Mountains"
+      },
+      {
+        "title": "REDNECKER",
+        "artist": "HARDY",
+        "album": "THIS OLE BOY"
+      },
+      {
+        "title": "My Kinda Party",
+        "artist": "Jason Aldean",
+        "album": "My Kinda Party"
+      },
+      {
+        "title": "Your Heart Or Mine",
+        "artist": "Jon Pardi",
+        "album": "Mr. Saturday Night"
+      },
+      {
+        "title": "Ain't Nothing 'Bout You",
+        "artist": "Brooks & Dunn",
+        "album": "Steers & Stripes"
+      },
+      {
+        "title": "Rock and A Hard Place",
+        "artist": "Bailey Zimmerman",
+        "album": "Religiously. The Album."
+      },
+      {
+        "title": "Livin’ The Dream",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Something Like That",
+        "artist": "Tim McGraw",
+        "album": "A Place In The Sun"
+      },
+      {
+        "title": "Hurricane",
+        "artist": "Luke Combs",
+        "album": "This One's for You"
+      },
+      {
+        "title": "red",
+        "artist": "HARDY",
+        "album": null
+      },
+      {
+        "title": "There Was This Girl",
+        "artist": "Riley Green",
+        "album": "Different 'Round Here"
+      },
+      {
+        "title": "Should've Been A Cowboy",
+        "artist": "Toby Keith",
+        "album": null
+      },
+      {
+        "title": "Thinkin’ Bout Me",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Whiskey Glasses",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "Up Down",
+        "artist": "Morgan Wallen",
+        "album": null
+      },
+      {
+        "title": "Spin You Around",
+        "artist": "Morgan Wallen",
+        "album": "Stand Alone (10th Anniversary Deluxe Edition)"
+      },
+      {
+        "title": "Wolves Cry",
+        "artist": "Bryan Martin",
+        "album": "Poets & Old Souls"
+      },
+      {
+        "title": "Me On You",
+        "artist": "Muscadine Bloodline",
+        "album": "Teenage Dixie"
+      },
+      {
+        "title": "Ain't Doin' Jack",
+        "artist": "Josh Ross",
+        "album": "Ain't Doin' Jack"
+      },
+      {
+        "title": "Warning",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "She Got the Best of Me",
+        "artist": "Luke Combs",
+        "album": "This One's for You Too (Deluxe Edition)"
+      },
+      {
+        "title": "Beer Never Broke My Heart",
+        "artist": "Luke Combs",
+        "album": "What You See Is What You Get"
+      },
+      {
+        "title": "Buy Me a Boat",
+        "artist": "Chris Janson",
+        "album": null
+      },
+      {
+        "title": "Don't Come Lookin'",
+        "artist": "Jackson Dean",
+        "album": "Greenbroke"
+      },
+      {
+        "title": "You, Me, And Whiskey",
+        "artist": "Justin Moore",
+        "album": "Stray Dog"
+      },
+      {
+        "title": "Me and My Kind",
+        "artist": "Cody Johnson",
+        "album": "Cowboy Like Me"
+      },
+      {
+        "title": "Neon Eyes",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "More Than The Shine",
+        "artist": "Bryan Martin",
+        "album": "Self Inflicted Scars"
+      },
+      {
+        "title": "Whiskey On You",
+        "artist": "Nate Smith",
+        "album": "NATE SMITH (DELUXE)"
+      },
+      {
+        "title": "Bulletproof",
+        "artist": "Nate Smith",
+        "album": null
+      },
+      {
+        "title": "Play It Again",
+        "artist": "Luke Bryan",
+        "album": "Crash My Party"
+      },
+      {
+        "title": "Man Made A Bar",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "One Of Them Girls",
+        "artist": "Lee Brice",
+        "album": "Hey World"
+      },
+      {
+        "title": "Sunrise",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Fly over States",
+        "artist": "Jason Aldean",
+        "album": "My Kinda Party"
+      },
+      {
+        "title": "Good Die Young",
+        "artist": "Koe Wetzel",
+        "album": "Sellout"
+      },
+      {
+        "title": "BOOTS",
+        "artist": "HARDY",
+        "album": "A ROCK"
+      },
+      {
+        "title": "wait in the truck",
+        "artist": "HARDY",
+        "album": "the mockingbird & THE CROW"
+      },
+      {
+        "title": "Drink In My Hand",
+        "artist": "Eric Church",
+        "album": "Chief"
+      },
+      {
+        "title": "Dirt Cheap",
+        "artist": "Cody Johnson",
+        "album": "Leather"
+      },
+      {
+        "title": "I Don't Want This Night To End",
+        "artist": "Luke Bryan",
+        "album": "Tailgates & Tanlines"
+      },
+      {
+        "title": "Sand In My Boots",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Human",
+        "artist": "Cody Johnson",
+        "album": "Human The Double Album"
+      },
+      {
+        "title": "You Proof",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "When It Rains It Pours",
+        "artist": "Luke Combs",
+        "album": "This One's for You"
+      },
+      {
+        "title": "Deep End",
+        "artist": "Gavin Adcock",
+        "album": "Bonfire Blackout"
+      },
+      {
+        "title": "Even If It Breaks Your Heart",
+        "artist": "Eli Young Band",
+        "album": "Life At Best"
+      },
+      {
+        "title": "Son Of A Sinner",
+        "artist": "Jelly Roll",
+        "album": "Ballads Of The Broken"
+      },
+      {
+        "title": "Thought You Should Know",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Worst Way",
+        "artist": "Riley Green",
+        "album": "Way Out Here"
+      },
+      {
+        "title": "Runnin' Outta Moonlight",
+        "artist": "Randy Houser",
+        "album": "How Country Feels"
+      },
+      {
+        "title": "When She Says Baby",
+        "artist": "Jason Aldean",
+        "album": "Night Train"
+      },
+      {
+        "title": "Wild as You",
+        "artist": "Cody Johnson",
+        "album": "Gotta Be Me"
+      },
+      {
+        "title": "More Than My Hometown",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Watching You",
+        "artist": "Rodney Atkins",
+        "album": "If You're Going Through Hell"
+      },
+      {
+        "title": "Rain Is A Good Thing",
+        "artist": "Luke Bryan",
+        "album": "Doin' My Thing"
+      },
+      {
+        "title": "I Wish Grandpas Never Died",
+        "artist": "Riley Green",
+        "album": "Different 'Round Here"
+      },
+      {
+        "title": "Brokenheartsville",
+        "artist": "Joe Nichols",
+        "album": "Man With A Memory"
+      },
+      {
+        "title": "Cowgirls",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Cold As You",
+        "artist": "Luke Combs",
+        "album": "What You See Ain't Always What You Get (Deluxe Edition)"
+      },
+      {
+        "title": "Kiss Tomorrow Goodbye",
+        "artist": "Luke Bryan",
+        "album": "Tailgates & Tanlines"
+      },
+      {
+        "title": "TRUCK",
+        "artist": "HARDY",
+        "album": "A ROCK"
+      },
+      {
+        "title": "This Is How We Roll",
+        "artist": "Florida Georgia Line",
+        "album": "Here's To The Good Times...This Is How We Roll"
+      },
+      {
+        "title": "Your Bartender",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Cover Me Up",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Diamond In My Pocket",
+        "artist": "Cody Johnson",
+        "album": "A Different Day"
+      },
+      {
+        "title": "Every Storm",
+        "artist": "Gary Allan",
+        "album": null
+      },
+      {
+        "title": "Farmer's Daughter",
+        "artist": "Rodney Atkins",
+        "album": "It's America"
+      },
+      {
+        "title": "I Like It, I Love It",
+        "artist": "Tim McGraw",
+        "album": null
+      },
+      {
+        "title": "A ROCK",
+        "artist": "HARDY",
+        "album": null
+      },
+      {
+        "title": "The Kind of Love We Make",
+        "artist": "Luke Combs",
+        "album": "Growin' Up"
+      },
+      {
+        "title": "All Over The Road",
+        "artist": "Easton Corbin",
+        "album": "All Over The Road"
+      },
+      {
+        "title": "Drunk On A Plane",
+        "artist": "Dierks Bentley",
+        "album": "RISER"
+      },
+      {
+        "title": "Springsteen",
+        "artist": "Eric Church",
+        "album": "Chief"
+      },
+      {
+        "title": "Chasin' You",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "Tequila Makes Her Clothes Fall Off",
+        "artist": "Joe Nichols",
+        "album": "III"
+      },
+      {
+        "title": "Drunk On You",
+        "artist": "Luke Bryan",
+        "album": "Tailgates & Tanlines"
+      },
+      {
+        "title": "Silverado For Sale",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Not Good At Not",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "Going, Going, Gone",
+        "artist": "Luke Combs",
+        "album": "Growin' Up"
+      },
+      {
+        "title": "Crazy Girl",
+        "artist": "Eli Young Band",
+        "album": null
+      },
+      {
+        "title": "Alright",
+        "artist": "Darius Rucker",
+        "album": null
+      },
+      {
+        "title": "If I Know Me",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "This Bar",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "American Kids",
+        "artist": "Kenny Chesney",
+        "album": "The Big Revival"
+      },
+      {
+        "title": "Drink A Beer",
+        "artist": "Luke Bryan",
+        "album": "Crash My Party"
+      },
+      {
+        "title": "Lovin' On You",
+        "artist": "Luke Combs",
+        "album": "What You See Is What You Get"
+      },
+      {
+        "title": "5 Foot 9",
+        "artist": "Tyler Hubbard",
+        "album": null
+      },
+      {
+        "title": "Pretty Good At Drinkin' Beer",
+        "artist": "Billy Currington",
+        "album": "Enjoy Yourself"
+      },
+      {
+        "title": "Barefoot Blue Jean Night",
+        "artist": "Jake Owen",
+        "album": "Barefoot Blue Jean Night"
+      },
+      {
+        "title": "Love Like Crazy",
+        "artist": "Lee Brice",
+        "album": "Love Like Crazy"
+      },
+      {
+        "title": "Time Marches On",
+        "artist": "Tracy Lawrence",
+        "album": "Time Marches On"
+      },
+      {
+        "title": "Still Goin Down",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "865",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Everything I Love",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "I'm Gonna Miss Her",
+        "artist": "Brad Paisley",
+        "album": "Part II"
+      },
+      {
+        "title": "I'm Not For Everyone",
+        "artist": "Brothers Osborne",
+        "album": "Skeletons"
+      },
+      {
+        "title": "Bandaid On A Bullet Hole",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album (Bonus)"
+      },
+      {
+        "title": "Live Like You Were Dying",
+        "artist": "Tim McGraw",
+        "album": "Live Like You Were Dying"
+      },
+      {
+        "title": "Me On Whiskey",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "It Goes Like This",
+        "artist": "Thomas Rhett",
+        "album": "It Goes Like This"
+      },
+      {
+        "title": "We Didn't Have Much",
+        "artist": "Justin Moore",
+        "album": "Straight Outta The Country"
+      },
+      {
+        "title": "Little Rain",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "Somebody’s Problem",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Talkin' Tennessee",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "I Know She Ain't Ready",
+        "artist": "Luke Combs",
+        "album": "The Way She Rides"
+      },
+      {
+        "title": "February 28, 2016",
+        "artist": "Koe Wetzel",
+        "album": "Noise Complaint"
+      },
+      {
+        "title": "Heartless",
+        "artist": "Morgan Wallen",
+        "album": null
+      },
+      {
+        "title": "Boys 'Round Here",
+        "artist": "Blake Shelton",
+        "album": null
+      },
+      {
+        "title": "Happy Hour",
+        "artist": "Morgan Wallen",
+        "album": "If I Know Me"
+      },
+      {
+        "title": "I Deserve A Drink",
+        "artist": "Morgan Wallen",
+        "album": "One Thing At A Time"
+      },
+      {
+        "title": "Shotgun Rider",
+        "artist": "Tim McGraw",
+        "album": "Sundown Heaven Town"
+      },
+      {
+        "title": "Wonderin’ Bout The Wind",
+        "artist": "Morgan Wallen",
+        "album": "Dangerous: The Double Album"
+      },
+      {
+        "title": "Crash My Party",
+        "artist": "Luke Bryan",
+        "album": "Crash My Party"
+      },
+      {
+        "title": "Kick The Dust Up",
+        "artist": "Luke Bryan",
+        "album": "Kill The Lights (Deluxe)"
+      },
+      {
+        "title": "Hard to Break",
+        "artist": "Blake Whiten",
+        "album": null
+      },
+      {
+        "title": "Take The Lonely",
+        "artist": "Hayden Coffman",
+        "album": null
+      },
+      {
+        "title": "Indigo (feat. Avery Anna)",
+        "artist": "Sam Barber",
+        "album": null
+      },
+      {
+        "title": "You're a Fucking Bitch Hope You Know That Shit",
+        "artist": "Atlus",
+        "album": null
+      },
+      {
+        "title": "Lovin On Me",
+        "artist": "Jack Harlow",
+        "album": null
+      },
+      {
+        "title": "Gnat",
+        "artist": "Eminem",
+        "album": null
+      },
+      {
+        "title": "iSpy (feat. Lil Yachty)",
+        "artist": "KYLE",
+        "album": null
+      },
+      {
+        "title": "Rolex® On A Redneck",
+        "artist": "Brantley Gilbert",
+        "album": null
+      },
+      {
+        "title": "Swimming Pools (Drank)",
+        "artist": "Kendrick Lamar",
+        "album": null
+      },
+      {
+        "title": "Like I Ain't",
+        "artist": "Tech N9ne",
+        "album": null
+      },
+      {
+        "title": "It's Been Awhile",
+        "artist": "Staind",
+        "album": null
+      },
+      {
+        "title": "Psycho",
+        "artist": "Puddle Of Mudd",
+        "album": null
+      },
+      {
+        "title": "Remember Everything",
+        "artist": "Five Finger Death Punch",
+        "album": null
+      },
+      {
+        "title": "(Make My) Country Rock (feat. Sully Erna of Godsmack, Travis Tritt, and Mick Mars)",
+        "artist": "Cory Marks",
+        "album": null
+      },
+      {
+        "title": "$WERVINㅤ",
+        "artist": "purge!",
+        "album": null
+      },
+      {
+        "title": "The Devil Is A Democrat",
+        "artist": "Tom MacDonald",
+        "album": null
+      },
+      {
+        "title": "The System",
+        "artist": "Tom MacDonald",
+        "album": null
+      },
+      {
+        "title": "Soldier (feat. Tom MacDonald)",
+        "artist": "Dax",
+        "album": null
+      },
+      {
+        "title": "All My Haters",
+        "artist": "Tom MacDonald",
+        "album": null
+      },
+      {
+        "title": "Man In the Sky",
+        "artist": "Tom MacDonald",
+        "album": null
+      }
+    ]
+  }
+]

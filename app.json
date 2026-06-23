@@ -1,0 +1,67 @@
+{
+  "expo": {
+    "name": "PulseMobile",
+    "slug": "pulse",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/Pulse.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/Pulse.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0a0a"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.pulse.mobile",
+      "buildNumber": "1",
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"],
+        "NSPhotoLibraryUsageDescription": "PulseMobile accesses your music library to play your songs.",
+        "NSAppleMusicUsageDescription": "PulseMobile needs access to your music library to play your iTunes and Apple Music downloads.",
+        "NSMicrophoneUsageDescription": "Required by the audio framework.",
+        "UIFileSharingEnabled": true,
+        "LSSupportsOpeningDocumentsInPlace": true,
+        "CFBundleDocumentTypes": [
+          {
+            "CFBundleTypeName": "Audio",
+            "LSItemContentTypes": [
+              "public.mp3",
+              "public.mpeg-4-audio",
+              "public.aiff-audio",
+              "public.audio",
+              "org.xiph.flac",
+              "com.microsoft.waveform-audio"
+            ],
+            "CFBundleTypeRole": "Viewer"
+          }
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "plugins": [
+      "./plugins/withMusicLibrary",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow PulseMobile to access your music library.",
+          "savePhotosPermission": "Allow PulseMobile to save to your library.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      [
+        "expo-document-picker",
+        {
+          "iCloudContainerEnvironment": "Production"
+        }
+      ],
+      "expo-av"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9bcd3a45-e6a7-47a3-9c14-cd9729754963"
+      }
+    },
+    "owner": "mylesthepro"
+  }
+}

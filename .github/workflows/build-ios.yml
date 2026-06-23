@@ -1,0 +1,110 @@
+name: Build iOS IPA (Unsigned)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Export NODE_BINARY for all steps
+        run: echo "NODE_BINARY=$(which node)" >> $GITHUB_ENV
+
+      - name: Fix execute permissions on all node_modules scripts
+        run: |
+          find node_modules -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
+          find node_modules -name "*.rb" -exec chmod +x {} \; 2>/dev/null || true
+          echo "Done fixing node_modules script permissions"
+
+      - name: Disable New Architecture in app.json
+        run: |
+          node -e "
+            const fs = require('fs');
+            const cfg = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            if (!cfg.expo.experiments) cfg.expo.experiments = {};
+            cfg.expo.experiments.newArchEnabled = false;
+            fs.writeFileSync('app.json', JSON.stringify(cfg, null, 2));
+            console.log('newArchEnabled set to false');
+          "
+
+      - name: Expo prebuild
+        run: sh node_modules/.bin/expo prebuild --platform ios --non-interactive --clean
+
+      - name: Force newArchEnabled=false in Podfile.properties.json
+        working-directory: ios
+        run: |
+          node -e "
+            const fs = require('fs');
+            const cfg = JSON.parse(fs.readFileSync('Podfile.properties.json', 'utf8'));
+            cfg.newArchEnabled = 'false';
+            fs.writeFileSync('Podfile.properties.json', JSON.stringify(cfg, null, 2));
+            console.log('Podfile.properties.json:', JSON.stringify(cfg));
+          "
+
+      - name: Install CocoaPods
+        working-directory: ios
+        run: pod install
+
+      - name: Fix Pods script permissions
+        run: find ios/Pods -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
+
+      - name: Build unsigned archive
+        run: |
+          # Add node to PATH so Xcode build scripts can find it via `which node`
+          export PATH="$(dirname $NODE_BINARY):$PATH"
+          echo "NODE_BINARY=$NODE_BINARY"
+          echo "node in PATH: $(which node)"
+
+          xcodebuild archive \
+            -workspace ios/PulseMobile.xcworkspace \
+            -scheme PulseMobile \
+            -configuration Release \
+            -archivePath "$RUNNER_TEMP/PulseMobile.xcarchive" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            NODE_BINARY="$NODE_BINARY" \
+            RCT_NEW_ARCH_ENABLED=0 \
+            -destination "generic/platform=iOS" \
+            2>&1 | tee "$RUNNER_TEMP/xcodebuild.log"
+
+      - name: Check archive and show errors if failed
+        run: |
+          if [ ! -d "$RUNNER_TEMP/PulseMobile.xcarchive/Products/Applications" ]; then
+            echo "=== ARCHIVE FAILED — LAST 200 LINES ==="
+            tail -200 "$RUNNER_TEMP/xcodebuild.log"
+            exit 1
+          fi
+          ls -la "$RUNNER_TEMP/PulseMobile.xcarchive/Products/Applications/"
+
+      - name: Package as IPA
+        run: |
+          APP_PATH=$(find "$RUNNER_TEMP/PulseMobile.xcarchive/Products/Applications" -name "*.app" | head -1)
+          echo "Packaging: $APP_PATH"
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -r "$APP_PATH" "$RUNNER_TEMP/ipa/Payload/"
+          cd "$RUNNER_TEMP/ipa"
+          zip -r PulseMobile-unsigned.ipa Payload/
+          echo "IPA size: $(du -sh PulseMobile-unsigned.ipa | cut -f1)"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PulseMobile-unsigned
+          path: ${{ runner.temp }}/ipa/PulseMobile-unsigned.ipa
+          retention-days: 90

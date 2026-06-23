@@ -1,0 +1,212 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { YoutubeResult, Track } from '../types';
+
+// ── Invidious instances ───────────────────────────────────────────
+const INVIDIOUS = [
+  'https://inv.nadeko.net',
+  'https://invidious.nerdvpn.de',
+  'https://yt.artemislena.eu',
+  'https://iv.datura.network',
+  'https://invidious.fdn.fr',
+  'https://yewtu.be',
+  'https://invidious.privacyredirect.com',
+  'https://invidious.incogniweb.net',
+  'https://inv.tux.pizza',
+  'https://yt.cdaut.de',
+  'https://invidious.einfachzocken.eu',
+  'https://invidious.lunar.icu',
+  'https://iv.ggtyler.dev',
+  'https://invidious.poast.org',
+  'https://invidious.io',
+];
+
+// ── Piped API instances (fallback when all Invidious fail) ────────
+const PIPED = [
+  'https://pipedapi.kavin.rocks',
+  'https://pipedapi.adminforge.de',
+  'https://piped-api.garudalinux.org',
+];
+
+const INSTANCE_KEY = 'yt_active_instance_v2';
+const URL_CACHE_KEY = 'yt_url_cache_v1';
+const URL_TTL = 4 * 60 * 60 * 1000;
+
+type CacheEntry = { url: string; expiresAt: number };
+let urlCache: Record<string, CacheEntry> = {};
+let cacheLoaded = false;
+let activeInvidiousIdx = 0;
+
+async function loadCache() {
+  if (cacheLoaded) return;
+  try {
+    const [raw, savedIdx] = await Promise.all([
+      AsyncStorage.getItem(URL_CACHE_KEY),
+      AsyncStorage.getItem(INSTANCE_KEY),
+    ]);
+    if (raw) urlCache = JSON.parse(raw);
+    if (savedIdx) activeInvidiousIdx = parseInt(savedIdx, 10) || 0;
+  } catch {}
+  cacheLoaded = true;
+}
+
+async function saveCache() {
+  try {
+    const now = Date.now();
+    for (const k of Object.keys(urlCache)) {
+      if (urlCache[k].expiresAt < now) delete urlCache[k];
+    }
+    await AsyncStorage.setItem(URL_CACHE_KEY, JSON.stringify(urlCache));
+  } catch {}
+}
+
+function timedFetch(url: string, ms = 8000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
+}
+
+// Parse JSON safely — Invidious sometimes returns an HTML error page (200 OK, body starts with <)
+async function safeJson(res: Response): Promise<any | null> {
+  try {
+    const text = await res.text();
+    if (!text || text.trimStart().startsWith('<')) return null;
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+async function tryInvidious(path: string): Promise<any | null> {
+  const order = [
+    ...INVIDIOUS.slice(activeInvidiousIdx),
+    ...INVIDIOUS.slice(0, activeInvidiousIdx),
+  ];
+  for (const inst of order) {
+    try {
+      const res = await timedFetch(`${inst}${path}`);
+      if (!res.ok) continue;
+      const data = await safeJson(res);
+      if (!data) continue; // HTML response, skip this instance
+      const idx = INVIDIOUS.indexOf(inst);
+      if (idx !== activeInvidiousIdx) {
+        activeInvidiousIdx = idx;
+        AsyncStorage.setItem(INSTANCE_KEY, String(idx)).catch(() => {});
+      }
+      return data;
+    } catch {}
+  }
+  return null;
+}
+
+async function tryPiped(path: string): Promise<any | null> {
+  for (const inst of PIPED) {
+    try {
+      const res = await timedFetch(`${inst}${path}`);
+      if (!res.ok) continue;
+      const data = await safeJson(res);
+      if (data) return data;
+    } catch {}
+  }
+  return null;
+}
+
+// ── Public API ────────────────────────────────────────────────────
+
+export async function searchYoutube(query: string): Promise<YoutubeResult[]> {
+  await loadCache();
+  const q = encodeURIComponent(query);
+
+  const data = await tryInvidious(
+    `/api/v1/search?q=${q}&type=video&fields=videoId,title,author,lengthSeconds,videoThumbnails&hl=en`
+  );
+  if (data && Array.isArray(data)) {
+    return data
+      .filter((v: any) => v.videoId)
+      .slice(0, 25)
+      .map((v: any) => ({
+        videoId: v.videoId,
+        title: v.title,
+        author: v.author,
+        durationSeconds: v.lengthSeconds ?? 0,
+        thumbnail:
+          v.videoThumbnails?.find((t: any) => t.quality === 'medium')?.url ??
+          v.videoThumbnails?.[0]?.url ?? '',
+      }));
+  }
+
+  // Piped fallback
+  const piped = await tryPiped(`/search?q=${q}&filter=videos`);
+  if (piped) {
+    const items: any[] = piped.items ?? [];
+    return items
+      .filter((v: any) => v.url)
+      .slice(0, 25)
+      .map((v: any) => ({
+        videoId: (v.url as string).replace('/watch?v=', ''),
+        title: v.title ?? '',
+        author: v.uploaderName ?? v.uploader ?? 'Unknown',
+        durationSeconds: v.duration ?? 0,
+        thumbnail: v.thumbnail ?? '',
+      }));
+  }
+
+  throw new Error('YouTube search is unavailable right now — all streaming servers are offline. Try again shortly.');
+}
+
+export async function resolveStreamUrl(videoId: string): Promise<string> {
+  await loadCache();
+
+  const cached = urlCache[videoId];
+  if (cached && cached.expiresAt > Date.now()) return cached.url;
+
+  // Invidious path
+  const data = await tryInvidious(`/api/v1/videos/${videoId}?fields=adaptiveFormats,formatStreams`);
+  if (data) {
+    const audioFormats: any[] = (data.adaptiveFormats ?? []).filter(
+      (f: any) => typeof f.type === 'string' && f.type.startsWith('audio/mp4')
+    );
+    let url: string | undefined;
+    if (audioFormats.length > 0) {
+      audioFormats.sort((a: any, b: any) => (b.bitrate ?? 0) - (a.bitrate ?? 0));
+      url = audioFormats[0].url;
+    } else {
+      const muxed = (data.formatStreams ?? []).find((f: any) =>
+        typeof f.type === 'string' && (f.type.startsWith('video/mp4') || f.type.startsWith('audio/'))
+      );
+      url = muxed?.url;
+    }
+    if (url) {
+      urlCache[videoId] = { url, expiresAt: Date.now() + URL_TTL };
+      saveCache();
+      return url;
+    }
+  }
+
+  // Piped fallback
+  const piped = await tryPiped(`/streams/${videoId}`);
+  if (piped) {
+    const streams: any[] = piped.audioStreams ?? [];
+    if (streams.length > 0) {
+      streams.sort((a: any, b: any) => (b.bitrate ?? 0) - (a.bitrate ?? 0));
+      const url = streams[0].url as string;
+      urlCache[videoId] = { url, expiresAt: Date.now() + URL_TTL };
+      saveCache();
+      return url;
+    }
+  }
+
+  throw new Error(`Cannot stream video ${videoId} — all sources offline.`);
+}
+
+export function youtubeResultToTrack(result: YoutubeResult): Track {
+  return {
+    id: `yt::${result.videoId}`,
+    title: result.title,
+    artist: result.author,
+    album: 'YouTube',
+    duration: result.durationSeconds,
+    uri: `yt::${result.videoId}`,
+    artwork: result.thumbnail,
+    source: 'youtube',
+  };
+}
