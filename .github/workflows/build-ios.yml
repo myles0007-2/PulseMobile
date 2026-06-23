@@ -21,6 +21,12 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
+      - name: Fix CRLF line endings in node_modules scripts
+        run: |
+          find node_modules/.bin -type f -exec dos2unix {} \; 2>/dev/null || true
+          find node_modules -name "*.sh" -exec dos2unix {} \; 2>/dev/null || true
+          find . -maxdepth 1 -name "*.sh" -exec dos2unix {} \; 2>/dev/null || true
+
       - name: Export NODE_BINARY for all steps
         run: echo "NODE_BINARY=$(which node)" >> $GITHUB_ENV
 
