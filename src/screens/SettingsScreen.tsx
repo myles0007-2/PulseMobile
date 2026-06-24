@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,6 +6,8 @@ import { useStore, useColors } from '../store/useStore';
 import { MiniPlayer } from '../components/MiniPlayer';
 import { spacing, fontSize, radius, ThemeName, THEME_LABELS } from '../theme';
 import { clearLibraryCache } from '../services/libraryService';
+import { downloadManager } from '../services/downloadManager';
+import { cacheManager } from '../services/cacheManager';
 
 function Row({ label, value, onPress, danger }: { label: string; value?: string; onPress?: () => void; danger?: boolean }) {
   const colors = useColors();
@@ -34,11 +36,41 @@ const THEMES: ThemeName[] = ['dark', 'midnight', 'forest', 'rose', 'slate', 'amb
 export function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { tracks, repeat, shuffle, setRepeat, toggleShuffle, themeName, setTheme, clearHistory, history } = useStore();
+  const { tracks, repeat, shuffle, setRepeat, toggleShuffle, themeName, setTheme, clearHistory, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, setAutoDownload, setAutoDownloadLikedSongs, setWifiOnly } = useStore();
+  const [cacheStats, setCacheStats] = useState({ used: 0, limit: 1024 * 1024 * 1024, count: 0 });
+  const [downloadSize, setDownloadSize] = useState(0);
 
-  const clearCache = () => Alert.alert('Clear Library Cache', 'Force a fresh scan next time you open the Library tab.', [
+  useEffect(() => {
+    const updateStats = async () => {
+      const stats = cacheManager.getStats();
+      setCacheStats(stats);
+      const dlSize = await downloadManager.getDownloadsFolderSize();
+      setDownloadSize(dlSize);
+    };
+    updateStats();
+  }, []);
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+  };
+
+  const clearLibraryCacheUI = () => Alert.alert('Clear Library Cache', 'Force a fresh scan next time you open the Library tab.', [
     { text: 'Cancel', style: 'cancel' },
     { text: 'Clear', style: 'destructive', onPress: async () => { await clearLibraryCache(); Alert.alert('Done', 'Reopen the Library tab to rescan.'); } },
+  ]);
+
+  const clearDownloads = () => Alert.alert('Clear Downloads', `Delete ${formatBytes(downloadSize)} of downloaded songs?`, [
+    { text: 'Cancel', style: 'cancel' },
+    { text: 'Clear', style: 'destructive', onPress: async () => { await downloadManager.clearAllDownloads(); setDownloadSize(0); } },
+  ]);
+
+  const clearCache = () => Alert.alert('Clear Cache', `Delete ${formatBytes(cacheStats.used)} of cached songs?`, [
+    { text: 'Cancel', style: 'cancel' },
+    { text: 'Clear', style: 'destructive', onPress: async () => { await cacheManager.clearCache(); setCacheStats({ ...cacheStats, used: 0, count: 0 }); } },
   ]);
 
   const clearHistoryConfirm = () => Alert.alert('Clear History', 'Remove all play history?', [
@@ -90,7 +122,36 @@ export function SettingsScreen() {
           <Row label="Total Tracks" value={`${tracks.length}`} />
           <Row label="Play History" value={`${history.length} entries`} />
           <Row label="Clear Play History" onPress={clearHistoryConfirm} danger />
-          <Row label="Clear Library Cache" onPress={clearCache} danger />
+          <Row label="Clear Library Cache" onPress={clearLibraryCacheUI} danger />
+        </Section>
+
+        {/* Downloads & Cache */}
+        <Section title="DOWNLOADS & CACHE">
+          <Row label="Downloads" value={formatBytes(downloadSize)} />
+          <Row label="Cache" value={`${formatBytes(cacheStats.used)} / ${formatBytes(cacheStats.limit)}`} />
+          <Row label="Cached Files" value={`${cacheStats.count}`} />
+          {downloadSize > 0 && <Row label="Clear Downloads" onPress={clearDownloads} danger />}
+          {cacheStats.used > 0 && <Row label="Clear Cache" onPress={clearCache} danger />}
+        </Section>
+
+        {/* Auto-Download */}
+        <Section title="AUTO-DOWNLOAD">
+          <Pressable style={[styles.row, { borderBottomColor: colors.border }]} onPress={() => setAutoDownload(!autoDownloadEnabled)}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Auto-Download Enabled</Text>
+            <Text style={[styles.rowValue, { color: autoDownloadEnabled ? colors.primary : colors.textSecondary }]}>{autoDownloadEnabled ? 'On' : 'Off'}</Text>
+          </Pressable>
+          {autoDownloadEnabled && (
+            <>
+              <Pressable style={[styles.row, { borderBottomColor: colors.border }]} onPress={() => setAutoDownloadLikedSongs(!autoDownloadLikedSongs)}>
+                <Text style={[styles.rowLabel, { color: colors.text }]}>Liked Songs</Text>
+                <Text style={[styles.rowValue, { color: autoDownloadLikedSongs ? colors.primary : colors.textSecondary }]}>{autoDownloadLikedSongs ? 'Yes' : 'No'}</Text>
+              </Pressable>
+              <Pressable style={[styles.row]} onPress={() => setWifiOnly(!wifiOnly)}>
+                <Text style={[styles.rowLabel, { color: colors.text }]}>WiFi Only</Text>
+                <Text style={[styles.rowValue, { color: wifiOnly ? colors.primary : colors.textSecondary }]}>{wifiOnly ? 'Yes' : 'No'}</Text>
+              </Pressable>
+            </>
+          )}
         </Section>
 
         {/* Transfer */}

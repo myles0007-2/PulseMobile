@@ -2,12 +2,14 @@ import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, Pressable, StyleSheet, Alert, TextInput, Modal,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore, useColors } from '../store/useStore';
 import { TrackItem } from '../components/TrackItem';
 import { MiniPlayer } from '../components/MiniPlayer';
 import { Playlist } from '../types';
 import { spacing, fontSize, radius } from '../theme';
+import { batchQueueDownloads } from '../services/batchDownloadService';
 
 export function PlaylistsScreen() {
   const insets = useSafeAreaInsets();
@@ -16,6 +18,23 @@ export function PlaylistsScreen() {
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
   const [showNewModal, setShowNewModal] = useState(false);
   const [newName, setNewName] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadPlaylist = useCallback(async (pl: Playlist) => {
+    if (pl.tracks.length === 0) {
+      Alert.alert('Empty Playlist', 'Add tracks to this playlist first.');
+      return;
+    }
+    setIsDownloading(true);
+    try {
+      await batchQueueDownloads(pl.tracks);
+      Alert.alert('Downloaded', `Queued ${pl.tracks.length} songs for download.`);
+    } catch (e) {
+      Alert.alert('Download Error', 'Failed to queue downloads.');
+    } finally {
+      setIsDownloading(false);
+    }
+  }, []);
 
   const handleCreate = useCallback(() => {
     if (!newName.trim()) return;
@@ -42,9 +61,20 @@ export function PlaylistsScreen() {
             <Text style={[styles.back, { color: colors.primary }]}>‹ Playlists</Text>
           </Pressable>
           <Text style={[styles.detailTitle, { color: colors.text }]} numberOfLines={1}>{current.name}</Text>
-          <Pressable hitSlop={12} onPress={() => openDeleteMenu(current)}>
-            <Text style={{ color: colors.textMuted, fontSize: 22 }}>⋯</Text>
-          </Pressable>
+          <View style={styles.detailActions}>
+            {current.tracks.length > 0 && (
+              <Pressable
+                hitSlop={12}
+                onPress={() => handleDownloadPlaylist(current)}
+                disabled={isDownloading}
+              >
+                <Ionicons name={isDownloading ? 'ellipsis-horizontal' : 'download'} size={20} color={colors.primary} />
+              </Pressable>
+            )}
+            <Pressable hitSlop={12} onPress={() => openDeleteMenu(current)}>
+              <Text style={{ color: colors.textMuted, fontSize: 22 }}>⋯</Text>
+            </Pressable>
+          </View>
         </View>
 
         {current.tracks.length === 0 ? (
@@ -166,6 +196,7 @@ const styles = StyleSheet.create({
   },
   back: { fontSize: fontSize.md, fontWeight: '600' },
   detailTitle: { flex: 1, fontSize: fontSize.lg, fontWeight: '700', textAlign: 'center' },
+  detailActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
   emptyText: { fontSize: fontSize.md, textAlign: 'center', lineHeight: 22 },
   modalOverlay: {

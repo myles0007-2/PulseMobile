@@ -51,10 +51,6 @@ class AudioPlayer {
             duration,
             isLoading: status.isBuffering,
           });
-          // Detect track end: transition from playing to not playing at end of track
-          if (this.lastPlayingState && !status.isPlaying && duration > 0 && position >= duration - 0.5) {
-            this.trackEndCallback?.();
-          }
           this.lastPlayingState = status.isPlaying;
         }
       } catch {}

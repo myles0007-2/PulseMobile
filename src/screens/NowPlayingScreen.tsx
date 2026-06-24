@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAsyncDebounce } from '../hooks/useDebounce';
 import { useStore, useColors, RepeatMode } from '../store/useStore';
 import { spacing, fontSize, radius } from '../theme';
+import { QueueViewer } from '../components/QueueViewer';
 
 const { width } = Dimensions.get('window');
 const ART_SIZE = Math.min(width - 56, 340);
@@ -43,7 +44,11 @@ export function NowPlayingScreen() {
     togglePlay, nextTrack, prevTrack, seekTo, setRepeat, toggleShuffle,
     setVolume, setSleepTimer, toggleLike, isLiked,
     sponsorSegments,
+    queue, currentIndex, playTrack,
+    bluetoothState,
   } = useStore();
+
+  const [showQueue, setShowQueue] = useState(false);
 
   const lyricsScrollRef = useRef<ScrollView>(null);
   const lineHeight = 40;
@@ -135,6 +140,15 @@ export function NowPlayingScreen() {
               <View style={[styles.sponsorBadge, { backgroundColor: colors.primary + '22' }]}>
                 <Text style={[styles.sponsorText, { color: colors.primary }]}>SponsorBlock Active</Text>
               </View>
+            )}
+            {bluetoothState.isInitialized && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 4 }}>
+                <Ionicons name="bluetooth" size={12} color={colors.primary} />
+                <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '600' }}>BT Controls</Text>
+              </View>
+            )}
+            {!bluetoothState.isInitialized && bluetoothState.errorMessage && (
+              <Text style={{ fontSize: 9, color: colors.textMuted, marginTop: 2 }}>⚠ BT unavailable</Text>
             )}
           </View>
 
@@ -292,6 +306,18 @@ export function NowPlayingScreen() {
           </Pressable>
         </View>
 
+        {/* Queue Button */}
+        <Pressable
+          hitSlop={16}
+          onPress={() => setShowQueue(true)}
+          style={[styles.queueBtn, { borderColor: colors.border }]}
+        >
+          <Ionicons name="list" size={20} color={colors.text} />
+          <Text style={[styles.queueBtnText, { color: colors.textSecondary }]}>
+            {queue.length} in queue
+          </Text>
+        </Pressable>
+
         {/* Volume */}
         <View style={styles.volumeRow}>
           <Ionicons name="volume-low-outline" size={18} color={colors.textMuted} />
@@ -310,6 +336,20 @@ export function NowPlayingScreen() {
         </View>
 
       </View>
+
+      {/* Queue Viewer */}
+      <QueueViewer
+        visible={showQueue}
+        queue={queue}
+        currentIndex={currentIndex}
+        onClose={() => setShowQueue(false)}
+        onSelectTrack={(index) => {
+          if (queue[index]) {
+            playTrack(queue[index], queue);
+            setShowQueue(false);
+          }
+        }}
+      />
     </Modal>
   );
 }
@@ -419,4 +459,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   volumeSlider: { flex: 1, height: 40 },
+
+  queueBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginVertical: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: radius.md,
+    borderWidth: 1,
+  },
+  queueBtnText: { fontSize: 13, fontWeight: '600' },
 });

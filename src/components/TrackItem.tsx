@@ -5,6 +5,7 @@ import { Track } from '../types';
 import { useColors, useStore } from '../store/useStore';
 import { spacing, fontSize, radius } from '../theme';
 import { getTrackArtwork } from '../services/iosMusicLibrary';
+import { DownloadButton } from './DownloadButton';
 
 interface Props {
   track: Track;
@@ -147,6 +148,8 @@ export const TrackItem = React.memo(
         {isLiked && (
           <Ionicons name="heart" size={13} color={colors.primary} style={styles.heart} />
         )}
+
+        <DownloadButton track={track} size="small" />
 
         {showMenu && (
           <Pressable hitSlop={12} onPress={openMenu} style={styles.menuBtn}>
