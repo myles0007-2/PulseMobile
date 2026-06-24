@@ -1,23 +1,40 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { useTheme } from '../store/useStore';
+import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { useColors } from '../store/useStore';
+
+const MAX_RETRY_ATTEMPTS = 3;
 
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
   errorInfo: React.ErrorInfo | null;
   errorCount: number;
+  retryAttempts: number;
 }
 
 interface Props {
   children: React.ReactNode;
   fallback?: React.ReactNode;
+  // Optional callback for analytics/error tracking. Called whenever an error is caught.
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
 /**
  * ErrorBoundary: Catches rendering errors and shows user-friendly recovery UI
- * Never shows white screen—always gives user a recovery path
+ * Never shows white screen—always gives user a recovery path.
+ *
+ * Tracks error count and retry attempts. After MAX_RETRY_ATTEMPTS (3), disables retry button.
+ * Use the optional onError callback to track errors for analytics/logging.
+ *
+ * Example:
+ *   <ErrorBoundary
+ *     onError={(error, info) => {
+ *       console.log('Error caught:', error.message);
+ *       logErrorToAnalytics({ error: error.message, component: info.componentStack });
+ *     }}
+ *   >
+ *     <App />
+ *   </ErrorBoundary>
  */
 export class ErrorBoundary extends React.Component<Props, ErrorBoundaryState> {
   constructor(props: Props) {
@@ -27,11 +44,12 @@ export class ErrorBoundary extends React.Component<Props, ErrorBoundaryState> {
       error: null,
       errorInfo: null,
       errorCount: 0,
+      retryAttempts: 0,
     };
   }
 
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
-    return { hasError: true, error };
+    return { hasError: true, error, retryAttempts: 0 };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
@@ -49,10 +67,15 @@ export class ErrorBoundary extends React.Component<Props, ErrorBoundaryState> {
   }
 
   handleReload = () => {
+    const newRetryCount = this.state.retryAttempts + 1;
+    if (newRetryCount > MAX_RETRY_ATTEMPTS) {
+      return;
+    }
     this.setState({
       hasError: false,
       error: null,
       errorInfo: null,
+      retryAttempts: newRetryCount,
     });
   };
 
@@ -64,8 +87,15 @@ export class ErrorBoundary extends React.Component<Props, ErrorBoundaryState> {
           errorInfo={this.state.errorInfo}
           onReload={this.handleReload}
           errorCount={this.state.errorCount}
+          retryAttempts={this.state.retryAttempts}
+          maxRetries={MAX_RETRY_ATTEMPTS}
         />
       );
+    }
+
+    // Reset errorCount on successful render (no error)
+    if (this.state.errorCount > 0) {
+      this.setState({ errorCount: 0 });
     }
 
     return this.props.children;
@@ -77,6 +107,8 @@ interface ErrorFallbackProps {
   errorInfo: React.ErrorInfo | null;
   onReload: () => void;
   errorCount: number;
+  retryAttempts: number;
+  maxRetries: number;
 }
 
 /**
@@ -88,15 +120,18 @@ function ErrorFallback({
   errorInfo,
   onReload,
   errorCount,
+  retryAttempts,
+  maxRetries,
 }: ErrorFallbackProps) {
-  const theme = useTheme();
+  const colors = useColors();
   const isDev = __DEV__; // __DEV__ is Expo's dev flag
+  const retriesExhausted = retryAttempts >= maxRetries;
 
   return (
     <View
       style={[
         styles.container,
-        { backgroundColor: theme.colors.bg },
+        { backgroundColor: colors.bg },
       ]}
     >
       <ScrollView
@@ -107,14 +142,14 @@ function ErrorFallback({
         <Text style={styles.emoji}>😕</Text>
 
         {/* User-Friendly Message */}
-        <Text style={[styles.title, { color: theme.colors.text }]}>
+        <Text style={[styles.title, { color: colors.text }]}>
           Oops!
         </Text>
 
         <Text
           style={[
             styles.description,
-            { color: theme.colors.textSecondary },
+            { color: colors.textSecondary },
           ]}
         >
           Something unexpected happened.
@@ -123,7 +158,7 @@ function ErrorFallback({
         <Text
           style={[
             styles.hint,
-            { color: theme.colors.textSecondary },
+            { color: colors.textSecondary },
           ]}
         >
           This isn't your fault. Let's try fixing it.
@@ -134,18 +169,18 @@ function ErrorFallback({
           <View
             style={[
               styles.devDetails,
-              { backgroundColor: theme.colors.bgSecondary },
+              { backgroundColor: colors.card },
             ]}
           >
             <Text
-              style={[styles.devLabel, { color: theme.colors.text }]}
+              style={[styles.devLabel, { color: colors.text }]}
             >
               📋 Error Details (Dev Mode)
             </Text>
             <Text
               style={[
                 styles.devText,
-                { color: theme.colors.textSecondary },
+                { color: colors.textSecondary },
               ]}
             >
               {error.message}
@@ -154,7 +189,7 @@ function ErrorFallback({
               <Text
                 style={[
                   styles.devStack,
-                  { color: theme.colors.textTertiary },
+                  { color: colors.textMuted },
                 ]}
               >
                 {errorInfo.componentStack.slice(0, 500)}...
@@ -163,7 +198,7 @@ function ErrorFallback({
             <Text
               style={[
                 styles.devLabel,
-                { color: theme.colors.textTertiary },
+                { color: colors.textMuted },
               ]}
             >
               Error count: {errorCount}
@@ -172,42 +207,67 @@ function ErrorFallback({
         )}
 
         {/* Recovery Button */}
-        <TouchableOpacity
-          onPress={onReload}
-          style={[
-            styles.button,
-            { backgroundColor: theme.colors.primary },
-          ]}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.buttonText, { color: theme.colors.bgPrimary }]}>
-            Try Again
-          </Text>
-        </TouchableOpacity>
+        {retriesExhausted ? (
+          <>
+            <Pressable
+              disabled
+              style={[
+                styles.button,
+                { backgroundColor: colors.textMuted },
+              ]}
+            >
+              <Text style={[styles.buttonText, { color: colors.card }]}>
+                Retries Exhausted
+              </Text>
+            </Pressable>
+            <Text
+              style={[
+                styles.footer,
+                { color: colors.primary },
+              ]}
+            >
+              We've tried {maxRetries} times. Please close and reopen the app to restart.
+            </Text>
+          </>
+        ) : (
+          <>
+            <Pressable
+              onPress={onReload}
+              style={[
+                styles.button,
+                { backgroundColor: colors.primary },
+              ]}
+            >
+              <Text style={[styles.buttonText, { color: colors.bg }]}>
+                Try Again ({retryAttempts}/{maxRetries})
+              </Text>
+            </Pressable>
 
-        {/* Secondary Info */}
-        <Text
-          style={[
-            styles.footer,
-            { color: theme.colors.textTertiary },
-          ]}
-        >
-          If this keeps happening, try closing and reopening the app.
-        </Text>
+            {/* Secondary Info */}
+            <Text
+              style={[
+                styles.footer,
+                { color: colors.textMuted },
+              ]}
+            >
+              If this keeps happening, try closing and reopening the app.
+            </Text>
+          </>
+        )}
       </ScrollView>
     </View>
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center' as const,
+    justifyContent: 'center',
   },
   content: {
     flexGrow: 1,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 32,
   },
@@ -217,24 +277,24 @@ const styles = {
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold' as const,
+    fontWeight: 'bold',
     marginBottom: 8,
-    textAlign: 'center' as const,
+    textAlign: 'center',
   },
   description: {
     fontSize: 16,
     marginBottom: 8,
-    textAlign: 'center' as const,
+    textAlign: 'center',
     lineHeight: 22,
   },
   hint: {
     fontSize: 14,
     marginBottom: 24,
-    textAlign: 'center' as const,
-    fontStyle: 'italic' as const,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   devDetails: {
-    width: '100%',
+    alignSelf: 'stretch',
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 24,
@@ -244,7 +304,7 @@ const styles = {
   },
   devLabel: {
     fontSize: 12,
-    fontWeight: 'bold' as const,
+    fontWeight: 'bold',
     marginBottom: 4,
   },
   devText: {
@@ -267,13 +327,13 @@ const styles = {
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: 'bold' as const,
-    textAlign: 'center' as const,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   footer: {
     fontSize: 12,
-    textAlign: 'center' as const,
+    textAlign: 'center',
     lineHeight: 16,
     marginTop: 8,
   },
-};
+});

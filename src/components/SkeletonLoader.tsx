@@ -6,19 +6,27 @@ import { spacing } from '../theme';
 interface SkeletonLoaderProps {
   count?: number;
   height?: number;
-  width?: string | number;
+  // Width as number (pixels) or pass nothing to stretch full width. Strings like '100%' are handled internally.
+  width?: number;
 }
 
 /**
  * SkeletonLoader: Shows placeholder boxes while content loads
- * Mimics the shape of actual content (e.g., track rows)
+ * Mimics the shape of actual content (e.g., track rows).
+ *
+ * Width handling: Pass a number for fixed pixel width, or omit to stretch full width.
+ *
+ * Example:
+ *   <SkeletonLoader count={5} height={60} /> // Stretches full width
+ *   <SkeletonLoader count={3} height={40} width={200} /> // Fixed 200px width
  */
 export function SkeletonLoader({
   count = 5,
   height = 60,
-  width = '100%',
+  width,
 }: SkeletonLoaderProps) {
   const colors = useColors();
+  const widthStyle = width ? { width } : { alignSelf: 'stretch' as const };
 
   return (
     <View style={styles.container}>
@@ -27,10 +35,10 @@ export function SkeletonLoader({
           key={i}
           style={[
             styles.skeleton,
+            widthStyle,
             {
-              backgroundColor: colors.bgSecondary,
+              backgroundColor: colors.card,
               height,
-              width,
               marginBottom: spacing.sm,
             },
           ]}

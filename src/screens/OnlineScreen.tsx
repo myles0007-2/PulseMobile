@@ -31,6 +31,8 @@ const CURATED_SEARCHES = [
   'Pop Workout Mix',
 ];
 
+const MAX_PLAYBACK_RETRIES = 2;
+
 export function OnlineScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
@@ -44,6 +46,8 @@ export function OnlineScreen() {
   const [podcastTitle, setPodcastTitle] = useState('');
   const [podcastLoading, setPodcastLoading] = useState(false);
   const [customFeedUrl, setCustomFeedUrl] = useState('');
+  const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
+  const [retryAttempts, setRetryAttempts] = useState<Map<string, number>>(new Map());
 
   // Pull up to 8 unique artists from the user's library as quick-search chips
   const libraryArtists = useMemo(() => {
@@ -101,14 +105,35 @@ export function OnlineScreen() {
   }, []);
 
   const playYt = useCallback(async (result: YoutubeResult) => {
+    const trackId = result.videoId;
+    const currentAttempts = retryAttempts.get(trackId) ?? 0;
+
+    if (currentAttempts >= MAX_PLAYBACK_RETRIES) {
+      Alert.alert(
+        'Playback Failed',
+        `Unable to play this stream after ${MAX_PLAYBACK_RETRIES} attempts. The stream may be unavailable or blocked.`,
+        [{ text: 'OK', style: 'cancel' }]
+      );
+      return;
+    }
+
+    setPlayingTrackId(trackId);
     try {
       const track = youtubeResultToTrack(result);
       await playTrack(track, ytResults.map(youtubeResultToTrack));
+      setPlayingTrackId(null);
+      setRetryAttempts(new Map());
     } catch (error: any) {
+      setPlayingTrackId(null);
+      const nextAttempt = currentAttempts + 1;
+      setRetryAttempts(new Map(retryAttempts).set(trackId, nextAttempt));
       const errorMsg = error?.message || 'Could not play stream';
+      const suggestion = nextAttempt === 1
+        ? 'Check your internet connection.'
+        : 'The stream may be temporarily unavailable. Try another song.';
       Alert.alert(
         'Playback Failed',
-        `${errorMsg}. The stream might be unavailable or blocked.\n\nWould you like to try again?`,
+        `${errorMsg}\n\n${suggestion}\n\nAttempt ${nextAttempt}/${MAX_PLAYBACK_RETRIES}`,
         [
           {
             text: 'Try Again',
@@ -121,17 +146,38 @@ export function OnlineScreen() {
         ]
       );
     }
-  }, [ytResults, playTrack]);
+  }, [ytResults, playTrack, retryAttempts]);
 
   const playPodcast = useCallback(async (episode: PodcastEpisode) => {
+    const episodeId = episode.id;
+    const currentAttempts = retryAttempts.get(episodeId) ?? 0;
+
+    if (currentAttempts >= MAX_PLAYBACK_RETRIES) {
+      Alert.alert(
+        'Playback Failed',
+        `Unable to play this episode after ${MAX_PLAYBACK_RETRIES} attempts. The feed may be offline.`,
+        [{ text: 'OK', style: 'cancel' }]
+      );
+      return;
+    }
+
+    setPlayingTrackId(episodeId);
     try {
       const track = episodeToTrack(episode);
       await playTrack(track, podcastEps.map(episodeToTrack));
+      setPlayingTrackId(null);
+      setRetryAttempts(new Map());
     } catch (error: any) {
+      setPlayingTrackId(null);
+      const nextAttempt = currentAttempts + 1;
+      setRetryAttempts(new Map(retryAttempts).set(episodeId, nextAttempt));
       const errorMsg = error?.message || 'Could not play episode';
+      const suggestion = nextAttempt === 1
+        ? 'Check your internet connection and try again.'
+        : 'The feed may be offline. Try another episode.';
       Alert.alert(
         'Playback Failed',
-        `${errorMsg}. The feed might be offline.\n\nWould you like to try again?`,
+        `${errorMsg}\n\n${suggestion}\n\nAttempt ${nextAttempt}/${MAX_PLAYBACK_RETRIES}`,
         [
           {
             text: 'Try Again',
@@ -144,7 +190,7 @@ export function OnlineScreen() {
         ]
       );
     }
-  }, [podcastEps, playTrack]);
+  }, [podcastEps, playTrack, retryAttempts]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>

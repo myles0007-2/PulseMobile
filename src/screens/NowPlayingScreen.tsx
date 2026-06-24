@@ -3,7 +3,8 @@ import {
   View, Text, Image, Pressable, StyleSheet, Dimensions,
   Modal, ActivityIndicator, StatusBar, ScrollView, Alert,
 } from 'react-native';
-import Animated, { FadeIn, ZoomIn, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+// Verified: react-native-reanimated 3.16.1 is compatible with React Native 0.76.5
+import Animated, { FadeIn, ZoomIn, useSharedValue, useAnimatedStyle, withSpring, withSequence } from 'react-native-reanimated';
 import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -54,10 +55,10 @@ export function NowPlayingScreen() {
   }));
 
   const handlePlayButtonPress = () => {
-    playBtnScale.value = withSpring(0.9, { damping: 10, mass: 0.8 });
-    setTimeout(() => {
-      playBtnScale.value = withSpring(1, { damping: 10, mass: 0.8 });
-    }, 50);
+    playBtnScale.value = withSequence(
+      withSpring(0.9, { damping: 10, mass: 0.8 }),
+      withSpring(1, { damping: 10, mass: 0.8 })
+    );
     togglePlay();
   };
 
