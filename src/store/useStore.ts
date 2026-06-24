@@ -179,6 +179,13 @@ interface Store {
   bluetoothNextTrack: () => Promise<void>;
   bluetoothPrevTrack: () => Promise<void>;
 
+  // YouTube Music authentication (Phase 3)
+  youtubeAuthInitialized: boolean;
+  youtubeAuthenticated: boolean;
+  youtubeCircuitBreakerTripped: boolean;
+  initializeYouTubeAuth: () => Promise<void>;
+  logoutYouTube: () => Promise<void>;
+
   // Bootstrap & internal
   bootstrap: () => Promise<void>;
   _persist: () => void;
@@ -242,6 +249,11 @@ export const useStore = create<Store>((set, get) => {
 
     // Sleep timer lock
     _sleepTimerLock: false,
+
+    // YouTube Music auth (Phase 3)
+    youtubeAuthInitialized: false,
+    youtubeAuthenticated: false,
+    youtubeCircuitBreakerTripped: false,
 
     // Lyrics
     lyrics: [], currentLyricIndex: 0, showLyrics: false,
@@ -447,6 +459,32 @@ export const useStore = create<Store>((set, get) => {
       }
     },
 
+    // YouTube Music authentication (Phase 3)
+    initializeYouTubeAuth: async () => {
+      try {
+        const { youtubeMusicAuth } = await import('../services/youtubeMusicAPI');
+        const authState = await youtubeMusicAuth.initialize();
+        set({
+          youtubeAuthInitialized: true,
+          youtubeAuthenticated: authState.isAuthenticated,
+          youtubeCircuitBreakerTripped: authState.circuitBreakerTripped,
+        });
+      } catch (error) {
+        console.error('YouTube auth init failed:', error);
+        set({ youtubeAuthInitialized: true, youtubeAuthenticated: false });
+      }
+    },
+
+    logoutYouTube: async () => {
+      try {
+        const { youtubeMusicAuth } = await import('../services/youtubeMusicAPI');
+        await youtubeMusicAuth.logout();
+        set({ youtubeAuthenticated: false, youtubeCircuitBreakerTripped: false });
+      } catch (error) {
+        console.error('YouTube logout failed:', error);
+      }
+    },
+
     // Bootstrap
     bootstrap: async () => {
       const saved = await loadPersisted();
@@ -487,6 +525,12 @@ export const useStore = create<Store>((set, get) => {
       // This runs asynchronously and doesn't block the bootstrap
       get().initializeBluetooth().catch((e) => {
         console.warn('Bluetooth initialization failed (app works fine without it):', e);
+      });
+
+      // Initialize YouTube Music auth (Phase 3, non-blocking)
+      // Falls back to Invidious if YouTube Music is unavailable
+      get().initializeYouTubeAuth().catch((e) => {
+        console.warn('YouTube Music auth init failed (Invidious fallback available):', e);
       });
     },
 
