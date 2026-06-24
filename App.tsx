@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View } from 'react-native';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { CertExpiryBanner } from './src/components/CertExpiryBanner';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { player } from './src/services/audioPlayer';
 import { useStore, useColors } from './src/store/useStore';
 
@@ -29,8 +30,10 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
-        <Root />
+        <ErrorBoundary>
+          <StatusBar style="light" />
+          <Root />
+        </ErrorBoundary>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
