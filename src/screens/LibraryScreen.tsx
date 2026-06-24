@@ -9,6 +9,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useStore, useColors } from '../store/useStore';
 import { TrackItem } from '../components/TrackItem';
 import { MiniPlayer } from '../components/MiniPlayer';
+import { LibrarySkeletonLoader } from '../components/SkeletonLoader';
 import { spacing, fontSize, radius } from '../theme';
 import { Track } from '../types';
 import { scanLibrary, loadCachedLibrary, clearLibraryCache } from '../services/libraryService';
@@ -171,14 +172,14 @@ export function LibraryScreen() {
 
       {/* Content */}
       {isScanning ? (
-        <View style={styles.empty}>
-          <ActivityIndicator color={colors.primary} size="large" />
-          <Text style={[styles.emptyText, { color: colors.text, marginTop: spacing.md }]}>
-            Scanning music library…
-          </Text>
-          <Text style={[styles.emptySubText, { color: colors.textSecondary }]}>
-            Reading your iTunes library. This takes a moment for large collections.
-          </Text>
+        <View style={{ flex: 1, backgroundColor: colors.bg }}>
+          <View style={[styles.scanHeader, { borderBottomColor: colors.border }]}>
+            <ActivityIndicator color={colors.primary} size="small" />
+            <Text style={[styles.scanText, { color: colors.textSecondary }]}>
+              Scanning music library…
+            </Text>
+          </View>
+          <LibrarySkeletonLoader />
         </View>
       ) : tracks.length === 0 ? (
         <View style={styles.empty}>
@@ -393,5 +394,17 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  scanHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: spacing.sm,
+  },
+  scanText: {
+    fontSize: fontSize.sm,
+    fontWeight: '500',
   },
 });

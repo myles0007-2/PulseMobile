@@ -6,6 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore, useColors } from '../store/useStore';
+import { useDebounce } from '../hooks/useDebounce';
 import { MiniPlayer } from '../components/MiniPlayer';
 import { TrackItem } from '../components/TrackItem';
 import { spacing, fontSize, radius } from '../theme';
@@ -38,6 +39,7 @@ export function OnlineScreen() {
   const [search, setSearch] = useState('');
   const [ytResults, setYtResults] = useState<YoutubeResult[]>([]);
   const [ytLoading, setYtLoading] = useState(false);
+  const [isDebouncing, setIsDebouncing] = useState(false);
   const [podcastEps, setPodcastEps] = useState<PodcastEpisode[]>([]);
   const [podcastTitle, setPodcastTitle] = useState('');
   const [podcastLoading, setPodcastLoading] = useState(false);
@@ -47,17 +49,18 @@ export function OnlineScreen() {
   const libraryArtists = useMemo(() => {
     const artists = Array.from(new Set(tracks.map((t) => t.artist)))
       .filter((a) => a !== 'Unknown Artist')
-      .sort(() => Math.random() - 0.5) // shuffle so it's different each render
+      .sort(() => Math.random() - 0.5)
       .slice(0, 8);
     return artists;
-  }, [tracks.length]); // only recalc when library changes
+  }, [tracks.length]);
 
   const doYoutubeSearch = useCallback(async (query?: string) => {
     const q = (query ?? search).trim();
-    if (!q) return;
-    setSearch(q);
+    if (!q) {
+      setYtResults([]);
+      return;
+    }
     setYtLoading(true);
-    setYtResults([]);
     try {
       setYtResults(await searchYoutube(q));
     } catch (e: any) {
@@ -66,6 +69,18 @@ export function OnlineScreen() {
       setYtLoading(false);
     }
   }, [search]);
+
+  // Debounced search: waits 500ms after user stops typing before searching
+  const debouncedSearch = useDebounce(async (query: string) => {
+    setIsDebouncing(false);
+    doYoutubeSearch(query);
+  }, 500);
+
+  const handleSearchChange = (text: string) => {
+    setSearch(text);
+    setIsDebouncing(true);
+    debouncedSearch(text);
+  };
 
   const searchArtist = useCallback((artist: string) => {
     doYoutubeSearch(`${artist} mix playlist`);
@@ -86,9 +101,50 @@ export function OnlineScreen() {
   }, []);
 
   const playYt = useCallback(async (result: YoutubeResult) => {
-    const track = youtubeResultToTrack(result);
-    await playTrack(track, ytResults.map(youtubeResultToTrack));
+    try {
+      const track = youtubeResultToTrack(result);
+      await playTrack(track, ytResults.map(youtubeResultToTrack));
+    } catch (error: any) {
+      const errorMsg = error?.message || 'Could not play stream';
+      Alert.alert(
+        'Playback Failed',
+        `${errorMsg}. The stream might be unavailable or blocked.\n\nWould you like to try again?`,
+        [
+          {
+            text: 'Try Again',
+            onPress: () => playYt(result),
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+        ]
+      );
+    }
   }, [ytResults, playTrack]);
+
+  const playPodcast = useCallback(async (episode: PodcastEpisode) => {
+    try {
+      const track = episodeToTrack(episode);
+      await playTrack(track, podcastEps.map(episodeToTrack));
+    } catch (error: any) {
+      const errorMsg = error?.message || 'Could not play episode';
+      Alert.alert(
+        'Playback Failed',
+        `${errorMsg}. The feed might be offline.\n\nWould you like to try again?`,
+        [
+          {
+            text: 'Try Again',
+            onPress: () => playPodcast(episode),
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+        ]
+      );
+    }
+  }, [podcastEps, playTrack]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
@@ -131,24 +187,27 @@ export function OnlineScreen() {
                 placeholder="Search YouTube Music…"
                 placeholderTextColor={colors.textMuted}
                 value={search}
-                onChangeText={setSearch}
-                onSubmitEditing={() => doYoutubeSearch()}
+                onChangeText={handleSearchChange}
+                onSubmitEditing={() => doYoutubeSearch(search)}
                 returnKeyType="search"
                 clearButtonMode="while-editing"
               />
+              {isDebouncing && (
+                <View style={{ marginLeft: 6 }}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                </View>
+              )}
             </View>
-            <Pressable
-              style={[styles.searchBtn, { backgroundColor: colors.primary }]}
-              onPress={() => doYoutubeSearch()}
-            >
-              <Text style={{ color: colors.bg, fontWeight: '700', fontSize: fontSize.md }}>Go</Text>
-            </Pressable>
           </View>
 
           {ytLoading ? (
             <View style={styles.center}>
               <ActivityIndicator color={colors.primary} size="large" />
               <Text style={{ color: colors.textSecondary, marginTop: spacing.sm }}>Searching…</Text>
+            </View>
+          ) : isDebouncing ? (
+            <View style={styles.center}>
+              <Text style={{ color: colors.textSecondary, marginTop: spacing.sm }}>searching…</Text>
             </View>
           ) : ytResults.length > 0 ? (
             <>
@@ -308,7 +367,7 @@ export function OnlineScreen() {
                   <TrackItem
                     track={episodeToTrack(item)}
                     isActive={currentTrack?.id === item.id}
-                    onPress={() => playTrack(episodeToTrack(item), podcastEps.map(episodeToTrack))}
+                    onPress={() => playPodcast(item)}
                   />
                 )}
                 contentContainerStyle={{ paddingBottom: 120 }}

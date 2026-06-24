@@ -1,8 +1,9 @@
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect, useState } from 'react';
 import {
   View, Text, Image, Pressable, StyleSheet, Dimensions,
   Modal, ActivityIndicator, StatusBar, ScrollView, Alert,
 } from 'react-native';
+import Animated, { FadeIn, ZoomIn, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,6 +45,21 @@ export function NowPlayingScreen() {
 
   const lyricsScrollRef = useRef<ScrollView>(null);
   const lineHeight = 40;
+
+  // Animation state for play button press
+  const playBtnScale = useSharedValue(1);
+
+  const playBtnAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: playBtnScale.value }],
+  }));
+
+  const handlePlayButtonPress = () => {
+    playBtnScale.value = withSpring(0.9, { damping: 10, mass: 0.8 });
+    setTimeout(() => {
+      playBtnScale.value = withSpring(1, { damping: 10, mass: 0.8 });
+    }, 50);
+    togglePlay();
+  };
 
   useEffect(() => {
     if (showLyrics && lyrics.length && lyricsScrollRef.current) {
@@ -123,8 +139,10 @@ export function NowPlayingScreen() {
 
         {!showLyrics ? (
           <>
-            {/* Album Art */}
-            <View style={styles.artWrapper}>
+            {/* Album Art - Animated fade in + zoom */}
+            <Animated.View
+              style={[styles.artWrapper, { entering: ZoomIn.springify().damping(1.5) }]}
+            >
               {currentTrack.artwork ? (
                 <Image
                   source={{ uri: currentTrack.artwork }}
@@ -136,10 +154,12 @@ export function NowPlayingScreen() {
                   <Ionicons name="musical-notes" size={72} color={colors.textMuted} />
                 </View>
               )}
-            </View>
+            </Animated.View>
 
-            {/* Track Info */}
-            <View style={styles.trackRow}>
+            {/* Track Info - Animated fade in */}
+            <Animated.View
+              style={[styles.trackRow, { entering: FadeIn.delay(100).duration(300) }]}
+            >
               <View style={styles.trackInfoFlex}>
                 <Text style={[styles.trackTitle, { color: colors.text }]} numberOfLines={2}>
                   {currentTrack.title}
@@ -155,7 +175,7 @@ export function NowPlayingScreen() {
                   color={liked ? colors.primary : colors.textMuted}
                 />
               </Pressable>
-            </View>
+            </Animated.View>
           </>
         ) : (
           /* Lyrics View */
@@ -232,18 +252,23 @@ export function NowPlayingScreen() {
             <Ionicons name="play-skip-back" size={30} color={colors.text} />
           </Pressable>
 
-          <Pressable style={[styles.playBtn, { backgroundColor: colors.primary }]} onPress={togglePlay}>
-            {isLoading ? (
-              <ActivityIndicator color={colors.bg} size="large" />
-            ) : (
-              <Ionicons
-                name={isPlaying ? 'pause' : 'play'}
-                size={32}
-                color={colors.bg}
-                style={{ marginLeft: isPlaying ? 0 : 4 }}
-              />
-            )}
-          </Pressable>
+          <Animated.View style={playBtnAnimatedStyle}>
+            <Pressable
+              style={[styles.playBtn, { backgroundColor: colors.primary }]}
+              onPress={handlePlayButtonPress}
+            >
+              {isLoading ? (
+                <ActivityIndicator color={colors.bg} size="large" />
+              ) : (
+                <Ionicons
+                  name={isPlaying ? 'pause' : 'play'}
+                  size={32}
+                  color={colors.bg}
+                  style={{ marginLeft: isPlaying ? 0 : 4 }}
+                />
+              )}
+            </Pressable>
+          </Animated.View>
 
           <Pressable hitSlop={12} onPress={nextTrack} style={styles.skipBtn}>
             <Ionicons name="play-skip-forward" size={30} color={colors.text} />
