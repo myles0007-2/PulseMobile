@@ -254,10 +254,13 @@ export function NowPlayingScreen() {
         <View style={styles.progressBlock}>
           <Slider
             style={styles.slider}
+            disabled={!duration || duration <= 0}
             minimumValue={0}
-            maximumValue={duration || 1}
-            value={Math.min(position, duration)}
-            onSlidingComplete={(pos) => seekTo(Math.min(pos, duration))}
+            maximumValue={Math.max(duration, 1)}
+            value={duration > 0 ? Math.min(position, duration) : 0}
+            onSlidingComplete={(pos) => {
+              if (duration > 0) seekTo(Math.min(pos, duration));
+            }}
             minimumTrackTintColor={colors.primary}
             maximumTrackTintColor={colors.border}
             thumbTintColor={colors.primary}
