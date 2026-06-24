@@ -66,7 +66,7 @@ export function computeStats(history: HistoryEntry[]): ListeningStats {
     const artist = entry.track.artist || 'Unknown Artist';
     artistMap.set(artist, (artistMap.get(artist) ?? 0) + 1);
     if (!artistFirstSeen.has(artist)) {
-      artistFirstSeen.set(artist, entry.timestamp);
+      artistFirstSeen.set(artist, entry.playedAt);
     }
 
     // Album stats
@@ -84,7 +84,7 @@ export function computeStats(history: HistoryEntry[]): ListeningStats {
     genreMap.set(genre, (genreMap.get(genre) ?? 0) + 1);
 
     // Daily stats
-    const date = new Date(entry.timestamp);
+    const date = new Date(entry.playedAt);
     const dateStr = date.toISOString().split('T')[0];
     const dailyEntry = dailyMap.get(dateStr) ?? { seconds: 0, trackCount: 0 };
     dailyMap.set(dateStr, {
