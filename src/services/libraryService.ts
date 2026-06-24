@@ -43,7 +43,9 @@ export async function scanLibrary(
   let itunesTracks: NativeMusicTrack[] = [];
   try {
     itunesTracks = await getItunesTracks();
-  } catch {}
+  } catch (e) {
+    console.warn('iTunes library scan failed, using Documents only:', e);
+  }
 
   for (let i = 0; i < itunesTracks.length; i++) {
     const native = itunesTracks[i];
@@ -130,10 +132,14 @@ async function scanDirRecursive(dir: string, rootDir: string, depth = 0): Promis
             const sub = await scanDirRecursive(fullPath + '/', rootDir, depth + 1);
             tracks.push(...sub);
           }
-        } catch {}
+        } catch (e) {
+          console.warn(`Failed to scan subdirectory ${fullPath}:`, e);
+        }
       }
     }
-  } catch {}
+  } catch (e) {
+    console.warn(`Library scan error in ${dir}:`, e);
+  }
   return tracks;
 }
 

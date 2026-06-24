@@ -643,13 +643,22 @@ export const useStore = create<Store>((set, get) => {
     },
 
     _onStatus: (s) => {
-      const { sponsorSegments, _skipGuard, _sponsorSkipPending, sleepTimerEnd, lyrics } = get();
+      const { sponsorSegments, _skipGuard, _sponsorSkipPending, sleepTimerEnd, lyrics, currentLyricIndex } = get();
+
+      let newLyricIndex = 0;
+      if (lyrics.length) {
+        const calculatedIndex = getCurrentLyricIndex(lyrics, s.position);
+        const timeSinceLast = s.position - (lyrics[currentLyricIndex]?.time ?? 0);
+        // Only update if we've moved forward significantly (prevents drift on long tracks)
+        newLyricIndex = timeSinceLast > 0 || calculatedIndex > currentLyricIndex ? calculatedIndex : currentLyricIndex;
+      }
+
       set({
         isPlaying: s.isPlaying,
         position: s.position,
         duration: s.duration,
         isLoading: s.isLoading,
-        currentLyricIndex: lyrics.length ? getCurrentLyricIndex(lyrics, s.position) : 0,
+        currentLyricIndex: newLyricIndex,
       });
 
       if (s.isPlaying && !_skipGuard && !_sponsorSkipPending && sponsorSegments.length) {

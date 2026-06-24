@@ -24,6 +24,7 @@ export interface DownloadProgress {
 
 type ProgressCallback = (progress: DownloadProgress) => void;
 type CompleteCallback = (taskId: string, success: boolean, error?: string) => void;
+type StatusChangeCallback = (taskId: string, status: DownloadTask['status']) => void;
 
 const DOWNLOADS_DIR = `${FileSystem.documentDirectory}PulseMusic/downloads`;
 const CACHE_DIR = `${FileSystem.documentDirectory}PulseMusic/cache`;
@@ -35,6 +36,7 @@ class DownloadManager {
   private isProcessing: boolean = false;
   private progressCallbacks: ProgressCallback[] = [];
   private completeCallbacks: CompleteCallback[] = [];
+  private statusChangeCallbacks: StatusChangeCallback[] = [];
   private currentTaskId: string | null = null;
   private abortController: AbortController | null = null;
 
@@ -97,6 +99,10 @@ class DownloadManager {
     this.completeCallbacks.push(callback);
   }
 
+  onStatusChange(callback: StatusChangeCallback) {
+    this.statusChangeCallbacks.push(callback);
+  }
+
   // Queue a track for download
   queueDownload(track: Track): string {
     const taskId = `dl_${track.id}_${Date.now()}`;
@@ -133,7 +139,12 @@ class DownloadManager {
     }
     if (this.currentTaskId) {
       const task = this.queue.get(this.currentTaskId);
-      if (task) task.status = 'paused';
+      if (task) {
+        task.status = 'paused';
+        // Emit status change event for UI updates
+        this.statusChangeCallbacks.forEach(cb => cb(this.currentTaskId!, 'paused'));
+        await this.persistQueue();
+      }
     }
   }
 
