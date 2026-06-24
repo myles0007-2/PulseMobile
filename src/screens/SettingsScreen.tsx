@@ -36,7 +36,7 @@ const THEMES: ThemeName[] = ['dark', 'midnight', 'forest', 'rose', 'slate', 'amb
 export function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { tracks, repeat, shuffle, setRepeat, toggleShuffle, themeName, setTheme, clearHistory, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, setAutoDownload, setAutoDownloadLikedSongs, setWifiOnly } = useStore();
+  const { tracks, repeat, shuffle, setRepeat, toggleShuffle, themeName, setTheme, clearHistory, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, setAutoDownload, setAutoDownloadLikedSongs, setWifiOnly, youtubeAuthenticated, youtubeAuthInitialized, logoutYouTube } = useStore();
   const [cacheStats, setCacheStats] = useState({ used: 0, limit: 1024 * 1024 * 1024, count: 0 });
   const [downloadSize, setDownloadSize] = useState(0);
 
@@ -116,6 +116,24 @@ export function SettingsScreen() {
             <Text style={[styles.rowValue, { color: shuffle ? colors.primary : colors.textSecondary }]}>{shuffle ? 'On' : 'Off'}</Text>
           </Pressable>
         </Section>
+
+        {/* YouTube Music */}
+        {youtubeAuthInitialized && (
+          <Section title="YOUTUBE MUSIC">
+            <Pressable
+              style={[styles.row, { borderBottomColor: colors.border }]}
+              onPress={youtubeAuthenticated ? logoutYouTube : undefined}
+            >
+              <Text style={[styles.rowLabel, { color: colors.text }]}>Status</Text>
+              <Text style={[styles.rowValue, { color: youtubeAuthenticated ? colors.primary : colors.textSecondary }]}>
+                {youtubeAuthenticated ? 'Logged In' : 'Not Connected'}
+              </Text>
+            </Pressable>
+            {youtubeAuthenticated && (
+              <Row label="Logout YouTube" onPress={logoutYouTube} danger />
+            )}
+          </Section>
+        )}
 
         {/* Library */}
         <Section title="LIBRARY">

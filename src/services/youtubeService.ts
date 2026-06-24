@@ -40,6 +40,7 @@ let searchCache: Record<string, SearchCache> = {};
 let cacheLoaded = false;
 let activeInvidiousIdx = 0;
 let lastRequestTime: Record<string, number> = {}; // Track request timestamps for throttling
+let cacheSavePromise: Promise<void> | null = null; // Prevent concurrent saveCache calls
 
 async function loadCache() {
   if (cacheLoaded) return;
@@ -67,15 +68,31 @@ function checkRateLimit(key: string): boolean {
 }
 
 async function saveCache() {
-  try {
-    const now = Date.now();
-    for (const k of Object.keys(urlCache)) {
-      if (urlCache[k].expiresAt < now) delete urlCache[k];
+  // Prevent concurrent saves from overwriting each other
+  if (cacheSavePromise) return cacheSavePromise;
+
+  const saveOp = (async () => {
+    try {
+      const now = Date.now();
+      // Expire URL cache entries
+      for (const k of Object.keys(urlCache)) {
+        if (urlCache[k].expiresAt < now) delete urlCache[k];
+      }
+      // Expire search cache entries (1-hour TTL)
+      const SEARCH_TTL = 60 * 60 * 1000;
+      for (const k of Object.keys(searchCache)) {
+        if (now - searchCache[k].timestamp > SEARCH_TTL) delete searchCache[k];
+      }
+      await AsyncStorage.setItem(URL_CACHE_KEY, JSON.stringify(urlCache));
+    } catch (error) {
+      console.warn('Failed to persist YouTube cache:', error instanceof Error ? error.message : String(error));
+    } finally {
+      cacheSavePromise = null;
     }
-    await AsyncStorage.setItem(URL_CACHE_KEY, JSON.stringify(urlCache));
-  } catch (error) {
-    console.warn('Failed to persist YouTube cache:', error instanceof Error ? error.message : String(error));
-  }
+  })();
+
+  cacheSavePromise = saveOp;
+  return saveOp;
 }
 
 function timedFetch(url: string, ms = 8000): Promise<Response> {
@@ -88,9 +105,13 @@ function timedFetch(url: string, ms = 8000): Promise<Response> {
 async function safeJson(res: Response): Promise<any | null> {
   try {
     const text = await res.text();
-    if (!text || text.trimStart().startsWith('<')) return null;
+    if (!text || text.trimStart().startsWith('<')) {
+      console.debug('Response was HTML, not JSON (HTTP ' + res.status + ')');
+      return null;
+    }
     return JSON.parse(text);
-  } catch {
+  } catch (error) {
+    console.debug('JSON parse error:', error instanceof Error ? error.message : String(error));
     return null;
   }
 }
@@ -109,7 +130,7 @@ async function tryInvidious(path: string): Promise<any | null> {
       const idx = INVIDIOUS.indexOf(inst);
       if (idx !== activeInvidiousIdx) {
         activeInvidiousIdx = idx;
-        AsyncStorage.setItem(INSTANCE_KEY, inst).catch(() => {});
+        await AsyncStorage.setItem(INSTANCE_KEY, inst).catch(() => {});
       }
       return data;
     } catch (error) {
@@ -139,9 +160,10 @@ export async function searchYoutube(query: string): Promise<YoutubeResult[]> {
   // Rate limit identical searches
   const searchKey = `search:${query}`;
   if (!checkRateLimit(searchKey)) {
-    // Return last cached results if available, or throw
+    // Return last cached results if available (and not expired), or throw
     const cached = searchCache[query];
-    if (cached) {
+    const SEARCH_TTL = 60 * 60 * 1000; // 1 hour TTL
+    if (cached && Date.now() - cached.timestamp < SEARCH_TTL) {
       return cached.results;
     }
     throw new Error('Search rate limited — please wait before searching again');
@@ -220,7 +242,7 @@ export async function resolveStreamUrl(videoId: string): Promise<string> {
     }
     if (url && typeof url === 'string') {
       urlCache[videoId] = { url, expiresAt: Date.now() + URL_TTL };
-      saveCache();
+      await saveCache();
       return url;
     }
   }
@@ -234,7 +256,7 @@ export async function resolveStreamUrl(videoId: string): Promise<string> {
       const url = streams[0].url;
       if (url && typeof url === 'string') {
         urlCache[videoId] = { url, expiresAt: Date.now() + URL_TTL };
-        saveCache();
+        await saveCache();
         return url;
       }
     }
