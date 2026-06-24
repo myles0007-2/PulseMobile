@@ -188,6 +188,7 @@ export async function searchYouTubeMusic(query: string): Promise<YoutubeResult[]
       // TODO: Implement actual YouTube Music API search
       // This would call the official YouTube Music API with auth token
       // For now, fall through to Invidious fallback
+      console.debug('YouTube Music auth available but not yet implemented, using Invidious fallback');
     } catch (error) {
       console.warn('YouTube Music search failed, falling back to Invidious:', error);
     }
@@ -195,6 +196,25 @@ export async function searchYouTubeMusic(query: string): Promise<YoutubeResult[]
 
   // Fallback to Invidious (guaranteed to work or throw useful error)
   return searchYoutube(query);
+}
+
+/**
+ * Resolve stream URL using YouTube Music or Invidious fallback
+ */
+export async function resolveYouTubeMusicStreamUrl(videoId: string): Promise<string> {
+  // If YouTube Music auth available, try official API first
+  if (youtubeMusicAuth.isAuthenticated()) {
+    try {
+      // TODO: Implement actual YouTube Music stream URL resolution
+      // This would call the YouTube Music API to get direct stream
+      console.debug('YouTube Music auth available but not yet implemented, using Invidious fallback');
+    } catch (error) {
+      console.warn('YouTube Music stream resolution failed, falling back to Invidious:', error);
+    }
+  }
+
+  // Fallback to Invidious
+  return resolveStreamUrl(videoId);
 }
 
 /**
