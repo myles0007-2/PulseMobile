@@ -104,7 +104,7 @@ class DownloadManager {
   }
 
   // Queue a track for download
-  queueDownload(track: Track): string {
+  async queueDownload(track: Track): Promise<string> {
     const taskId = `dl_${track.id}_${Date.now()}`;
     const task: DownloadTask = {
       id: taskId,
@@ -116,7 +116,7 @@ class DownloadManager {
       retryAttempts: 0,
     };
     this.queue.set(taskId, task);
-    this.persistQueue();
+    await this.persistQueue();
     this.processQueue();
     return taskId;
   }

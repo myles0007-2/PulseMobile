@@ -45,16 +45,16 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ track, size = 'm
     });
   }, [track.id]);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (task?.status === 'completed') return; // Already downloaded
     if (task?.status === 'downloading') {
-      downloadManager.pauseDownload();
+      await downloadManager.pauseDownload();
       setTask(undefined);
       return;
     }
 
     // Start download
-    const taskId = downloadManager.queueDownload(track);
+    const taskId = await downloadManager.queueDownload(track);
     setTask({ id: taskId, track, status: 'queued', progress: 0, bytesDownloaded: 0, totalBytes: 0, retryAttempts: 0 });
   };
 

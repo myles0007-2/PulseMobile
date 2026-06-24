@@ -707,14 +707,14 @@ export const useStore = create<Store>((set, get) => {
       if (track.source === 'local' && track.artist !== 'Unknown Artist') {
         fetchLyrics(track.artist, track.title, track.album, track.duration)
           .then((lines) => set({ lyrics: lines }))
-          .catch(() => {});
+          .catch((e) => console.warn('Lyrics fetch failed:', e instanceof Error ? e.message : String(e)));
       }
 
       if (track.source === 'youtube') {
         const videoId = track.id.replace('yt::', '');
         fetchSponsorSegments(videoId)
           .then((segs) => set({ sponsorSegments: segs }))
-          .catch(() => {});
+          .catch((e) => console.warn('SponsorBlock fetch failed:', e instanceof Error ? e.message : String(e)));
       }
 
       // Update Bluetooth lock screen metadata with retry on track change (non-blocking)
@@ -735,7 +735,7 @@ export const useStore = create<Store>((set, get) => {
           }
         }
       };
-      updateMetadataWithRetry().catch(() => {});
+      updateMetadataWithRetry().catch((e) => console.warn('Bluetooth metadata update failed:', e instanceof Error ? e.message : String(e)));
     },
 
     togglePlay: async () => {
@@ -806,15 +806,20 @@ export const useStore = create<Store>((set, get) => {
             await player.setVolume(currentVolume);
             set({ volume: currentVolume, _volumeDebounceTimer: null });
           } catch (e) {
-            console.error('Volume apply failed:', e);
+            console.error('Volume apply failed:', e instanceof Error ? e.message : String(e));
           } finally {
             set({ _volumeLock: false });
           }
         }, 100);
 
+        const failsafeTimer = setTimeout(() => {
+          console.warn('Volume lock timeout - force clearing lock');
+          set({ _volumeLock: false });
+        }, 5000);
+
         set({ _volumeDebounceTimer: timer });
       } catch (e) {
-        console.error('Volume debounce setup failed:', e);
+        console.error('Volume debounce setup failed:', e instanceof Error ? e.message : String(e));
         set({ _volumeLock: false });
         throw e;
       }
@@ -846,7 +851,7 @@ export const useStore = create<Store>((set, get) => {
             player.seekTo(end)
               .catch((e) => console.error('SponsorBlock skip failed:', e))
               .finally(() => set({ _skipGuard: false }));
-            break;
+            return;
           }
         }
       }
@@ -865,14 +870,16 @@ export const useStore = create<Store>((set, get) => {
       const { _sleepTimerLock } = get();
       if (!_sleepTimerLock && sleepTimerEnd && Date.now() >= sleepTimerEnd) {
         set({ _sleepTimerLock: true });
-        try {
-          player.pause();
-          set({ isPlaying: false, sleepTimerEnd: null });
-        } catch (e) {
-          console.error('Sleep timer pause failed:', e);
-        } finally {
-          set({ _sleepTimerLock: false });
-        }
+        player.pause()
+          .then(() => {
+            set({ isPlaying: false, sleepTimerEnd: null });
+          })
+          .catch((e) => {
+            console.error('Sleep timer pause failed:', e);
+          })
+          .finally(() => {
+            set({ _sleepTimerLock: false });
+          });
       }
 
       // Sync Bluetooth playback state (non-blocking)
@@ -881,7 +888,12 @@ export const useStore = create<Store>((set, get) => {
 
     _onTrackEnd: () => {
       const { repeat } = get();
-      if (repeat === 'one') { player.seekTo(0).then(() => player.play()); return; }
+      if (repeat === 'one') {
+        player.seekTo(0)
+          .then(() => player.play())
+          .catch((e) => console.error('Repeat-one restart failed:', e instanceof Error ? e.message : String(e)));
+        return;
+      }
       get().nextTrack();
     },
 

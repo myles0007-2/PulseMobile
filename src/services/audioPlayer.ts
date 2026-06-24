@@ -31,6 +31,7 @@ class AudioPlayer {
   private lastPlayingState: boolean = false;
   private trackEndFired: boolean = false;
   private isLoading: boolean = false;
+  private isUnloaded: boolean = false;
 
   async init() {
     await Audio.setAudioModeAsync({
@@ -53,7 +54,7 @@ class AudioPlayer {
   private startPolling() {
     this.stopPolling();
     this.statusInterval = setInterval(async () => {
-      if (!this.sound) return;
+      if (!this.sound || this.isUnloaded) return;
       try {
         const status = await this.sound.getStatusAsync();
         if (status.isLoaded) {
@@ -87,36 +88,42 @@ class AudioPlayer {
     }
 
     this.isLoading = true;
+    this.isUnloaded = false;
     try {
       await this.unload();
       this.lastPlayingState = false;
       this.trackEndFired = false;
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: track.uri },
-        { shouldPlay: false, progressUpdateIntervalMillis: 500 },
-        (status: AVPlaybackStatus) => {
-        if (status.isLoaded) {
-          const position = (status.positionMillis ?? 0) / 1000;
-          const duration = (status.durationMillis ?? 0) / 1000;
-          this.statusCallback?.({
-            isPlaying: status.isPlaying,
-            position,
-            duration,
-            isLoading: status.isBuffering ?? false,
-          });
-          // State-based track end detection: playing → stopped at end of track
-          if (!this.trackEndFired && this.lastPlayingState && !status.isPlaying && duration > 0 && position >= duration - 0.5) {
-            this.trackEndFired = true;
-            this.trackEndCallback?.();
+      const createWithTimeout = Promise.race([
+        Audio.Sound.createAsync(
+          { uri: track.uri },
+          { shouldPlay: false, progressUpdateIntervalMillis: 500 },
+          (status: AVPlaybackStatus) => {
+            if (status.isLoaded) {
+              const position = (status.positionMillis ?? 0) / 1000;
+              const duration = (status.durationMillis ?? 0) / 1000;
+              this.statusCallback?.({
+                isPlaying: status.isPlaying,
+                position,
+                duration,
+                isLoading: status.isBuffering ?? false,
+              });
+              if (!this.trackEndFired && this.lastPlayingState && !status.isPlaying && duration > 0 && position > 0 && position >= duration - 0.5) {
+                this.trackEndFired = true;
+                this.trackEndCallback?.();
+              }
+              this.lastPlayingState = status.isPlaying;
+            }
           }
-          this.lastPlayingState = status.isPlaying;
-        }
-      }
-    );
+        ),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Audio load timeout (30s)')), 30000)
+        ),
+      ]);
+      const { sound } = await createWithTimeout;
       this.sound = sound;
       this.startPolling();
     } catch (error) {
-      console.error('Load audio failed:', error);
+      console.error('Load audio failed:', error instanceof Error ? error.message : String(error));
       throw error;
     } finally {
       this.isLoading = false;
@@ -132,7 +139,16 @@ class AudioPlayer {
   }
 
   async seekTo(seconds: number) {
-    await this.sound?.setPositionAsync(seconds * 1000);
+    if (!this.sound) return;
+    const status = await this.sound.getStatusAsync();
+    if (status.isLoaded) {
+      const duration = (status.durationMillis ?? 0) / 1000;
+      if (seconds < 0 || seconds > duration) {
+        console.warn(`Seek out of bounds: ${seconds}s (duration: ${duration}s)`);
+        return;
+      }
+    }
+    await this.sound.setPositionAsync(seconds * 1000);
   }
 
   async setVolume(v: number) {
@@ -145,11 +161,14 @@ class AudioPlayer {
 
   async unload() {
     this.stopPolling();
+    this.isUnloaded = true;
     this.lastPlayingState = false;
     if (this.sound) {
       try {
         await this.sound.unloadAsync();
-      } catch {}
+      } catch (e) {
+        console.warn('Unload failed:', e instanceof Error ? e.message : String(e));
+      }
       this.sound = null;
     }
   }

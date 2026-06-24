@@ -63,7 +63,7 @@ async function checkAndAutoDownload(
     // Only queue if not already queued/completed
     const existingTasks = downloadManager.getAllTasks();
     if (!existingTasks.find((t) => t.track.id === track.id && (t.status === 'completed' || t.status === 'downloading' || t.status === 'queued'))) {
-      downloadManager.queueDownload(track);
+      await downloadManager.queueDownload(track);
     }
   }
 }

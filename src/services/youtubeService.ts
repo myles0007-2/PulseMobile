@@ -118,6 +118,40 @@ async function safeJson(res: Response): Promise<any | null> {
   }
 }
 
+// Validate stream URL for security (reject SSRF, internal IPs, file://, data://, etc.)
+function validateStreamUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+
+    // Only allow HTTPS and HTTP (no file://, data://, etc.)
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') {
+      console.warn(`Invalid URL protocol: ${u.protocol}`);
+      return false;
+    }
+
+    // Reject private/internal IP ranges
+    const hostname = u.hostname;
+    if (
+      hostname === 'localhost' ||
+      hostname.startsWith('127.') ||           // 127.0.0.0/8
+      hostname.startsWith('10.') ||            // 10.0.0.0/8
+      hostname.startsWith('192.168.') ||       // 192.168.0.0/16
+      hostname.startsWith('172.') ||           // 172.16.0.0/12
+      hostname === '::1' ||                    // IPv6 loopback
+      hostname.startsWith('fc') ||             // IPv6 private
+      hostname.startsWith('fd')                // IPv6 private
+    ) {
+      console.warn(`Rejecting internal IP: ${hostname}`);
+      return false;
+    }
+
+    return true;
+  } catch (e) {
+    console.warn(`Invalid URL: ${url}`, e);
+    return false;
+  }
+}
+
 async function tryInvidious(path: string): Promise<any | null> {
   const order = [
     ...INVIDIOUS.slice(activeInvidiousIdx),
@@ -244,7 +278,7 @@ export async function resolveStreamUrl(videoId: string): Promise<string> {
       );
       url = muxed?.url || undefined;
     }
-    if (url && typeof url === 'string') {
+    if (url && typeof url === 'string' && validateStreamUrl(url)) {
       urlCache[videoId] = { url, expiresAt: Date.now() + URL_TTL };
       await saveCache();
       return url;
@@ -258,7 +292,7 @@ export async function resolveStreamUrl(videoId: string): Promise<string> {
     if (streams.length > 0) {
       streams.sort((a: any, b: any) => (b.bitrate ?? 0) - (a.bitrate ?? 0));
       const url = streams[0].url;
-      if (url && typeof url === 'string') {
+      if (url && typeof url === 'string' && validateStreamUrl(url)) {
         urlCache[videoId] = { url, expiresAt: Date.now() + URL_TTL };
         await saveCache();
         return url;

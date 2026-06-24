@@ -32,7 +32,7 @@ export async function batchQueueDownloads(
   for (const track of tracks) {
     if (!alreadyQueued.has(track.id)) {
       try {
-        downloadManager.queueDownload(track);
+        await downloadManager.queueDownload(track);
         stats.queued++;
         alreadyQueued.add(track.id);
       } catch (e) {
