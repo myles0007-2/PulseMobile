@@ -1,6 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { YoutubeResult, Track } from '../types';
+import { YoutubeResult } from '../types';
+import { searchYoutube, resolveStreamUrl } from './youtubeService';
 
 /**
  * YouTube Music OAuth + API Service
@@ -186,24 +187,20 @@ export async function searchYouTubeMusic(query: string): Promise<YoutubeResult[]
     try {
       // TODO: Implement actual YouTube Music API search
       // This would call the official YouTube Music API with auth token
-      return [];
+      // For now, fall through to Invidious fallback
     } catch (error) {
       console.warn('YouTube Music search failed, falling back to Invidious:', error);
     }
   }
 
-  // Fallback to Invidious (existing implementation)
-  // This keeps backward compatibility while supporting official API
-  return [];
+  // Fallback to Invidious (guaranteed to work or throw useful error)
+  return searchYoutube(query);
 }
 
 /**
  * Resolve stream URL (three-tier: YouTube Music → Invidious → Piped)
  */
-export async function resolveStreamUrlWithFallback(
-  videoId: string,
-  fallbackResolver: (id: string) => Promise<string>
-): Promise<string> {
+export async function resolveStreamUrlWithFallback(videoId: string): Promise<string> {
   // Tier 1: YouTube Music official
   if (youtubeMusicAuth.isAuthenticated()) {
     try {
@@ -216,19 +213,6 @@ export async function resolveStreamUrlWithFallback(
     }
   }
 
-  // Tier 2 & 3: Invidious/Piped (handled by fallbackResolver)
-  return fallbackResolver(videoId);
-}
-
-export function youtubeResultToTrack(result: YoutubeResult): Track {
-  return {
-    id: `yt::${result.videoId}`,
-    title: result.title || 'Unknown Title',
-    artist: result.author || 'Unknown Artist',
-    album: 'YouTube',
-    duration: result.durationSeconds || 0,
-    uri: `yt::${result.videoId}`,
-    artwork: result.thumbnail || undefined,
-    source: 'youtube',
-  };
+  // Tier 2 & 3: Invidious/Piped (via youtubeService)
+  return resolveStreamUrl(videoId);
 }
