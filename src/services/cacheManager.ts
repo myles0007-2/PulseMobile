@@ -50,9 +50,8 @@ class CacheManager {
       for (const file of files) {
         const filePath = `${CACHE_DIR}/${file}`;
         const info = await FileSystem.getInfoAsync(filePath);
-        if (info.exists && info.isDirectory === false) {
-          const fileInfo = info as any;
-          if (fileInfo.size) totalSize += fileInfo.size;
+        if (info.exists && !info.isDirectory && 'size' in info) {
+          totalSize += (info as FileSystem.FileInfo).size ?? 0;
         }
       }
 
@@ -142,12 +141,11 @@ class CacheManager {
         const filePath = `${CACHE_DIR}/${file}`;
         const info = await FileSystem.getInfoAsync(filePath);
 
-        if (info.exists && info.isDirectory === false) {
-          const fileInfo = info as any;
+        if (info.exists && !info.isDirectory && 'size' in info) {
           fileStats.push({
             name: file,
             mtime: info.modificationTime ?? 0,
-            size: fileInfo.size ?? 0,
+            size: (info as FileSystem.FileInfo).size ?? 0,
           });
         }
       }
