@@ -8,6 +8,8 @@ import { PlaylistsScreen } from '../screens/PlaylistsScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
 import { OnlineScreen } from '../screens/OnlineScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { AnalyticsScreen } from '../screens/AnalyticsScreen';
+import { WrappedScreen } from '../screens/WrappedScreen';
 import { NowPlayingScreen } from '../screens/NowPlayingScreen';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useColors } from '../store/useStore';
@@ -84,6 +86,20 @@ export function AppNavigator() {
           component={OnlineScreen}
           options={{
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'globe', 'globe-outline', color),
+          }}
+        />
+        <Tab.Screen
+          name="Analytics"
+          component={AnalyticsScreen}
+          options={{
+            tabBarIcon: ({ focused, color }) => tabIcon(focused, 'stats-chart', 'stats-chart-outline', color),
+          }}
+        />
+        <Tab.Screen
+          name="Wrapped"
+          component={WrappedScreen}
+          options={{
+            tabBarIcon: ({ focused, color }) => tabIcon(focused, 'gift', 'gift-outline', color),
           }}
         />
         <Tab.Screen
