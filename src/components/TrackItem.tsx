@@ -70,35 +70,37 @@ export const TrackItem = React.memo(
     const accessibilityLabel = `${track.title} by ${track.artist}${isActive ? ', currently playing' : ''}`;
 
     const openMenu = useCallback(() => {
+      const { playlists: currentPlaylists, addToPlaylist: add, createPlaylist: create } = useStore.getState();
+
       const buttons: any[] = [
         { text: isLiked ? 'Unlike' : 'Like', onPress: () => toggleLike(track) },
         {
           text: 'Add to Playlist',
           onPress: () => {
-            if (!playlists.length) {
+            if (!currentPlaylists.length) {
               Alert.prompt('New Playlist', 'Name your playlist:', (name) => {
                 if (name?.trim()) {
-                  createPlaylist(name.trim());
+                  create(name.trim());
                   const { playlists: pl } = useStore.getState();
-                  if (pl[0]) addToPlaylist(pl[0].id, track);
+                  if (pl[0]) add(pl[0].id, track);
                 }
               });
               return;
             }
             Alert.alert('Add to Playlist', track.title, [
-              ...playlists.map((pl) => ({
+              ...currentPlaylists.map((pl) => ({
                 text: pl.name,
-                onPress: () => addToPlaylist(pl.id, track),
+                onPress: () => add(pl.id, track),
               })),
               {
                 text: '+ New Playlist',
                 onPress: () =>
                   Alert.prompt('New Playlist', 'Name:', (name) => {
                     if (name?.trim()) {
-                      createPlaylist(name.trim());
+                      create(name.trim());
                       const { playlists: fresh } = useStore.getState();
                       const newest = fresh[fresh.length - 1];
-                      if (newest) addToPlaylist(newest.id, track);
+                      if (newest) add(newest.id, track);
                     }
                   }),
               },
@@ -110,7 +112,7 @@ export const TrackItem = React.memo(
       if (onRemove) buttons.push({ text: 'Remove', style: 'destructive', onPress: onRemove });
       buttons.push({ text: 'Cancel', style: 'cancel' });
       Alert.alert(track.title, track.artist, buttons);
-    }, [isLiked, toggleLike, playlists, addToPlaylist, createPlaylist, track, onRemove]);
+    }, [track, isLiked, toggleLike, onRemove]);
 
     return (
       <Pressable

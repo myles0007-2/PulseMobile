@@ -250,7 +250,7 @@ export function NowPlayingScreen() {
             style={styles.slider}
             minimumValue={0}
             maximumValue={duration || 1}
-            value={position}
+            value={Math.min(position, duration)}
             onSlidingComplete={(pos) => seekTo(Math.min(pos, duration))}
             minimumTrackTintColor={colors.primary}
             maximumTrackTintColor={colors.border}
@@ -264,7 +264,14 @@ export function NowPlayingScreen() {
 
         {/* Controls */}
         <View style={styles.controls}>
-          <Pressable hitSlop={16} onPress={toggleShuffle} style={styles.sideCtrl}>
+          <Pressable
+            hitSlop={16}
+            onPress={toggleShuffle}
+            style={styles.sideCtrl}
+            accessibilityLabel={`${shuffle ? 'Shuffle on' : 'Shuffle off'}`}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: shuffle }}
+          >
             <Ionicons
               name={shuffle ? 'shuffle' : 'shuffle-outline'}
               size={22}
@@ -272,7 +279,13 @@ export function NowPlayingScreen() {
             />
           </Pressable>
 
-          <Pressable hitSlop={12} onPress={prevTrack} style={styles.skipBtn}>
+          <Pressable
+            hitSlop={12}
+            onPress={prevTrack}
+            style={styles.skipBtn}
+            accessibilityLabel="Previous track"
+            accessibilityRole="button"
+          >
             <Ionicons name="play-skip-back" size={30} color={colors.text} />
           </Pressable>
 
@@ -280,6 +293,8 @@ export function NowPlayingScreen() {
             <Pressable
               style={[styles.playBtn, { backgroundColor: colors.primary }]}
               onPress={handlePlayButtonPress}
+              accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+              accessibilityRole="button"
             >
               {isLoading ? (
                 <ActivityIndicator color={colors.bg} size="large" />
@@ -294,11 +309,23 @@ export function NowPlayingScreen() {
             </Pressable>
           </Animated.View>
 
-          <Pressable hitSlop={12} onPress={nextTrack} style={styles.skipBtn}>
+          <Pressable
+            hitSlop={12}
+            onPress={nextTrack}
+            style={styles.skipBtn}
+            accessibilityLabel="Next track"
+            accessibilityRole="button"
+          >
             <Ionicons name="play-skip-forward" size={30} color={colors.text} />
           </Pressable>
 
-          <Pressable hitSlop={16} onPress={() => setRepeat(REPEAT_NEXT[repeat])} style={styles.sideCtrl}>
+          <Pressable
+            hitSlop={16}
+            onPress={() => setRepeat(REPEAT_NEXT[repeat])}
+            style={styles.sideCtrl}
+            accessibilityLabel={`Repeat: ${repeat === 'none' ? 'off' : repeat === 'all' ? 'all' : 'one'}`}
+            accessibilityRole="button"
+          >
             <Ionicons name={repeatIcon} size={22} color={repeatColor} />
             {repeat === 'one' && (
               <Text style={[styles.repeatOne, { color: colors.primary }]}>1</Text>

@@ -1,6 +1,6 @@
 import { NativeModules, Platform } from 'react-native';
 
-const { MusicLibraryModule } = NativeModules;
+const MusicLibraryModule = NativeModules?.MusicLibraryModule || null;
 
 export interface NativeMusicTrack {
   id: string;

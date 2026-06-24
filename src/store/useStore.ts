@@ -692,22 +692,30 @@ export const useStore = create<Store>((set, get) => {
       const { _volumeLock, _volumeDebounceTimer } = get();
       if (_volumeLock) return;
 
-      set({ _volumeLock: true });
+      try {
+        set({ _volumeLock: true });
 
-      if (_volumeDebounceTimer) clearTimeout(_volumeDebounceTimer);
-      set({ _lastVolume: v });
+        if (_volumeDebounceTimer) clearTimeout(_volumeDebounceTimer);
+        set({ _lastVolume: v });
 
-      const timer = setTimeout(async () => {
-        try {
-          const { _lastVolume: currentVolume } = get();
-          await player.setVolume(currentVolume);
-          set({ volume: currentVolume, _volumeDebounceTimer: null });
-        } finally {
-          set({ _volumeLock: false });
-        }
-      }, 100);
+        const timer = setTimeout(async () => {
+          try {
+            const { _lastVolume: currentVolume } = get();
+            await player.setVolume(currentVolume);
+            set({ volume: currentVolume, _volumeDebounceTimer: null });
+          } catch (e) {
+            console.error('Volume apply failed:', e);
+          } finally {
+            set({ _volumeLock: false });
+          }
+        }, 100);
 
-      set({ _volumeDebounceTimer: timer });
+        set({ _volumeDebounceTimer: timer });
+      } catch (e) {
+        console.error('Volume debounce setup failed:', e);
+        set({ _volumeLock: false });
+        throw e;
+      }
     },
 
     _onStatus: (s) => {
@@ -741,11 +749,28 @@ export const useStore = create<Store>((set, get) => {
         }
       }
 
+      // Prevent re-triggering of same segment if position drifts slightly
+      if (s.isPlaying && !_skipGuard && sponsorSegments.length) {
+        for (const [start, end] of sponsorSegments) {
+          if (s.position >= end && s.position < end + 1) {
+            set({ _skipGuard: true });
+            setTimeout(() => set({ _skipGuard: false }), 500);
+            break;
+          }
+        }
+      }
+
       const { _sleepTimerLock } = get();
       if (!_sleepTimerLock && sleepTimerEnd && Date.now() >= sleepTimerEnd) {
         set({ _sleepTimerLock: true });
-        player.pause();
-        set({ isPlaying: false, sleepTimerEnd: null, _sleepTimerLock: false });
+        try {
+          player.pause();
+          set({ isPlaying: false, sleepTimerEnd: null });
+        } catch (e) {
+          console.error('Sleep timer pause failed:', e);
+        } finally {
+          set({ _sleepTimerLock: false });
+        }
       }
 
       // Sync Bluetooth playback state (non-blocking)
@@ -756,6 +781,14 @@ export const useStore = create<Store>((set, get) => {
       const { repeat } = get();
       if (repeat === 'one') { player.seekTo(0).then(() => player.play()); return; }
       get().nextTrack();
+    },
+
+    _clearAllTimers: () => {
+      const { _volumeDebounceTimer, _themeChangeTimer, _historyPersistTimer } = get();
+      if (_volumeDebounceTimer) clearTimeout(_volumeDebounceTimer);
+      if (_themeChangeTimer) clearTimeout(_themeChangeTimer);
+      if (_historyPersistTimer) clearTimeout(_historyPersistTimer);
+      set({ _volumeDebounceTimer: null, _themeChangeTimer: null, _historyPersistTimer: null });
     },
   } as Store;
 });

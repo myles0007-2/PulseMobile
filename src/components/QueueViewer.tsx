@@ -34,6 +34,9 @@ export const QueueViewer = React.memo<React.FC<QueueViewerProps>>(({
           { borderBottomColor: colors.border },
         ]}
         onPress={() => onSelectTrack(index)}
+        accessibilityLabel={`${item.title} by ${item.artist}, track ${index + 1}${isNow ? ', now playing' : isNext ? ', next' : ''}`}
+        accessibilityRole="radio"
+        accessibilityState={{ selected: isNow }}
       >
         <View style={styles.queueItemContent}>
           <Text style={[styles.queueIndex, { color: isNow ? colors.primary : colors.textMuted }]}>
@@ -68,7 +71,7 @@ export const QueueViewer = React.memo<React.FC<QueueViewerProps>>(({
           ]}
         >
           <Text style={[styles.headerTitle, { color: colors.text }]}>Queue ({queue.length})</Text>
-          <Pressable onPress={onClose} hitSlop={12}>
+          <Pressable onPress={onClose} hitSlop={12} accessibilityLabel="Close queue" accessibilityRole="button">
             <Ionicons name="close" size={24} color={colors.text} />
           </Pressable>
         </View>
@@ -77,7 +80,7 @@ export const QueueViewer = React.memo<React.FC<QueueViewerProps>>(({
         <FlatList
           data={queue}
           renderItem={renderQueueItem}
-          keyExtractor={(item, index) => `${item.id}_${index}`}
+          keyExtractor={(item, index) => `queue-item-${currentIndex}-${index}-${item.id}`}
           contentContainerStyle={{ paddingBottom: 100 }}
         />
       </View>

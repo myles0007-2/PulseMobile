@@ -33,7 +33,10 @@ const URL_TTL = 4 * 60 * 60 * 1000;
 const RATE_LIMIT_MS = 300; // Min 300ms between identical requests
 
 type CacheEntry = { url: string; expiresAt: number };
+type SearchCache = { results: YoutubeResult[]; timestamp: number };
+
 let urlCache: Record<string, CacheEntry> = {};
+let searchCache: Record<string, SearchCache> = {};
 let cacheLoaded = false;
 let activeInvidiousIdx = 0;
 let lastRequestTime: Record<string, number> = {}; // Track request timestamps for throttling
@@ -67,7 +70,9 @@ async function saveCache() {
       if (urlCache[k].expiresAt < now) delete urlCache[k];
     }
     await AsyncStorage.setItem(URL_CACHE_KEY, JSON.stringify(urlCache));
-  } catch {}
+  } catch (error) {
+    console.warn('Failed to persist YouTube cache:', error instanceof Error ? error.message : String(error));
+  }
 }
 
 function timedFetch(url: string, ms = 8000): Promise<Response> {
@@ -104,7 +109,9 @@ async function tryInvidious(path: string): Promise<any | null> {
         AsyncStorage.setItem(INSTANCE_KEY, String(idx)).catch(() => {});
       }
       return data;
-    } catch {}
+    } catch (error) {
+      console.debug(`Invidious ${inst} failed:`, error instanceof Error ? error.message : String(error));
+    }
   }
   return null;
 }
@@ -130,6 +137,10 @@ export async function searchYoutube(query: string): Promise<YoutubeResult[]> {
   const searchKey = `search:${query}`;
   if (!checkRateLimit(searchKey)) {
     // Return last cached results if available, or throw
+    const cached = searchCache[query];
+    if (cached) {
+      return cached.results;
+    }
     throw new Error('Search rate limited — please wait before searching again');
   }
 
@@ -139,7 +150,7 @@ export async function searchYoutube(query: string): Promise<YoutubeResult[]> {
     `/api/v1/search?q=${q}&type=video&fields=videoId,title,author,lengthSeconds,videoThumbnails&hl=en`
   );
   if (data && Array.isArray(data)) {
-    return data
+    const results = data
       .filter((v: any) => v.videoId)
       .slice(0, 25)
       .map((v: any) => ({
@@ -151,13 +162,18 @@ export async function searchYoutube(query: string): Promise<YoutubeResult[]> {
           v.videoThumbnails?.find((t: any) => t.quality === 'medium')?.url ??
           v.videoThumbnails?.[0]?.url ?? '',
       }));
+
+    // Cache the search results
+    searchCache[query] = { results, timestamp: Date.now() };
+
+    return results;
   }
 
   // Piped fallback
   const piped = await tryPiped(`/search?q=${q}&filter=videos`);
   if (piped) {
     const items: any[] = piped.items ?? [];
-    return items
+    const results = items
       .filter((v: any) => v.url)
       .slice(0, 25)
       .map((v: any) => ({
@@ -167,6 +183,11 @@ export async function searchYoutube(query: string): Promise<YoutubeResult[]> {
         durationSeconds: v.duration ?? 0,
         thumbnail: v.thumbnail ?? '',
       }));
+
+    // Cache the search results
+    searchCache[query] = { results, timestamp: Date.now() };
+
+    return results;
   }
 
   throw new Error('YouTube search is unavailable right now — all streaming servers are offline. Try again shortly.');

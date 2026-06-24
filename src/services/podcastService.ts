@@ -1,5 +1,12 @@
 import { Podcast, PodcastEpisode } from '../types';
 
+// Fetch with timeout to prevent hanging
+function timedFetch(url: string, ms = 10000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
+}
+
 // Well-known podcast feeds
 export const FEATURED_FEEDS = [
   { title: 'The Daily (NYT)', url: 'https://feeds.simplecast.com/54nAGcIl' },
@@ -31,9 +38,18 @@ function parseDuration(raw: string): number {
 }
 
 function isValidPodcastUrl(url: string): boolean {
+  if (!url || typeof url !== 'string') return false;
   try {
     const parsed = new URL(url);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    // Reject localhost, private IPs, and other non-public addresses
+    const hostname = parsed.hostname;
+    if (!hostname || hostname === 'localhost') return false;
+    if (/^127\./.test(hostname)) return false; // 127.0.0.0/8
+    if (/^192\.168\./.test(hostname)) return false; // 192.168.0.0/16
+    if (/^10\./.test(hostname)) return false; // 10.0.0.0/8
+    if (/^172\.(1[6-9]|2[0-9]|3[01])\./.test(hostname)) return false; // 172.16.0.0/12
+    return true;
   } catch {
     return false;
   }
@@ -44,7 +60,7 @@ export async function fetchPodcast(feedUrl: string): Promise<Podcast> {
     throw new Error('Invalid podcast URL format');
   }
 
-  const res = await fetch(feedUrl, { headers: { Accept: 'application/rss+xml, application/xml, text/xml' } });
+  const res = await timedFetch(feedUrl, 10000);
   if (!res.ok) throw new Error(`Failed to fetch feed: ${res.status}`);
   const xml = await res.text();
 

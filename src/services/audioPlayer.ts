@@ -29,6 +29,8 @@ class AudioPlayer {
   private trackEndCallback: TrackEndCallback | null = null;
   private statusInterval: ReturnType<typeof setInterval> | null = null;
   private lastPlayingState: boolean = false;
+  private trackEndFired: boolean = false;
+  private isLoading: boolean = false;
 
   async init() {
     await Audio.setAudioModeAsync({
@@ -65,7 +67,9 @@ class AudioPlayer {
           });
           this.lastPlayingState = status.isPlaying;
         }
-      } catch {}
+      } catch (error) {
+        console.warn('Status poll error:', error instanceof Error ? error.message : String(error));
+      }
     }, 500);
   }
 
@@ -77,12 +81,20 @@ class AudioPlayer {
   }
 
   async load(track: Track): Promise<void> {
-    await this.unload();
-    this.lastPlayingState = false;
-    const { sound } = await Audio.Sound.createAsync(
-      { uri: track.uri },
-      { shouldPlay: false, progressUpdateIntervalMillis: 500 },
-      (status: AVPlaybackStatus) => {
+    if (this.isLoading) {
+      console.warn('Load already in progress');
+      return;
+    }
+
+    this.isLoading = true;
+    try {
+      await this.unload();
+      this.lastPlayingState = false;
+      this.trackEndFired = false;
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: track.uri },
+        { shouldPlay: false, progressUpdateIntervalMillis: 500 },
+        (status: AVPlaybackStatus) => {
         if (status.isLoaded) {
           const position = (status.positionMillis ?? 0) / 1000;
           const duration = (status.durationMillis ?? 0) / 1000;
@@ -93,15 +105,22 @@ class AudioPlayer {
             isLoading: status.isBuffering ?? false,
           });
           // State-based track end detection: playing → stopped at end of track
-          if (this.lastPlayingState && !status.isPlaying && duration > 0 && position >= duration - 0.5) {
+          if (!this.trackEndFired && this.lastPlayingState && !status.isPlaying && duration > 0 && position >= duration - 0.5) {
+            this.trackEndFired = true;
             this.trackEndCallback?.();
           }
           this.lastPlayingState = status.isPlaying;
         }
       }
     );
-    this.sound = sound;
-    this.startPolling();
+      this.sound = sound;
+      this.startPolling();
+    } catch (error) {
+      console.error('Load audio failed:', error);
+      throw error;
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   async play() {
