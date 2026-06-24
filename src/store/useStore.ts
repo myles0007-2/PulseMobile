@@ -12,6 +12,25 @@ import { bluetoothManager, BluetoothRemoteState } from '../services/bluetoothMan
 import likedSongsRaw from '../data/liked_songs.json';
 import playlistsSeedRaw from '../data/playlists_seed.json';
 
+/**
+ * useStore: Central state management for PulseMobile
+ *
+ * Concurrency patterns:
+ * - _bluetoothLock: Prevents concurrent Bluetooth metadata updates
+ * - _volumeLock: Prevents concurrent volume changes from slider + Bluetooth
+ * - _isLoadingTrack: Prevents concurrent playTrack calls
+ * - _skipGuard + _sponsorSkipPending: Atomic SponsorBlock seek operations
+ * - _sleepTimerLock: Prevents concurrent pause from timer + user action
+ *
+ * Debouncing:
+ * - _volumeDebounceTimer: Debounce volume changes by 100ms
+ * - _themeChangeTimer: Debounce theme persistence by 500ms
+ * - _historyPersistTimer: Debounce history writes by 2s
+ *
+ * All async operations have guards to prevent race conditions.
+ * All persistence operations are debounced to prevent I/O storms.
+ */
+
 export type RepeatMode = 'none' | 'all' | 'one';
 
 const PERSIST_KEY = 'pulse_store_v3';

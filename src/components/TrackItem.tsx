@@ -67,6 +67,7 @@ export const TrackItem = React.memo(
     const createPlaylist = useStore((s) => s.createPlaylist);
 
     const artwork = useLazyArtwork(track);
+    const accessibilityLabel = `${track.title} by ${track.artist}${isActive ? ', currently playing' : ''}`;
 
     const openMenu = useCallback(() => {
       const buttons: any[] = [
@@ -119,6 +120,9 @@ export const TrackItem = React.memo(
           isActive && styles.active,
         ]}
         onPress={onPress}
+        accessible
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole="button"
       >
         {artwork ? (
           <Image source={{ uri: artwork }} style={styles.art} />

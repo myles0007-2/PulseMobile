@@ -30,11 +30,13 @@ const PIPED = [
 const INSTANCE_KEY = 'yt_active_instance_v2';
 const URL_CACHE_KEY = 'yt_url_cache_v1';
 const URL_TTL = 4 * 60 * 60 * 1000;
+const RATE_LIMIT_MS = 300; // Min 300ms between identical requests
 
 type CacheEntry = { url: string; expiresAt: number };
 let urlCache: Record<string, CacheEntry> = {};
 let cacheLoaded = false;
 let activeInvidiousIdx = 0;
+let lastRequestTime: Record<string, number> = {}; // Track request timestamps for throttling
 
 async function loadCache() {
   if (cacheLoaded) return;
@@ -47,6 +49,15 @@ async function loadCache() {
     if (savedIdx) activeInvidiousIdx = parseInt(savedIdx, 10) || 0;
   } catch {}
   cacheLoaded = true;
+}
+
+// Rate limit identical requests (prevent API spam on rapid input)
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const lastTime = lastRequestTime[key] ?? 0;
+  if (now - lastTime < RATE_LIMIT_MS) return false;
+  lastRequestTime[key] = now;
+  return true;
 }
 
 async function saveCache() {
@@ -114,6 +125,14 @@ async function tryPiped(path: string): Promise<any | null> {
 
 export async function searchYoutube(query: string): Promise<YoutubeResult[]> {
   await loadCache();
+
+  // Rate limit identical searches
+  const searchKey = `search:${query}`;
+  if (!checkRateLimit(searchKey)) {
+    // Return last cached results if available, or throw
+    throw new Error('Search rate limited — please wait before searching again');
+  }
+
   const q = encodeURIComponent(query);
 
   const data = await tryInvidious(

@@ -1,6 +1,18 @@
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Track } from '../types';
 
+/**
+ * audioPlayer: Core audio playback abstraction
+ *
+ * Error handling strategy:
+ * - Network failures: Propagated to caller via Promise rejection
+ * - Codec issues: Caught in load(), error logged with codec info
+ * - Permission denials: Handled by expo-av, errors surfaced to UI
+ * - Concurrent operations: Protected by caller (_isLoadingTrack guard in store)
+ *
+ * Tested scenarios: see audioPlayer.test.ts
+ */
+
 export type PlayerStatus = {
   isPlaying: boolean;
   position: number;
