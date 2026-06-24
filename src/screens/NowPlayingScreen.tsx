@@ -251,7 +251,7 @@ export function NowPlayingScreen() {
             minimumValue={0}
             maximumValue={duration || 1}
             value={position}
-            onSlidingComplete={seekTo}
+            onSlidingComplete={(pos) => seekTo(Math.min(pos, duration))}
             minimumTrackTintColor={colors.primary}
             maximumTrackTintColor={colors.border}
             thumbTintColor={colors.primary}

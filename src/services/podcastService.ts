@@ -30,7 +30,20 @@ function parseDuration(raw: string): number {
   return parseInt(raw, 10) || 0;
 }
 
+function isValidPodcastUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export async function fetchPodcast(feedUrl: string): Promise<Podcast> {
+  if (!isValidPodcastUrl(feedUrl)) {
+    throw new Error('Invalid podcast URL format');
+  }
+
   const res = await fetch(feedUrl, { headers: { Accept: 'application/rss+xml, application/xml, text/xml' } });
   if (!res.ok) throw new Error(`Failed to fetch feed: ${res.status}`);
   const xml = await res.text();

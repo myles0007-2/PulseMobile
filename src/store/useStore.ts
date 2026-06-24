@@ -90,12 +90,24 @@ interface Store {
   // Bluetooth state lock
   _bluetoothLock: boolean;
 
+  // Volume change lock (prevent concurrent changes)
+  _volumeLock: boolean;
+
   // PlayTrack race condition prevention
   _isLoadingTrack: boolean;
 
   // Volume debounce (for stable reference)
   _lastVolume: number;
   _volumeDebounceTimer: NodeJS.Timeout | null;
+
+  // Theme change debounce
+  _themeChangeTimer: NodeJS.Timeout | null;
+
+  // History persist debounce
+  _historyPersistTimer: NodeJS.Timeout | null;
+
+  // Sleep timer lock (prevent race with pause)
+  _sleepTimerLock: boolean;
 
   // Lyrics
   lyrics: LyricLine[];
@@ -194,12 +206,24 @@ export const useStore = create<Store>((set, get) => {
     // Bluetooth state lock (prevents race conditions)
     _bluetoothLock: false,
 
+    // Volume lock (prevents concurrent changes)
+    _volumeLock: false,
+
     // PlayTrack race condition prevention
     _isLoadingTrack: false,
 
     // Volume debounce
     _lastVolume: 1,
     _volumeDebounceTimer: null,
+
+    // Theme debounce
+    _themeChangeTimer: null,
+
+    // History persist debounce
+    _historyPersistTimer: null,
+
+    // Sleep timer lock
+    _sleepTimerLock: false,
 
     // Lyrics
     lyrics: [], currentLyricIndex: 0, showLyrics: false,
@@ -259,9 +283,18 @@ export const useStore = create<Store>((set, get) => {
     // History
     history: [],
     addToHistory: (track) => {
+      const { _historyPersistTimer } = get();
+      if (_historyPersistTimer) clearTimeout(_historyPersistTimer);
+
       const entry: HistoryEntry = { track, playedAt: Date.now() };
       set((s) => ({ history: [entry, ...s.history.filter((h) => h.track.id !== track.id)].slice(0, 200) }));
-      get()._persist();
+
+      const timer = setTimeout(() => {
+        get()._persist();
+        set({ _historyPersistTimer: null });
+      }, 2000);
+
+      set({ _historyPersistTimer: timer });
     },
     clearHistory: () => { set({ history: [] }); get()._persist(); },
 
@@ -269,8 +302,17 @@ export const useStore = create<Store>((set, get) => {
     themeName: 'dark',
     colors: themes.dark,
     setTheme: (t) => {
+      const { _themeChangeTimer } = get();
+      if (_themeChangeTimer) clearTimeout(_themeChangeTimer);
+
       set({ themeName: t, colors: themes[t] });
-      get()._persist();
+
+      const timer = setTimeout(() => {
+        get()._persist();
+        set({ _themeChangeTimer: null });
+      }, 500);
+
+      set({ _themeChangeTimer: timer });
     },
 
     // UI
@@ -628,15 +670,22 @@ export const useStore = create<Store>((set, get) => {
     toggleShuffle: () => set((s) => ({ shuffle: !s.shuffle })),
 
     setVolume: async (v) => {
-      const { _volumeDebounceTimer, _lastVolume } = get();
-      if (_volumeDebounceTimer) clearTimeout(_volumeDebounceTimer);
+      const { _volumeLock, _volumeDebounceTimer } = get();
+      if (_volumeLock) return;
 
+      set({ _volumeLock: true });
+
+      if (_volumeDebounceTimer) clearTimeout(_volumeDebounceTimer);
       set({ _lastVolume: v });
 
       const timer = setTimeout(async () => {
-        const { _lastVolume: currentVolume } = get();
-        await player.setVolume(currentVolume);
-        set({ volume: currentVolume, _volumeDebounceTimer: null });
+        try {
+          const { _lastVolume: currentVolume } = get();
+          await player.setVolume(currentVolume);
+          set({ volume: currentVolume, _volumeDebounceTimer: null });
+        } finally {
+          set({ _volumeLock: false });
+        }
       }, 100);
 
       set({ _volumeDebounceTimer: timer });
@@ -673,9 +722,11 @@ export const useStore = create<Store>((set, get) => {
         }
       }
 
-      if (sleepTimerEnd && Date.now() >= sleepTimerEnd) {
+      const { _sleepTimerLock } = get();
+      if (!_sleepTimerLock && sleepTimerEnd && Date.now() >= sleepTimerEnd) {
+        set({ _sleepTimerLock: true });
         player.pause();
-        set({ isPlaying: false, sleepTimerEnd: null });
+        set({ isPlaying: false, sleepTimerEnd: null, _sleepTimerLock: false });
       }
 
       // Sync Bluetooth playback state (non-blocking)
