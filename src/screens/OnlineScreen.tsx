@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View, Text, TextInput, FlatList, Pressable,
   StyleSheet, ActivityIndicator, Alert, ScrollView,
@@ -48,6 +48,7 @@ export function OnlineScreen() {
   const [customFeedUrl, setCustomFeedUrl] = useState('');
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
   const [retryAttempts, setRetryAttempts] = useState<Map<string, number>>(new Map());
+  const [isOffline, setIsOffline] = useState(false);
 
   // Pull up to 8 unique artists from the user's library as quick-search chips
   const libraryArtists = useMemo(() => {
@@ -67,7 +68,10 @@ export function OnlineScreen() {
     setYtLoading(true);
     try {
       setYtResults(await searchYoutube(q));
+      setIsOffline(false);
     } catch (e: any) {
+      const isNetworkError = e.message?.toLowerCase().includes('network') || e.message?.toLowerCase().includes('offline');
+      if (isNetworkError || !e.message) setIsOffline(true);
       Alert.alert('Search Error', e.message || 'Could not reach streaming service. Check your connection.');
     } finally {
       setYtLoading(false);
@@ -197,6 +201,14 @@ export function OnlineScreen() {
       <View style={{ paddingHorizontal: spacing.md, paddingVertical: spacing.sm }}>
         <Text style={{ fontSize: fontSize.xxl, fontWeight: '800', color: colors.text }}>Online</Text>
       </View>
+
+      {/* Offline Banner */}
+      {isOffline && (
+        <View style={[styles.offlineBanner, { backgroundColor: colors.danger }]}>
+          <Ionicons name="alert-circle-outline" size={16} color="#fff" />
+          <Text style={styles.offlineText}>No Internet Connection</Text>
+        </View>
+      )}
 
       {/* Mode toggle */}
       <View style={styles.toggleRow}>
@@ -429,6 +441,21 @@ export function OnlineScreen() {
 }
 
 const styles = StyleSheet.create({
+  offlineBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+    borderRadius: radius.md,
+    gap: spacing.sm,
+  },
+  offlineText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: fontSize.sm,
+  },
   toggleRow: {
     flexDirection: 'row',
     paddingHorizontal: spacing.md,

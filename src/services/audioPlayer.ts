@@ -16,6 +16,7 @@ class AudioPlayer {
   private statusCallback: StatusCallback | null = null;
   private trackEndCallback: TrackEndCallback | null = null;
   private statusInterval: ReturnType<typeof setInterval> | null = null;
+  private lastPlayingState: boolean = false;
 
   async init() {
     await Audio.setAudioModeAsync({
@@ -42,12 +43,19 @@ class AudioPlayer {
       try {
         const status = await this.sound.getStatusAsync();
         if (status.isLoaded) {
+          const position = (status.positionMillis ?? 0) / 1000;
+          const duration = (status.durationMillis ?? 0) / 1000;
           this.statusCallback?.({
             isPlaying: status.isPlaying,
-            position: (status.positionMillis ?? 0) / 1000,
-            duration: (status.durationMillis ?? 0) / 1000,
+            position,
+            duration,
             isLoading: status.isBuffering,
           });
+          // Detect track end: transition from playing to not playing at end of track
+          if (this.lastPlayingState && !status.isPlaying && duration > 0 && position >= duration - 0.5) {
+            this.trackEndCallback?.();
+          }
+          this.lastPlayingState = status.isPlaying;
         }
       } catch {}
     }, 500);
@@ -62,20 +70,25 @@ class AudioPlayer {
 
   async load(track: Track): Promise<void> {
     await this.unload();
+    this.lastPlayingState = false;
     const { sound } = await Audio.Sound.createAsync(
       { uri: track.uri },
       { shouldPlay: false, progressUpdateIntervalMillis: 500 },
       (status: AVPlaybackStatus) => {
         if (status.isLoaded) {
+          const position = (status.positionMillis ?? 0) / 1000;
+          const duration = (status.durationMillis ?? 0) / 1000;
           this.statusCallback?.({
             isPlaying: status.isPlaying,
-            position: (status.positionMillis ?? 0) / 1000,
-            duration: (status.durationMillis ?? 0) / 1000,
+            position,
+            duration,
             isLoading: status.isBuffering ?? false,
           });
-          if (status.didJustFinish) {
+          // Also catch track end from callback listener (as backup to polling)
+          if (status.didJustFinish || (this.lastPlayingState && !status.isPlaying && duration > 0 && position >= duration - 0.5)) {
             this.trackEndCallback?.();
           }
+          this.lastPlayingState = status.isPlaying;
         }
       }
     );
@@ -101,6 +114,7 @@ class AudioPlayer {
 
   async unload() {
     this.stopPolling();
+    this.lastPlayingState = false;
     if (this.sound) {
       try {
         await this.sound.unloadAsync();

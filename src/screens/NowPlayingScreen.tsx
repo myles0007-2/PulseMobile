@@ -9,6 +9,7 @@ import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAsyncDebounce } from '../hooks/useDebounce';
 import { useStore, useColors, RepeatMode } from '../store/useStore';
 import { spacing, fontSize, radius } from '../theme';
 
@@ -46,6 +47,20 @@ export function NowPlayingScreen() {
 
   const lyricsScrollRef = useRef<ScrollView>(null);
   const lineHeight = 40;
+  const pendingVolumeRef = useRef(volume);
+
+  // Debounced volume update (100ms) to reduce frame drops during slider drag
+  const debouncedSetVolume = useAsyncDebounce(
+    useCallback(async (v: number) => {
+      await setVolume(v);
+    }, [setVolume]),
+    100
+  );
+
+  const handleVolumeChange = (v: number) => {
+    pendingVolumeRef.current = v;
+    debouncedSetVolume(v);
+  };
 
   // Animation state for play button press
   const playBtnScale = useSharedValue(1);
@@ -290,9 +305,9 @@ export function NowPlayingScreen() {
             style={styles.volumeSlider}
             minimumValue={0}
             maximumValue={1}
-            value={volume}
+            value={pendingVolumeRef.current}
             step={0.01}
-            onValueChange={setVolume}
+            onValueChange={handleVolumeChange}
             minimumTrackTintColor={colors.primary}
             maximumTrackTintColor={colors.border}
             thumbTintColor={colors.primary}
