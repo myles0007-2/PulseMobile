@@ -9,6 +9,7 @@ import { fetchSponsorSegments } from '../services/sponsorBlockService';
 import { bluetoothManager, BluetoothRemoteState } from '../services/bluetoothManager';
 import { computeStats, getEmptyStats } from '../services/analyticsEngine';
 import { EQ_PRESET_NAMES } from '../services/eqPresets';
+import { PodcastSubscription } from '../services/podcastManager';
 
 // Seed data imports
 import likedSongsRaw from '../data/liked_songs.json';
@@ -50,6 +51,7 @@ interface PersistedState {
   autoDownloadLikedSongs?: boolean;
   wifiOnly?: boolean;
   eqPreset?: 'flat' | 'rock' | 'pop' | 'podcast';
+  podcastSubscriptions?: PodcastSubscription[];
 }
 
 interface SeedPlaylistEntry {
@@ -193,6 +195,11 @@ interface Store {
   eqPreset: 'flat' | 'rock' | 'pop' | 'podcast';
   setEQPreset: (preset: 'flat' | 'rock' | 'pop' | 'podcast') => void;
 
+  // Podcasts (Phase 5)
+  podcastSubscriptions: PodcastSubscription[];
+  addPodcastSubscription: (podcast: PodcastSubscription) => void;
+  removePodcastSubscription: (podcastId: string) => void;
+
   // Analytics (Phase 6)
   listeningStats: any; // ListeningStats from analyticsEngine
   computeListeningStats: () => void;
@@ -268,6 +275,9 @@ export const useStore = create<Store>((set, get) => {
 
     // Audio EQ Presets (Phase 4)
     eqPreset: 'flat' as const,
+
+    // Podcasts (Phase 5)
+    podcastSubscriptions: [],
 
     // Analytics (Phase 6)
     listeningStats: getEmptyStats(),
@@ -509,6 +519,21 @@ export const useStore = create<Store>((set, get) => {
       // await applyEQPreset(player.sound, preset);
     },
 
+    // Add podcast subscription (Phase 5)
+    addPodcastSubscription: (podcast: PodcastSubscription) => {
+      const current = get().podcastSubscriptions;
+      const exists = current.some(p => p.id === podcast.id);
+      if (!exists) {
+        set({ podcastSubscriptions: [...current, podcast] });
+      }
+    },
+
+    // Remove podcast subscription (Phase 5)
+    removePodcastSubscription: (podcastId: string) => {
+      const current = get().podcastSubscriptions;
+      set({ podcastSubscriptions: current.filter(p => p.id !== podcastId) });
+    },
+
     // Compute listening statistics from history
     computeListeningStats: () => {
       const stats = computeStats(get().history);
@@ -550,6 +575,7 @@ export const useStore = create<Store>((set, get) => {
         autoDownloadLikedSongs: saved.autoDownloadLikedSongs ?? false,
         wifiOnly: saved.wifiOnly ?? true,
         eqPreset: (saved.eqPreset as any) ?? 'flat',
+        podcastSubscriptions: saved.podcastSubscriptions ?? [],
       });
 
       // Initialize Bluetooth (non-blocking, graceful degradation if unavailable)
@@ -608,7 +634,7 @@ export const useStore = create<Store>((set, get) => {
 
     // Internal persist
     _persist: () => {
-      const { themeName, likedIds, playlists, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, eqPreset } = get();
+      const { themeName, likedIds, playlists, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, eqPreset, podcastSubscriptions } = get();
       savePersisted({
         themeName,
         likedIds: Array.from(likedIds),
@@ -618,6 +644,7 @@ export const useStore = create<Store>((set, get) => {
         autoDownloadLikedSongs,
         wifiOnly,
         eqPreset,
+        podcastSubscriptions,
       });
     },
 
