@@ -19,9 +19,24 @@ export const FEATURED_FEEDS = [
   { title: 'Serial', url: 'https://feeds.thisiscriminal.com/CriminalSerial' },
 ];
 
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'");
+}
+
 function extractText(xml: string, tag: string): string {
   const m = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\/${tag}>`, 'i'));
-  return m ? m[1].replace(/<[^>]+>/g, '').trim() : '';
+  if (!m) return '';
+  let content = m[1];
+  // Handle CDATA sections: extract content between <![CDATA[ and ]]>
+  const cdataMatch = content.match(/<!\[CDATA\[([\s\S]*?)\]\]>/);
+  if (cdataMatch) return cdataMatch[1].trim();
+  // Remove HTML/XML tags and decode entities
+  return decodeHtmlEntities(content.replace(/<[^>]+>/g, '')).trim();
 }
 
 function extractAttr(xml: string, tag: string, attr: string): string {

@@ -24,7 +24,9 @@ function formatDuration(s: number): string {
 
 // Artwork is lazily fetched once per track; cached in a module-level Map so
 // the native bridge is only called once per unique track ID per app session.
+// In-flight requests are tracked to prevent duplicate concurrent fetches.
 const artworkMemCache = new Map<string, string | null>();
+const artworkFetchPromises = new Map<string, Promise<string | null>>();
 
 function useLazyArtwork(track: Track): string | undefined {
   const [art, setArt] = useState<string | undefined>(track.artwork);
@@ -43,9 +45,20 @@ function useLazyArtwork(track: Track): string | undefined {
 
     // Small delay so fast-scrolling doesn't fire dozens of bridge calls
     const timer = setTimeout(async () => {
-      const result = await getTrackArtwork(track.id);
-      artworkMemCache.set(track.id, result);
-      if (mounted.current && result) setArt(result);
+      try {
+        // If a fetch for this track is already in flight, reuse it instead of duplicating
+        let promise = artworkFetchPromises.get(track.id);
+        if (!promise) {
+          promise = getTrackArtwork(track.id);
+          artworkFetchPromises.set(track.id, promise);
+        }
+        const result = await promise;
+        artworkMemCache.set(track.id, result);
+        artworkFetchPromises.delete(track.id);
+        if (mounted.current && result) setArt(result);
+      } catch (error) {
+        artworkFetchPromises.delete(track.id);
+      }
     }, 200);
 
     return () => {
@@ -70,10 +83,11 @@ export const TrackItem = React.memo(
     const accessibilityLabel = `${track.title} by ${track.artist}${isActive ? ', currently playing' : ''}`;
 
     const openMenu = useCallback(() => {
+      const freshLiked = useStore((s) => s.isLiked(track.id));
       const { playlists: currentPlaylists, addToPlaylist: add, createPlaylist: create } = useStore.getState();
 
       const buttons: any[] = [
-        { text: isLiked ? 'Unlike' : 'Like', onPress: () => toggleLike(track) },
+        { text: freshLiked ? 'Unlike' : 'Like', onPress: () => toggleLike(track) },
         {
           text: 'Add to Playlist',
           onPress: () => {
@@ -112,7 +126,7 @@ export const TrackItem = React.memo(
       if (onRemove) buttons.push({ text: 'Remove', style: 'destructive', onPress: onRemove });
       buttons.push({ text: 'Cancel', style: 'cancel' });
       Alert.alert(track.title, track.artist, buttons);
-    }, [track, isLiked, toggleLike, onRemove]);
+    }, [track, toggleLike, onRemove]);
 
     return (
       <Pressable
@@ -165,11 +179,13 @@ export const TrackItem = React.memo(
       </Pressable>
     );
   },
-  // Only re-render when the track object or active state changes
   (prev, next) =>
     prev.track.id === next.track.id &&
     prev.isActive === next.isActive &&
-    prev.track.artwork === next.track.artwork
+    prev.track.artwork === next.track.artwork &&
+    prev.onPress === next.onPress &&
+    prev.showMenu === next.showMenu &&
+    prev.onRemove === next.onRemove
 );
 
 // Static styles — created ONCE, not on every render

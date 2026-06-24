@@ -79,26 +79,22 @@ class BluetoothManager {
       const MediaSession = this.mediaSession;
 
       // Play command
-      MediaSession.enablePlayCommand();
       MediaSession.enablePlayCommand((wasPlaying: boolean) => {
         this._emitCommand('play');
       });
 
       // Pause command
-      MediaSession.enablePauseCommand();
       MediaSession.enablePauseCommand((wasPlaying: boolean) => {
         this._emitCommand('pause');
       });
 
       // Skip forward (Android: fast-forward button)
-      MediaSession.enableJumpForwardCommand(15); // 15 second jump
-      MediaSession.enableJumpForwardCommand((wasPlaying: boolean) => {
+      MediaSession.enableJumpForwardCommand(15, (wasPlaying: boolean) => {
         this._emitCommand('skip_forward');
       });
 
       // Skip back (Android: rewind button)
-      MediaSession.enableJumpBackwardCommand(15);
-      MediaSession.enableJumpBackwardCommand((wasPlaying: boolean) => {
+      MediaSession.enableJumpBackwardCommand(15, (wasPlaying: boolean) => {
         this._emitCommand('skip_back');
       });
 

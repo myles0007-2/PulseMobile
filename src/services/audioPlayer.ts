@@ -136,6 +136,10 @@ class AudioPlayer {
   }
 
   async setVolume(v: number) {
+    if (!Number.isFinite(v)) {
+      console.warn(`Invalid volume value: ${v} (expected finite number)`);
+      return;
+    }
     await this.sound?.setVolumeAsync(Math.max(0, Math.min(1, v)));
   }
 

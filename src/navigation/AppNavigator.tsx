@@ -9,6 +9,7 @@ import { HistoryScreen } from '../screens/HistoryScreen';
 import { OnlineScreen } from '../screens/OnlineScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { NowPlayingScreen } from '../screens/NowPlayingScreen';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useColors } from '../store/useStore';
 
 const Tab = createBottomTabNavigator();
@@ -34,9 +35,10 @@ export function AppNavigator() {
   };
 
   return (
-    <NavigationContainer theme={navTheme}>
-      <NowPlayingScreen />
-      <Tab.Navigator
+    <ErrorBoundary>
+      <NavigationContainer theme={navTheme}>
+        <NowPlayingScreen />
+        <Tab.Navigator
         screenOptions={{
           headerShown: false,
           tabBarStyle: {
@@ -91,7 +93,8 @@ export function AppNavigator() {
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'settings', 'settings-outline', color),
           }}
         />
-      </Tab.Navigator>
-    </NavigationContainer>
+        </Tab.Navigator>
+      </NavigationContainer>
+    </ErrorBoundary>
   );
 }

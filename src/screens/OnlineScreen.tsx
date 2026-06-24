@@ -98,7 +98,12 @@ export function OnlineScreen() {
     setPodcastLoading(true);
     setPodcastEps([]);
     try {
-      const pod = await fetchPodcast(url);
+      const trimmedUrl = url.trim();
+      if (!trimmedUrl) {
+        Alert.alert('Invalid URL', 'Please enter a podcast feed URL');
+        return;
+      }
+      const pod = await fetchPodcast(trimmedUrl);
       setPodcastTitle(pod.title);
       setPodcastEps(pod.episodes);
     } catch (e: any) {

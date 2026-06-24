@@ -104,7 +104,6 @@ interface Store {
   // SponsorBlock
   sponsorSegments: [number, number][];
   _skipGuard: boolean;
-  _sponsorSkipPending: boolean;
 
   // Bluetooth state lock
   _bluetoothLock: boolean;
@@ -220,7 +219,7 @@ export const useStore = create<Store>((set, get) => {
     repeat: 'none', shuffle: false, volume: 1,
 
     // SponsorBlock
-    sponsorSegments: [], _skipGuard: false, _sponsorSkipPending: false,
+    sponsorSegments: [], _skipGuard: false,
 
     // Bluetooth state lock (prevents race conditions)
     _bluetoothLock: false,
@@ -719,7 +718,7 @@ export const useStore = create<Store>((set, get) => {
     },
 
     _onStatus: (s) => {
-      const { sponsorSegments, _skipGuard, _sponsorSkipPending, sleepTimerEnd, lyrics, currentLyricIndex } = get();
+      const { sponsorSegments, _skipGuard, sleepTimerEnd, lyrics, currentLyricIndex } = get();
 
       let newLyricIndex = 0;
       if (lyrics.length) {
@@ -737,13 +736,13 @@ export const useStore = create<Store>((set, get) => {
         currentLyricIndex: newLyricIndex,
       });
 
-      if (s.isPlaying && !_skipGuard && !_sponsorSkipPending && sponsorSegments.length) {
+      if (s.isPlaying && !_skipGuard && sponsorSegments.length) {
         for (const [start, end] of sponsorSegments) {
           if (s.position >= start - 0.5 && s.position < end) {
-            set({ _skipGuard: true, _sponsorSkipPending: true });
+            set({ _skipGuard: true });
             player.seekTo(end)
               .catch((e) => console.error('SponsorBlock skip failed:', e))
-              .finally(() => set({ _skipGuard: false, _sponsorSkipPending: false }));
+              .finally(() => set({ _skipGuard: false }));
             break;
           }
         }

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useEffect, useState } from 'react';
+import React, { useCallback, useRef, useEffect, useState, useMemo } from 'react';
 import {
   View, Text, Image, Pressable, StyleSheet, Dimensions,
   Modal, ActivityIndicator, StatusBar, ScrollView, Alert,
@@ -54,11 +54,14 @@ export function NowPlayingScreen() {
   const lineHeight = 40;
 
   // Debounced volume update (100ms) to reduce frame drops during slider drag
-  const debouncedSetVolume = useAsyncDebounce(
-    useCallback(async (v: number) => {
-      await setVolume(v);
-    }, [setVolume]),
-    100
+  const debouncedSetVolume = useMemo(
+    () => useAsyncDebounce(
+      async (v: number) => {
+        await setVolume(v);
+      },
+      100
+    ),
+    [setVolume]
   );
 
   // Animation state for play button press
@@ -214,7 +217,7 @@ export function NowPlayingScreen() {
             ) : (
               lyrics.map((line, i) => (
                 <Text
-                  key={i}
+                  key={`lyric-${i}-${line.text}`}
                   style={[
                     styles.lyricLine,
                     {

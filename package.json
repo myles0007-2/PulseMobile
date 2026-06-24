@@ -1,10 +1,14 @@
 {
   "name": "pulse-mobile",
   "version": "1.0.0",
+  "description": "React Native iOS/Android music player with offline downloads, YouTube Music API, and podcast support. Requires Expo SDK 52 + React Native 0.76.5.",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
     "ios": "expo run:ios",
+    "type-check": "tsc --noEmit",
+    "start:clear": "expo start --clear",
+    "lint": "echo 'No linter configured'",
     "build:ios": "eas build --platform ios --profile preview",
     "build:ios:prod": "eas build --platform ios --profile production"
   },

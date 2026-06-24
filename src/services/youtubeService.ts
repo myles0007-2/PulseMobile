@@ -44,12 +44,15 @@ let lastRequestTime: Record<string, number> = {}; // Track request timestamps fo
 async function loadCache() {
   if (cacheLoaded) return;
   try {
-    const [raw, savedIdx] = await Promise.all([
+    const [raw, savedUrl] = await Promise.all([
       AsyncStorage.getItem(URL_CACHE_KEY),
       AsyncStorage.getItem(INSTANCE_KEY),
     ]);
     if (raw) urlCache = JSON.parse(raw);
-    if (savedIdx) activeInvidiousIdx = parseInt(savedIdx, 10) || 0;
+    if (savedUrl) {
+      const idx = INVIDIOUS.indexOf(savedUrl);
+      activeInvidiousIdx = idx >= 0 ? idx : 0;
+    }
   } catch {}
   cacheLoaded = true;
 }
@@ -106,7 +109,7 @@ async function tryInvidious(path: string): Promise<any | null> {
       const idx = INVIDIOUS.indexOf(inst);
       if (idx !== activeInvidiousIdx) {
         activeInvidiousIdx = idx;
-        AsyncStorage.setItem(INSTANCE_KEY, String(idx)).catch(() => {});
+        AsyncStorage.setItem(INSTANCE_KEY, inst).catch(() => {});
       }
       return data;
     } catch (error) {
@@ -208,14 +211,14 @@ export async function resolveStreamUrl(videoId: string): Promise<string> {
     let url: string | undefined;
     if (audioFormats.length > 0) {
       audioFormats.sort((a: any, b: any) => (b.bitrate ?? 0) - (a.bitrate ?? 0));
-      url = audioFormats[0].url;
+      url = audioFormats[0].url || undefined;
     } else {
       const muxed = (data.formatStreams ?? []).find((f: any) =>
         typeof f.type === 'string' && (f.type.startsWith('video/mp4') || f.type.startsWith('audio/'))
       );
-      url = muxed?.url;
+      url = muxed?.url || undefined;
     }
-    if (url) {
+    if (url && typeof url === 'string') {
       urlCache[videoId] = { url, expiresAt: Date.now() + URL_TTL };
       saveCache();
       return url;
@@ -228,10 +231,12 @@ export async function resolveStreamUrl(videoId: string): Promise<string> {
     const streams: any[] = piped.audioStreams ?? [];
     if (streams.length > 0) {
       streams.sort((a: any, b: any) => (b.bitrate ?? 0) - (a.bitrate ?? 0));
-      const url = streams[0].url as string;
-      urlCache[videoId] = { url, expiresAt: Date.now() + URL_TTL };
-      saveCache();
-      return url;
+      const url = streams[0].url;
+      if (url && typeof url === 'string') {
+        urlCache[videoId] = { url, expiresAt: Date.now() + URL_TTL };
+        saveCache();
+        return url;
+      }
     }
   }
 
@@ -241,12 +246,12 @@ export async function resolveStreamUrl(videoId: string): Promise<string> {
 export function youtubeResultToTrack(result: YoutubeResult): Track {
   return {
     id: `yt::${result.videoId}`,
-    title: result.title,
-    artist: result.author,
+    title: result.title || 'Unknown Title',
+    artist: result.author || 'Unknown Artist',
     album: 'YouTube',
-    duration: result.durationSeconds,
+    duration: result.durationSeconds || 0,
     uri: `yt::${result.videoId}`,
-    artwork: result.thumbnail,
+    artwork: result.thumbnail || undefined,
     source: 'youtube',
   };
 }
