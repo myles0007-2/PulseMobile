@@ -10,6 +10,7 @@ import { OnlineScreen } from '../screens/OnlineScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { AnalyticsScreen } from '../screens/AnalyticsScreen';
 import { WrappedScreen } from '../screens/WrappedScreen';
+import { PodcastsScreen } from '../screens/PodcastsScreen';
 import { NowPlayingScreen } from '../screens/NowPlayingScreen';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useColors } from '../store/useStore';
@@ -86,6 +87,13 @@ export function AppNavigator() {
           component={OnlineScreen}
           options={{
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'globe', 'globe-outline', color),
+          }}
+        />
+        <Tab.Screen
+          name="Podcasts"
+          component={PodcastsScreen}
+          options={{
+            tabBarIcon: ({ focused, color }) => tabIcon(focused, 'headphones', 'headphones-outline', color),
           }}
         />
         <Tab.Screen
