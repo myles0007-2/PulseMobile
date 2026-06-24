@@ -79,6 +79,13 @@ export class ErrorBoundary extends React.Component<Props, ErrorBoundaryState> {
     });
   };
 
+  componentDidUpdate() {
+    // Reset errorCount on successful render (no error)
+    if (!this.state.hasError && this.state.errorCount > 0) {
+      this.setState({ errorCount: 0 });
+    }
+  }
+
   render() {
     if (this.state.hasError) {
       return (
@@ -91,11 +98,6 @@ export class ErrorBoundary extends React.Component<Props, ErrorBoundaryState> {
           maxRetries={MAX_RETRY_ATTEMPTS}
         />
       );
-    }
-
-    // Reset errorCount on successful render (no error)
-    if (this.state.errorCount > 0) {
-      this.setState({ errorCount: 0 });
     }
 
     return this.props.children;

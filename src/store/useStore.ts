@@ -650,8 +650,10 @@ export const useStore = create<Store>((set, get) => {
 
     // Player actions
     playTrack: async (track, contextQueue) => {
+      // Atomic guard: set immediately to prevent concurrent loads
       const { _isLoadingTrack } = get();
       if (_isLoadingTrack) return;
+      set({ _isLoadingTrack: true });
 
       // Strip artwork from queue entries — artwork can be lazy-loaded in TrackItem.
       // Keeps the queue small even with thousands of tracks.
@@ -661,7 +663,7 @@ export const useStore = create<Store>((set, get) => {
       const playableTrackStripped = stripArt(track);
       const idx = queue.findIndex((t) => t.id === track.id);
 
-      set({ isLoading: true, lyrics: [], currentLyricIndex: 0, sponsorSegments: [], _skipGuard: false, _isLoadingTrack: true });
+      set({ isLoading: true, lyrics: [], currentLyricIndex: 0, sponsorSegments: [], _skipGuard: false });
 
       let playableTrack = playableTrackStripped;
 
@@ -718,24 +720,26 @@ export const useStore = create<Store>((set, get) => {
       }
 
       // Update Bluetooth lock screen metadata with retry on track change (non-blocking)
-      let retries = 0;
-      const updateMetadataWithRetry = async () => {
-        try {
-          await bluetoothManager.updateMetadata({
-            title: track.title,
-            artist: track.artist,
-            album: track.album,
-            duration: track.duration,
-          });
-        } catch (e) {
-          if (retries < 2) {
-            retries++;
-            await new Promise(r => setTimeout(r, 200));
-            await updateMetadataWithRetry();
+      if (track.title && track.artist) {
+        let retries = 0;
+        const updateMetadataWithRetry = async () => {
+          try {
+            await bluetoothManager.updateMetadata({
+              title: track.title || 'Unknown',
+              artist: track.artist || 'Unknown',
+              album: track.album || 'Unknown Album',
+              duration: track.duration || 0,
+            });
+          } catch (e) {
+            if (retries < 2) {
+              retries++;
+              await new Promise(r => setTimeout(r, 200));
+              await updateMetadataWithRetry();
+            }
           }
-        }
-      };
-      updateMetadataWithRetry().catch((e) => console.warn('Bluetooth metadata update failed:', e instanceof Error ? e.message : String(e)));
+        };
+        updateMetadataWithRetry().catch((e) => console.warn('Bluetooth metadata update failed:', e instanceof Error ? e.message : String(e)));
+      }
     },
 
     togglePlay: async () => {
@@ -765,6 +769,8 @@ export const useStore = create<Store>((set, get) => {
     nextTrack: async () => {
       const { queue, currentIndex, repeat, shuffle, _isLoadingTrack } = get();
       if (!queue.length || _isLoadingTrack) return;
+      if (queue.length === 0) return;
+
       let nextIdx: number;
       if (shuffle) nextIdx = Math.floor(Math.random() * queue.length);
       else {
@@ -774,13 +780,14 @@ export const useStore = create<Store>((set, get) => {
           else return;
         }
       }
-      await get().playTrack(queue[nextIdx], queue);
+      const nextTrack = queue[nextIdx];
+      if (nextTrack) await get().playTrack(nextTrack, queue);
     },
 
     prevTrack: async () => {
-      const { queue, currentIndex, position, _isLoadingTrack } = get();
+      const { queue, currentIndex, position, duration, _isLoadingTrack } = get();
       if (_isLoadingTrack) return;
-      if (position > 3) { await player.seekTo(0); return; }
+      if (duration > 0 && position > 3) { await player.seekTo(0); return; }
       const prevIdx = Math.max(0, currentIndex - 1);
       if (queue[prevIdx]) await get().playTrack(queue[prevIdx], queue);
     },
@@ -800,19 +807,23 @@ export const useStore = create<Store>((set, get) => {
         if (_volumeDebounceTimer) clearTimeout(_volumeDebounceTimer);
         set({ _lastVolume: v });
 
+        let failsafeTimer: NodeJS.Timeout | null = null;
+
         const timer = setTimeout(async () => {
           try {
             const { _lastVolume: currentVolume } = get();
             await player.setVolume(currentVolume);
             set({ volume: currentVolume, _volumeDebounceTimer: null });
+            if (failsafeTimer) clearTimeout(failsafeTimer);
           } catch (e) {
             console.error('Volume apply failed:', e instanceof Error ? e.message : String(e));
           } finally {
             set({ _volumeLock: false });
+            if (failsafeTimer) clearTimeout(failsafeTimer);
           }
         }, 100);
 
-        const failsafeTimer = setTimeout(() => {
+        failsafeTimer = setTimeout(() => {
           console.warn('Volume lock timeout - force clearing lock');
           set({ _volumeLock: false });
         }, 5000);
@@ -821,7 +832,6 @@ export const useStore = create<Store>((set, get) => {
       } catch (e) {
         console.error('Volume debounce setup failed:', e instanceof Error ? e.message : String(e));
         set({ _volumeLock: false });
-        throw e;
       }
     },
 

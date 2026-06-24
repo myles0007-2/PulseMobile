@@ -18,8 +18,10 @@ const { width } = Dimensions.get('window');
 const ART_SIZE = Math.min(width - 56, 340);
 
 function fmt(s: number) {
-  if (!s || isNaN(s)) return '0:00';
-  return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
+  if (!Number.isFinite(s) || s <= 0) return '0:00';
+  const minutes = Math.floor(s / 60);
+  const seconds = Math.floor(s % 60);
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 const REPEAT_NEXT: Record<RepeatMode, RepeatMode> = { none: 'all', all: 'one', one: 'none' };
@@ -213,22 +215,25 @@ export function NowPlayingScreen() {
             {lyrics.length === 0 ? (
               <Text style={[styles.noLyrics, { color: colors.textMuted }]}>No lyrics found</Text>
             ) : (
-              lyrics.map((line, i) => (
-                <Text
-                  key={`lyric-${i}-${line.text}`}
-                  style={[
-                    styles.lyricLine,
-                    {
-                      color: i === currentLyricIndex ? colors.text : colors.textMuted,
-                      fontSize: i === currentLyricIndex ? 17 : 15,
-                      fontWeight: i === currentLyricIndex ? '700' : '400',
-                      opacity: Math.abs(i - currentLyricIndex) > 4 ? 0.35 : 1,
-                    },
-                  ]}
-                >
-                  {line.text}
-                </Text>
-              ))
+              lyrics.map((line, i) => {
+                const clampedIndex = Math.max(0, Math.min(currentLyricIndex, lyrics.length - 1));
+                return (
+                  <Text
+                    key={`lyric-${i}-${line.text}`}
+                    style={[
+                      styles.lyricLine,
+                      {
+                        color: i === clampedIndex ? colors.text : colors.textMuted,
+                        fontSize: i === clampedIndex ? 17 : 15,
+                        fontWeight: i === clampedIndex ? '700' : '400',
+                        opacity: Math.abs(i - clampedIndex) > 4 ? 0.35 : 1,
+                      },
+                    ]}
+                  >
+                    {line.text}
+                  </Text>
+                );
+              })
             )}
           </ScrollView>
         )}

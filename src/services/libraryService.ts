@@ -85,7 +85,13 @@ export async function scanLibrary(
   }
 
   // ── 2. Documents directory (iTunes File Sharing / 3uTools File Manager) ──
-  const docsDir = FileSystem.documentDirectory ?? '';
+  const docsDir = FileSystem.documentDirectory;
+  if (!docsDir) {
+    console.warn('Documents directory not available on this device, skipping file scan');
+    const albums = Object.values(albumMap);
+    await AsyncStorage.setItem(CACHE_KEY, JSON.stringify({ tracks: allTracks, albums, ts: Date.now() }));
+    return { tracks: allTracks, albums };
+  }
   const docTracks = await scanDirRecursive(docsDir, docsDir);
 
   for (const doc of docTracks) {
