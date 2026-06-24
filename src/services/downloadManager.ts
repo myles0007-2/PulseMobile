@@ -256,8 +256,7 @@ class DownloadManager {
       // Verify file exists and has content
       const result = await FileSystem.getInfoAsync(fileUri);
       if (result.exists && result.isDirectory === false) {
-        const fileInfo = result as any; // FileInfo union type workaround
-        const fileSize = fileInfo.size ?? 0;
+        const fileSize = 'size' in result ? (result as FileSystem.FileInfo).size : 0;
         task.bytesDownloaded = fileSize;
         task.totalBytes = fileSize;
         task.progress = 100;
@@ -308,8 +307,7 @@ class DownloadManager {
       for (const file of files) {
         const info = await FileSystem.getInfoAsync(`${DOWNLOADS_DIR}/${file}`);
         if (info.exists && info.isDirectory === false) {
-          const fileInfo = info as any;
-          if (fileInfo.size) totalSize += fileInfo.size;
+          if ('size' in info) totalSize += (info as FileSystem.FileInfo).size;
         }
       }
       return totalSize;

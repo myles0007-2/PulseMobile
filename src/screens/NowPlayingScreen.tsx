@@ -98,11 +98,9 @@ export function NowPlayingScreen() {
           text: o.label,
           onPress: () => setSleepTimer(o.value),
         })),
-        sleepTimerEnd
-          ? { text: 'Cancel Timer', style: 'destructive' as const, onPress: () => setSleepTimer(null) }
-          : null,
+        ...(sleepTimerEnd ? [{ text: 'Cancel Timer', style: 'destructive' as const, onPress: () => setSleepTimer(null) }] : []),
         { text: 'Dismiss', style: 'cancel' as const },
-      ].filter(Boolean) as any[]
+      ]
     );
   }, [sleepTimerEnd, setSleepTimer]);
 

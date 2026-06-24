@@ -574,7 +574,7 @@ export const useStore = create<Store>((set, get) => {
         autoDownloadEnabled: saved.autoDownloadEnabled ?? false,
         autoDownloadLikedSongs: saved.autoDownloadLikedSongs ?? false,
         wifiOnly: saved.wifiOnly ?? true,
-        eqPreset: (saved.eqPreset as any) ?? 'flat',
+        eqPreset: (['flat', 'rock', 'pop', 'podcast'].includes(saved.eqPreset) ? saved.eqPreset : 'flat') as 'flat' | 'rock' | 'pop' | 'podcast',
         podcastSubscriptions: saved.podcastSubscriptions ?? [],
       });
 
