@@ -1,5 +1,4 @@
 import * as SecureStore from 'expo-secure-store';
-import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { YoutubeResult, Track } from '../types';
 
@@ -58,8 +57,14 @@ class YouTubeMusicAuth {
       const cachedExpiry = await AsyncStorage.getItem(TOKEN_EXPIRY_KEY);
 
       if (cachedToken && cachedExpiry) {
+        const expiry = parseInt(cachedExpiry, 10);
+        if (Number.isNaN(expiry)) {
+          console.warn('Invalid cached token expiry, clearing');
+          await this.logout();
+          return this.authState;
+        }
         this.accessToken = cachedToken;
-        this.tokenExpiry = parseInt(cachedExpiry, 10);
+        this.tokenExpiry = expiry;
 
         // Check if token needs refresh
         if (Date.now() + TOKEN_REFRESH_BUFFER_MS > this.tokenExpiry) {
@@ -85,7 +90,7 @@ class YouTubeMusicAuth {
       // TODO: Implement full YouTube Music OAuth flow when credentials available
       return false;
     } catch (error) {
-      this.recordAuthFailure();
+      await this.recordAuthFailure();
       console.error('YouTube Music auth flow failed:', error);
       return false;
     }
@@ -98,16 +103,19 @@ class YouTubeMusicAuth {
     }
 
     this.refreshPromise = this.performRefresh();
-    const result = await this.refreshPromise;
-    this.refreshPromise = null;
-    return result;
+    try {
+      const result = await this.refreshPromise;
+      return result;
+    } finally {
+      this.refreshPromise = null;
+    }
   }
 
   private async performRefresh(): Promise<boolean> {
     try {
       const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
       if (!refreshToken) {
-        this.recordAuthFailure();
+        await this.recordAuthFailure();
         return false;
       }
 
@@ -115,7 +123,7 @@ class YouTubeMusicAuth {
       // This is a placeholder that would call YouTube's token endpoint
       return false;
     } catch (error) {
-      this.recordAuthFailure();
+      await this.recordAuthFailure();
       console.error('Token refresh failed:', error);
       return false;
     }
