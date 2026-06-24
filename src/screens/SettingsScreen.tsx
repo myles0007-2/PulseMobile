@@ -36,7 +36,7 @@ const THEMES: ThemeName[] = ['dark', 'midnight', 'forest', 'rose', 'slate', 'amb
 export function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { tracks, repeat, shuffle, setRepeat, toggleShuffle, themeName, setTheme, clearHistory, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, setAutoDownload, setAutoDownloadLikedSongs, setWifiOnly, youtubeAuthenticated, youtubeAuthInitialized, logoutYouTube } = useStore();
+  const { tracks, repeat, shuffle, setRepeat, toggleShuffle, themeName, setTheme, clearHistory, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, setAutoDownload, setAutoDownloadLikedSongs, setWifiOnly, youtubeAuthenticated, youtubeAuthInitialized, logoutYouTube, eqPreset, setEQPreset } = useStore();
   const [cacheStats, setCacheStats] = useState({ used: 0, limit: 1024 * 1024 * 1024, count: 0 });
   const [downloadSize, setDownloadSize] = useState(0);
 
@@ -134,6 +134,19 @@ export function SettingsScreen() {
             )}
           </Section>
         )}
+
+        {/* Audio EQ (Phase 4) */}
+        <Section title="AUDIO">
+          <Pressable style={[styles.row, { borderBottomColor: colors.border }]} onPress={() => {
+            const presets = ['flat', 'rock', 'pop', 'podcast'] as const;
+            const currentIdx = presets.indexOf(eqPreset);
+            const nextIdx = (currentIdx + 1) % presets.length;
+            setEQPreset(presets[nextIdx]);
+          }}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>EQ Preset</Text>
+            <Text style={[styles.rowValue, { color: colors.textSecondary }]}>{eqPreset.charAt(0).toUpperCase() + eqPreset.slice(1)}</Text>
+          </Pressable>
+        </Section>
 
         {/* Library */}
         <Section title="LIBRARY">

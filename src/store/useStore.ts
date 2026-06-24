@@ -8,6 +8,7 @@ import { fetchLyrics, getCurrentLyricIndex } from '../services/lyricsService';
 import { fetchSponsorSegments } from '../services/sponsorBlockService';
 import { bluetoothManager, BluetoothRemoteState } from '../services/bluetoothManager';
 import { computeStats, getEmptyStats } from '../services/analyticsEngine';
+import { EQ_PRESET_NAMES } from '../services/eqPresets';
 
 // Seed data imports
 import likedSongsRaw from '../data/liked_songs.json';
@@ -48,6 +49,7 @@ interface PersistedState {
   autoDownloadEnabled?: boolean;
   autoDownloadLikedSongs?: boolean;
   wifiOnly?: boolean;
+  eqPreset?: 'flat' | 'rock' | 'pop' | 'podcast';
 }
 
 interface SeedPlaylistEntry {
@@ -187,6 +189,10 @@ interface Store {
   initializeYouTubeAuth: () => Promise<void>;
   logoutYouTube: () => Promise<void>;
 
+  // Audio EQ Presets (Phase 4)
+  eqPreset: 'flat' | 'rock' | 'pop' | 'podcast';
+  setEQPreset: (preset: 'flat' | 'rock' | 'pop' | 'podcast') => void;
+
   // Analytics (Phase 6)
   listeningStats: any; // ListeningStats from analyticsEngine
   computeListeningStats: () => void;
@@ -259,6 +265,9 @@ export const useStore = create<Store>((set, get) => {
     youtubeAuthInitialized: false,
     youtubeAuthenticated: false,
     youtubeCircuitBreakerTripped: false,
+
+    // Audio EQ Presets (Phase 4)
+    eqPreset: 'flat' as const,
 
     // Analytics (Phase 6)
     listeningStats: getEmptyStats(),
@@ -493,6 +502,13 @@ export const useStore = create<Store>((set, get) => {
       }
     },
 
+    // Set audio EQ preset (Phase 4)
+    setEQPreset: (preset: 'flat' | 'rock' | 'pop' | 'podcast') => {
+      set({ eqPreset: preset });
+      // TODO: Apply EQ to current audio when Expo Audio supports it
+      // await applyEQPreset(player.sound, preset);
+    },
+
     // Compute listening statistics from history
     computeListeningStats: () => {
       const stats = computeStats(get().history);
@@ -533,6 +549,7 @@ export const useStore = create<Store>((set, get) => {
         autoDownloadEnabled: saved.autoDownloadEnabled ?? false,
         autoDownloadLikedSongs: saved.autoDownloadLikedSongs ?? false,
         wifiOnly: saved.wifiOnly ?? true,
+        eqPreset: (saved.eqPreset as any) ?? 'flat',
       });
 
       // Initialize Bluetooth (non-blocking, graceful degradation if unavailable)
@@ -591,7 +608,7 @@ export const useStore = create<Store>((set, get) => {
 
     // Internal persist
     _persist: () => {
-      const { themeName, likedIds, playlists, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly } = get();
+      const { themeName, likedIds, playlists, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, eqPreset } = get();
       savePersisted({
         themeName,
         likedIds: Array.from(likedIds),
@@ -600,6 +617,7 @@ export const useStore = create<Store>((set, get) => {
         autoDownloadEnabled,
         autoDownloadLikedSongs,
         wifiOnly,
+        eqPreset,
       });
     },
 
