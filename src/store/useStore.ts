@@ -7,6 +7,7 @@ import { resolveStreamUrl } from '../services/youtubeService';
 import { fetchLyrics, getCurrentLyricIndex } from '../services/lyricsService';
 import { fetchSponsorSegments } from '../services/sponsorBlockService';
 import { bluetoothManager, BluetoothRemoteState } from '../services/bluetoothManager';
+import { computeStats, getEmptyStats } from '../services/analyticsEngine';
 
 // Seed data imports
 import likedSongsRaw from '../data/liked_songs.json';
@@ -186,6 +187,10 @@ interface Store {
   initializeYouTubeAuth: () => Promise<void>;
   logoutYouTube: () => Promise<void>;
 
+  // Analytics (Phase 6)
+  listeningStats: any; // ListeningStats from analyticsEngine
+  computeListeningStats: () => void;
+
   // Bootstrap & internal
   bootstrap: () => Promise<void>;
   _persist: () => void;
@@ -254,6 +259,9 @@ export const useStore = create<Store>((set, get) => {
     youtubeAuthInitialized: false,
     youtubeAuthenticated: false,
     youtubeCircuitBreakerTripped: false,
+
+    // Analytics (Phase 6)
+    listeningStats: getEmptyStats(),
 
     // Lyrics
     lyrics: [], currentLyricIndex: 0, showLyrics: false,
@@ -483,6 +491,12 @@ export const useStore = create<Store>((set, get) => {
       } catch (error) {
         console.error('YouTube logout failed:', error);
       }
+    },
+
+    // Compute listening statistics from history
+    computeListeningStats: () => {
+      const stats = computeStats(get().history);
+      set({ listeningStats: stats });
     },
 
     // Bootstrap
