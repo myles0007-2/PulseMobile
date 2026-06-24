@@ -206,7 +206,6 @@ export async function resolveStreamUrlWithFallback(videoId: string): Promise<str
     try {
       // TODO: Implement actual YouTube Music streaming URL fetch
       // This would call official API to get premium stream
-      console.log('Using YouTube Music official stream for:', videoId);
       // return officialUrl;
     } catch (error) {
       console.warn('YouTube Music resolution failed, falling back to Invidious:', error);

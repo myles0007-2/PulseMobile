@@ -54,7 +54,9 @@ async function loadCache() {
       const idx = INVIDIOUS.indexOf(savedUrl);
       activeInvidiousIdx = idx >= 0 ? idx : 0;
     }
-  } catch {}
+  } catch (error) {
+    console.debug('Failed to load YouTube cache:', error instanceof Error ? error.message : String(error));
+  }
   cacheLoaded = true;
 }
 
@@ -147,7 +149,9 @@ async function tryPiped(path: string): Promise<any | null> {
       if (!res.ok) continue;
       const data = await safeJson(res);
       if (data) return data;
-    } catch {}
+    } catch (error) {
+      console.debug(`Piped ${inst} failed:`, error instanceof Error ? error.message : String(error));
+    }
   }
   return null;
 }
