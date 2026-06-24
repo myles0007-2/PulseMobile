@@ -84,8 +84,8 @@ class AudioPlayer {
             duration,
             isLoading: status.isBuffering ?? false,
           });
-          // Also catch track end from callback listener (as backup to polling)
-          if (status.didJustFinish || (this.lastPlayingState && !status.isPlaying && duration > 0 && position >= duration - 0.5)) {
+          // State-based track end detection: playing → stopped at end of track
+          if (this.lastPlayingState && !status.isPlaying && duration > 0 && position >= duration - 0.5) {
             this.trackEndCallback?.();
           }
           this.lastPlayingState = status.isPlaying;

@@ -47,7 +47,6 @@ export function NowPlayingScreen() {
 
   const lyricsScrollRef = useRef<ScrollView>(null);
   const lineHeight = 40;
-  const pendingVolumeRef = useRef(volume);
 
   // Debounced volume update (100ms) to reduce frame drops during slider drag
   const debouncedSetVolume = useAsyncDebounce(
@@ -56,11 +55,6 @@ export function NowPlayingScreen() {
     }, [setVolume]),
     100
   );
-
-  const handleVolumeChange = (v: number) => {
-    pendingVolumeRef.current = v;
-    debouncedSetVolume(v);
-  };
 
   // Animation state for play button press
   const playBtnScale = useSharedValue(1);
@@ -305,9 +299,9 @@ export function NowPlayingScreen() {
             style={styles.volumeSlider}
             minimumValue={0}
             maximumValue={1}
-            value={pendingVolumeRef.current}
+            value={volume}
             step={0.01}
-            onValueChange={handleVolumeChange}
+            onValueChange={debouncedSetVolume}
             minimumTrackTintColor={colors.primary}
             maximumTrackTintColor={colors.border}
             thumbTintColor={colors.primary}
