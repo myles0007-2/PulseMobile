@@ -210,7 +210,7 @@ interface Store {
 
   // Bootstrap & internal
   bootstrap: () => Promise<void>;
-  _persist: () => void;
+  _persist: () => Promise<void>;
   _applySeedToLibrary: (tracks: Track[]) => void;
 
   // Player actions
@@ -649,22 +649,26 @@ export const useStore = create<Store>((set, get) => {
     },
 
     // Internal persist
-    _persist: () => {
+    _persist: async () => {
       const { themeName, likedIds, playlists, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, eqPreset, podcastSubscriptions, currentTrack, position } = get();
-      savePersisted({
-        themeName,
-        likedIds: Array.from(likedIds),
-        playlists,
-        history: history.slice(0, 200),
-        autoDownloadEnabled,
-        autoDownloadLikedSongs,
-        wifiOnly,
-        eqPreset,
-        podcastSubscriptions,
-        currentTrackId: currentTrack?.id,
-        playbackPosition: position,
-        lastPlayedTime: Date.now(),
-      });
+      try {
+        await savePersisted({
+          themeName,
+          likedIds: Array.from(likedIds),
+          playlists,
+          history: history.slice(0, 200),
+          autoDownloadEnabled,
+          autoDownloadLikedSongs,
+          wifiOnly,
+          eqPreset,
+          podcastSubscriptions,
+          currentTrackId: currentTrack?.id,
+          playbackPosition: position,
+          lastPlayedTime: Date.now(),
+        });
+      } catch (e) {
+        console.warn('Failed to persist state:', e);
+      }
     },
 
     // Player actions

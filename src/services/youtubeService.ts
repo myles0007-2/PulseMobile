@@ -285,6 +285,9 @@ export async function resolveStreamUrl(videoId: string): Promise<string> {
     }
   }
 
+  // Invidious failed, falling back to Piped
+  console.warn(`[Circuit-breaker] Invidious failed for ${videoId}, falling back to Piped`);
+
   // Piped fallback
   const piped = await tryPiped(`/streams/${videoId}`);
   if (piped) {
@@ -300,6 +303,8 @@ export async function resolveStreamUrl(videoId: string): Promise<string> {
     }
   }
 
+  // Both Invidious and Piped failed
+  console.error(`[Circuit-breaker] All sources failed for ${videoId}: Invidious unavailable, Piped unavailable`);
   throw new Error(`Cannot stream video ${videoId} — all sources offline.`);
 }
 

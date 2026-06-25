@@ -9,6 +9,30 @@ interface DownloadButtonProps {
   size?: 'small' | 'medium';
 }
 
+// Alert rate limiter: max 1 alert per 3 seconds
+let lastAlertTime = 0;
+const ALERT_COOLDOWN_MS = 3000;
+const alertQueue: Array<{ title: string; message: string }> = [];
+let alertProcessing = false;
+
+async function showRateLimitedAlert(title: string, message: string) {
+  const now = Date.now();
+  if (now - lastAlertTime >= ALERT_COOLDOWN_MS && !alertProcessing) {
+    lastAlertTime = now;
+    alertProcessing = true;
+    Alert.alert(title, message);
+    setTimeout(() => {
+      alertProcessing = false;
+      if (alertQueue.length > 0) {
+        const next = alertQueue.shift();
+        if (next) showRateLimitedAlert(next.title, next.message);
+      }
+    }, ALERT_COOLDOWN_MS);
+  } else {
+    alertQueue.push({ title, message });
+  }
+}
+
 export const DownloadButton: React.FC<DownloadButtonProps> = ({ track, size = 'medium' }) => {
   const [task, setTask] = useState<DownloadTask | undefined>();
   const [progress, setProgress] = useState(0);
@@ -37,11 +61,11 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ track, size = 'm
         if (success) {
           setTask({ id: taskId, track, status: 'completed', progress: 100, bytesDownloaded: 0, totalBytes: 0, retryAttempts: 0 });
           setProgress(100);
-          Alert.alert('Download Complete', `"${track.title}" has been saved offline.`);
+          showRateLimitedAlert('Download Complete', `"${track.title}" has been saved offline.`);
         } else {
           setTask(undefined);
           setProgress(0);
-          Alert.alert('Download Failed', `Failed to download "${track.title}".`);
+          showRateLimitedAlert('Download Failed', `Failed to download "${track.title}".`);
         }
       }
     });

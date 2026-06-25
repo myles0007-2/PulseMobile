@@ -20,9 +20,13 @@ function Root() {
   }, []);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (state) => {
+    const subscription = AppState.addEventListener('change', async (state) => {
       if (state === 'background' || state === 'inactive') {
-        persist(); // Save playback state when app suspends
+        try {
+          await persist(); // Save playback state when app suspends
+        } catch (e) {
+          console.warn('Failed to persist state on app suspend:', e);
+        }
       }
     });
     return () => subscription.remove();
