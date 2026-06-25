@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, Text, Pressable, ScrollView, AppState, AppStateStatus } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { CertExpiryBanner } from './src/components/CertExpiryBanner';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
@@ -17,21 +18,21 @@ import { installCrashReporter, getLastCrash, clearLastCrash, CrashRecord } from 
 // so even an early crash is captured and surfaced on the next launch.
 installCrashReporter();
 
-// Also install a console.error override to log ALL errors, even if they slip past handlers.
+// Log all console.error calls to AsyncStorage for diagnostics (but safely).
 const originalError = console.error;
 console.error = (...args: any[]) => {
-  originalError('[CONSOLE.ERROR]', ...args);
-  // Try to log to a persistent store for debugging crashes.
-  try {
-    const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-    const msg = args.map((a) => (a instanceof Error ? a.stack : String(a))).join('\n');
-    AsyncStorage.getItem('_debug_errors').then((e: string | null) => {
-      const errors = e ? JSON.parse(e) : [];
-      errors.push({ time: new Date().toISOString(), msg });
-      AsyncStorage.setItem('_debug_errors', JSON.stringify(errors.slice(-20)));
-    });
-  } catch {}
   originalError.apply(console, args);
+  // Fire-and-forget: log error without blocking, and catch any storage errors.
+  try {
+    const msg = args.map((a) => (a instanceof Error ? a.stack : String(a))).join('\n');
+    AsyncStorage.getItem('_debug_errors')
+      .then((e: string | null) => {
+        const errors = e ? JSON.parse(e) : [];
+        errors.push({ time: new Date().toISOString(), msg });
+        return AsyncStorage.setItem('_debug_errors', JSON.stringify(errors.slice(-20)));
+      })
+      .catch(() => {});
+  } catch {}
 };
 
 /**
@@ -179,25 +180,44 @@ function Root() {
     );
   }
 
-  return (
-    <View style={[styles.root, { backgroundColor: colors.bg }]}>
-      <CertExpiryBanner />
-      <AppNavigator />
-      {lastCrash && <LastCrashBanner crash={lastCrash} onDismiss={() => setLastCrash(null)} />}
-      {debugErrors.length > 0 && (
-        <View style={styles.debugBanner}>
-          <ScrollView style={{ maxHeight: 150 }}>
-            <Text style={styles.debugTitle}>Debug Errors ({debugErrors.length})</Text>
-            {debugErrors.map((e, i) => (
-              <Text key={i} style={styles.debugText} selectable>
-                {e.time}: {e.msg}
-              </Text>
-            ))}
-          </ScrollView>
+  try {
+    return (
+      <View style={[styles.root, { backgroundColor: colors.bg }]}>
+        <CertExpiryBanner />
+        <AppNavigator />
+        {lastCrash && <LastCrashBanner crash={lastCrash} onDismiss={() => setLastCrash(null)} />}
+        {debugErrors.length > 0 && (
+          <View style={styles.debugBanner}>
+            <ScrollView style={{ maxHeight: 150 }}>
+              <Text style={styles.debugTitle}>Debug Errors ({debugErrors.length})</Text>
+              {debugErrors.map((e, i) => (
+                <Text key={i} style={styles.debugText} selectable>
+                  {e.time}: {e.msg}
+                </Text>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+    );
+  } catch (e) {
+    console.error('[Root] Render error:', e);
+    return (
+      <View style={[styles.root, { backgroundColor: '#0a0a0a' }]}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ color: '#ff6b6b', fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>
+            Root Render Crash
+          </Text>
+          <Text style={{ color: '#ffffff', fontSize: 12 }} selectable>
+            {e instanceof Error ? e.message : String(e)}
+          </Text>
+          <Text style={{ color: '#b0b0b0', fontSize: 10, marginTop: 10 }} selectable>
+            {e instanceof Error ? e.stack : ''}
+          </Text>
         </View>
-      )}
-    </View>
-  );
+      </View>
+    );
+  }
 }
 
 export default function App() {
