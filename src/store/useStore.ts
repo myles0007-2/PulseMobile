@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Track, Album, Playlist, HistoryEntry, LyricLine } from '../types';
+import { Track, Album, Playlist, HistoryEntry, LyricLine, PodcastResumeState } from '../types';
 import { ThemeName, ThemeColors, themes } from '../theme';
 import { player } from '../services/audioPlayer';
 import { resolveStreamUrl } from '../services/youtubeService';
@@ -48,6 +48,7 @@ interface PersistedState {
   likedIds: string[];
   playlists: Playlist[];
   history: HistoryEntry[];
+  podcastResumes?: Record<string, PodcastResumeState>;
   autoDownloadEnabled?: boolean;
   autoDownloadLikedSongs?: boolean;
   wifiOnly?: boolean;
@@ -150,6 +151,9 @@ interface Store {
   // History persist debounce
   _historyPersistTimer: NodeJS.Timeout | null;
 
+  // Podcast resume tracking debounce
+  _lastPodcastResumeSave: number;
+
   // Sleep timer lock (prevent race with pause)
   _sleepTimerLock: boolean;
 
@@ -246,6 +250,9 @@ interface Store {
   podcastSubscriptions: PodcastSubscription[];
   addPodcastSubscription: (podcast: PodcastSubscription) => void;
   removePodcastSubscription: (podcastId: string) => void;
+  podcastResumes: Record<string, PodcastResumeState>;
+  updatePodcastResume: (episodeId: string, podcastId: string, position: number, duration: number) => void;
+  getPodcastResume: (episodeId: string, podcastId: string) => PodcastResumeState | null;
 
   // Analytics (Phase 6)
   listeningStats: any; // ListeningStats from analyticsEngine
@@ -312,6 +319,9 @@ export const useStore = create<Store>((set, get) => {
     // History persist debounce
     _historyPersistTimer: null,
 
+    // Podcast resume tracking debounce
+    _lastPodcastResumeSave: 0,
+
     // Sleep timer lock
     _sleepTimerLock: false,
 
@@ -344,6 +354,7 @@ export const useStore = create<Store>((set, get) => {
 
     // Podcasts (Phase 5)
     podcastSubscriptions: [],
+    podcastResumes: {},
 
     // Analytics (Phase 6)
     listeningStats: getEmptyStats(),
@@ -600,6 +611,24 @@ export const useStore = create<Store>((set, get) => {
       set({ podcastSubscriptions: current.filter(p => p.id !== podcastId) });
     },
 
+    // Track podcast episode listen position (Phase 5)
+    updatePodcastResume: (episodeId: string, podcastId: string, position: number, duration: number) => {
+      const key = `${podcastId}::${episodeId}`;
+      const current = get().podcastResumes;
+      set({
+        podcastResumes: {
+          ...current,
+          [key]: { episodeId, podcastId, position, duration, lastResumedAt: Date.now() },
+        },
+      });
+    },
+
+    // Get podcast episode resume position (Phase 5)
+    getPodcastResume: (episodeId: string, podcastId: string): PodcastResumeState | null => {
+      const key = `${podcastId}::${episodeId}`;
+      return get().podcastResumes[key] || null;
+    },
+
     // Compute listening statistics from history
     computeListeningStats: () => {
       const stats = computeStats(get().history);
@@ -621,6 +650,7 @@ export const useStore = create<Store>((set, get) => {
           ? (saved.eqPreset as 'flat' | 'rock' | 'pop' | 'podcast')
           : 'flat';
         const validPodcastSubs = Array.isArray(saved.podcastSubscriptions) ? saved.podcastSubscriptions : [];
+        const validPodcastResumes = saved.podcastResumes && typeof saved.podcastResumes === 'object' ? saved.podcastResumes : {};
 
         // Check if seed playlists have been loaded yet
         const seedLoaded = await AsyncStorage.getItem(SEED_KEY);
@@ -670,6 +700,7 @@ export const useStore = create<Store>((set, get) => {
           wifiOnly: saved.wifiOnly !== false,
           eqPreset: validEqPreset,
           podcastSubscriptions: validPodcastSubs,
+          podcastResumes: validPodcastResumes,
           _pendingPlaybackRestore: pendingRestore,
           _isInitialized: true,
         });
@@ -857,7 +888,7 @@ export const useStore = create<Store>((set, get) => {
 
     // Internal persist
     _persist: async () => {
-      const { themeName, likedIds, playlists, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, eqPreset, podcastSubscriptions, currentTrack, position } = get();
+      const { themeName, likedIds, playlists, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, eqPreset, podcastSubscriptions, podcastResumes, currentTrack, position } = get();
       try {
         await savePersisted({
           themeName,
@@ -869,6 +900,7 @@ export const useStore = create<Store>((set, get) => {
           wifiOnly,
           eqPreset,
           podcastSubscriptions,
+          podcastResumes,
           currentTrackId: currentTrack?.id,
           playbackPosition: position,
           lastPlayedTime: Date.now(),
@@ -1098,6 +1130,13 @@ export const useStore = create<Store>((set, get) => {
         isLoading: s.isLoading,
         currentLyricIndex: newLyricIndex,
       });
+
+      // PHASE 5: Track podcast episode listen position (debounced every 5 seconds)
+      const { currentTrack, _lastPodcastResumeSave } = get();
+      if (currentTrack?.source === 'podcast' && Date.now() - _lastPodcastResumeSave > 5000) {
+        get().updatePodcastResume(currentTrack.id, currentTrack.album, s.position, s.duration);
+        set({ _lastPodcastResumeSave: Date.now() });
+      }
 
       if (s.isPlaying && !_skipGuard && sponsorSegments.length) {
         for (const [start, end] of sponsorSegments) {

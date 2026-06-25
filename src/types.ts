@@ -52,6 +52,14 @@ export interface Podcast {
   episodes: PodcastEpisode[];
 }
 
+export interface PodcastResumeState {
+  episodeId: string;
+  podcastId: string;
+  position: number;
+  duration: number;
+  lastResumedAt: number;
+}
+
 export interface YoutubeResult {
   videoId: string;
   title: string;
