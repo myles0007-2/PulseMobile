@@ -590,10 +590,20 @@ export const useStore = create<Store>((set, get) => {
     },
 
     // Set audio EQ preset (Phase 4)
-    setEQPreset: (preset: 'flat' | 'rock' | 'pop' | 'podcast') => {
+    setEQPreset: async (preset: 'flat' | 'rock' | 'pop' | 'podcast') => {
       set({ eqPreset: preset });
-      // TODO: Apply EQ to current audio when Expo Audio supports it
-      // await applyEQPreset(player.sound, preset);
+
+      // Apply EQ preset to current audio (via volume compensation)
+      try {
+        const { player } = await import('../services/audioPlayer');
+        const { applyEQPreset } = await import('../services/eqPresets');
+        const currentSound = (player as any).sound;
+        if (currentSound) {
+          await applyEQPreset(currentSound, preset);
+        }
+      } catch (error) {
+        console.warn('Failed to apply EQ preset:', error);
+      }
     },
 
     // Add podcast subscription (Phase 5)
