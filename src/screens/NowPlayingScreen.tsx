@@ -55,16 +55,11 @@ export function NowPlayingScreen() {
   const lyricsScrollRef = useRef<ScrollView>(null);
   const lineHeight = 40;
 
-  // Debounced volume update (100ms) to reduce frame drops during slider drag
-  const debouncedSetVolume = useMemo(
-    () => useAsyncDebounce(
-      async (v: number) => {
-        await setVolume(v);
-      },
-      100
-    ),
-    [setVolume]
-  );
+  // Debounced volume update (100ms) to reduce frame drops during slider drag.
+  // useAsyncDebounce is a hook and MUST be called unconditionally at top level —
+  // wrapping it in useMemo violates the Rules of Hooks and crashes on re-render.
+  const applyVolume = useCallback(async (v: number) => { await setVolume(v); }, [setVolume]);
+  const debouncedSetVolume = useAsyncDebounce(applyVolume, 100);
 
   // Animation state for play button press
   const playBtnScale = useSharedValue(1);

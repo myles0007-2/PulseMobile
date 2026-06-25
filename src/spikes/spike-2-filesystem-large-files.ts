@@ -77,7 +77,7 @@ async function testLargeFileSimulation() {
     // Test resume capability (partial file exists)
     const fileInfo = await FileSystem.getInfoAsync(testFilePath);
     console.log(`\nFile info:`);
-    console.log(`  Size: ${fileInfo.size} bytes`);
+    console.log(`  Size: ${fileInfo.exists ? fileInfo.size : 0} bytes`);
     console.log(`  Exists: ${fileInfo.exists}`);
     console.log(`✓ Resume capability: Can detect partial file ✓`);
 

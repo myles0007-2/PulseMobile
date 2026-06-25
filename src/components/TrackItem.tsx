@@ -83,7 +83,9 @@ export const TrackItem = React.memo(
     const accessibilityLabel = `${track.title} by ${track.artist}${isActive ? ', currently playing' : ''}`;
 
     const openMenu = useCallback(() => {
-      const freshLiked = useStore((s) => s.isLiked(track.id));
+      // NOTE: must read via getState() — calling the useStore hook inside an
+      // event handler violates the Rules of Hooks and throws at runtime.
+      const freshLiked = useStore.getState().isLiked(track.id);
       const { playlists: currentPlaylists, addToPlaylist: add, createPlaylist: create } = useStore.getState();
 
       const buttons: any[] = [

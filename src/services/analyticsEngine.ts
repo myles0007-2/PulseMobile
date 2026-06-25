@@ -83,8 +83,13 @@ export function computeStats(history: HistoryEntry[]): ListeningStats {
     const genre = entry.track.album || 'Mixed';
     genreMap.set(genre, (genreMap.get(genre) ?? 0) + 1);
 
+    // CRASH FIX: guard against malformed playedAt — an invalid Date makes
+    // toISOString() throw and getHours()/getDay() return NaN (bad array index).
+    const ts = typeof entry.playedAt === 'number' ? entry.playedAt : Date.parse(entry.playedAt as any);
+    const date = new Date(ts);
+    if (Number.isNaN(date.getTime())) continue;
+
     // Daily stats
-    const date = new Date(entry.playedAt);
     const dateStr = date.toISOString().split('T')[0];
     const dailyEntry = dailyMap.get(dateStr) ?? { seconds: 0, trackCount: 0 };
     dailyMap.set(dateStr, {
@@ -94,11 +99,11 @@ export function computeStats(history: HistoryEntry[]): ListeningStats {
 
     // Hourly stats
     const hour = date.getHours();
-    stats.hourlyStats[hour].seconds += duration;
+    if (stats.hourlyStats[hour]) stats.hourlyStats[hour].seconds += duration;
 
     // Weekday stats
     const day = date.getDay();
-    stats.weekdayStats[day].seconds += duration;
+    if (stats.weekdayStats[day]) stats.weekdayStats[day].seconds += duration;
   }
 
   // Convert maps to arrays and sort

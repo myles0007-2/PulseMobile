@@ -32,6 +32,9 @@ class AudioPlayer {
   private trackEndFired: boolean = false;
   private isLoading: boolean = false;
   private isUnloaded: boolean = false;
+  // PHASE 4: EQ via perceptual volume compensation (Expo Audio exposes no native EQ).
+  private baseVolume: number = 1.0;
+  private eqMultiplier: number = 1.0;
 
   async init() {
     try {
@@ -161,6 +164,8 @@ class AudioPlayer {
 
       const [sound] = await Promise.race<any>([soundPromise, timeoutPromise]);
       this.sound = sound;
+      // Re-apply EQ/volume so a freshly loaded track respects the active preset.
+      try { await sound.setVolumeAsync(this.effectiveVolume()); } catch {}
       this.startPolling();
       console.log('[AudioPlayer] Sound loaded:', track.id);
     } catch (error) {
@@ -209,7 +214,24 @@ class AudioPlayer {
       console.warn(`Invalid volume value: ${v} (expected finite number)`);
       return;
     }
-    await this.sound?.setVolumeAsync(Math.max(0, Math.min(1, v)));
+    this.baseVolume = Math.max(0, Math.min(1, v));
+    await this.sound?.setVolumeAsync(this.effectiveVolume());
+  }
+
+  private effectiveVolume(): number {
+    return Math.max(0, Math.min(1, this.baseVolume * this.eqMultiplier));
+  }
+
+  // PHASE 4: Apply an EQ preset's volume multiplier. Non-blocking and safe to call
+  // anytime; re-applies to the currently loaded sound if present.
+  async setEqMultiplier(m: number) {
+    if (!Number.isFinite(m) || m <= 0) return;
+    this.eqMultiplier = m;
+    try {
+      await this.sound?.setVolumeAsync(this.effectiveVolume());
+    } catch (e) {
+      console.warn('[AudioPlayer] EQ apply failed:', e instanceof Error ? e.message : String(e));
+    }
   }
 
   async unload() {

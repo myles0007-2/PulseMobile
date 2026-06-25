@@ -122,7 +122,8 @@ export function episodeToTrack(ep: PodcastEpisode) {
     id: ep.id,
     title: ep.title,
     artist: ep.podcastTitle,
-    album: 'Podcast',
+    // album doubles as the podcastId for resume-position keys (see useStore._onStatus).
+    album: ep.podcastTitle || 'Podcast',
     duration: ep.duration,
     uri: ep.audioUrl,
     artwork: ep.artwork,

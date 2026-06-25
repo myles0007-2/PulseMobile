@@ -17,6 +17,28 @@ import { useColors } from '../store/useStore';
 
 const Tab = createBottomTabNavigator();
 
+// Isolate each screen behind its own ErrorBoundary so a crash in one tab shows a
+// recovery UI for that tab only, instead of taking down the entire app.
+function withErrorBoundary<P extends object>(Comp: React.ComponentType<P>): React.ComponentType<P> {
+  return function BoundaryWrapped(props: P) {
+    return (
+      <ErrorBoundary>
+        <Comp {...props} />
+      </ErrorBoundary>
+    );
+  };
+}
+
+const SafeLibrary = withErrorBoundary(LibraryScreen);
+const SafeLiked = withErrorBoundary(LikedSongsScreen);
+const SafePlaylists = withErrorBoundary(PlaylistsScreen);
+const SafeHistory = withErrorBoundary(HistoryScreen);
+const SafeOnline = withErrorBoundary(OnlineScreen);
+const SafePodcasts = withErrorBoundary(PodcastsScreen);
+const SafeAnalytics = withErrorBoundary(AnalyticsScreen);
+const SafeWrapped = withErrorBoundary(WrappedScreen);
+const SafeSettings = withErrorBoundary(SettingsScreen);
+
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
 function tabIcon(focused: boolean, name: IoniconsName, outlineName: IoniconsName, color: string) {
@@ -40,7 +62,9 @@ export function AppNavigator() {
   return (
     <ErrorBoundary>
       <NavigationContainer theme={navTheme}>
-        <NowPlayingScreen />
+        <ErrorBoundary>
+          <NowPlayingScreen />
+        </ErrorBoundary>
         <Tab.Navigator
         screenOptions={{
           headerShown: false,
@@ -56,63 +80,63 @@ export function AppNavigator() {
       >
         <Tab.Screen
           name="Library"
-          component={LibraryScreen}
+          component={SafeLibrary}
           options={{
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'musical-notes', 'musical-notes-outline', color),
           }}
         />
         <Tab.Screen
           name="Liked"
-          component={LikedSongsScreen}
+          component={SafeLiked}
           options={{
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'heart', 'heart-outline', color),
           }}
         />
         <Tab.Screen
           name="Playlists"
-          component={PlaylistsScreen}
+          component={SafePlaylists}
           options={{
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'list', 'list-outline', color),
           }}
         />
         <Tab.Screen
           name="History"
-          component={HistoryScreen}
+          component={SafeHistory}
           options={{
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'time', 'time-outline', color),
           }}
         />
         <Tab.Screen
           name="Online"
-          component={OnlineScreen}
+          component={SafeOnline}
           options={{
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'globe', 'globe-outline', color),
           }}
         />
         <Tab.Screen
           name="Podcasts"
-          component={PodcastsScreen}
+          component={SafePodcasts}
           options={{
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'radio', 'radio-outline', color),
           }}
         />
         <Tab.Screen
           name="Analytics"
-          component={AnalyticsScreen}
+          component={SafeAnalytics}
           options={{
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'stats-chart', 'stats-chart-outline', color),
           }}
         />
         <Tab.Screen
           name="Wrapped"
-          component={WrappedScreen}
+          component={SafeWrapped}
           options={{
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'gift', 'gift-outline', color),
           }}
         />
         <Tab.Screen
           name="Settings"
-          component={SettingsScreen}
+          component={SafeSettings}
           options={{
             tabBarIcon: ({ focused, color }) => tabIcon(focused, 'settings', 'settings-outline', color),
           }}

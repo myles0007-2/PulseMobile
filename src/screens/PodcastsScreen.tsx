@@ -1,21 +1,41 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TextInput, FlatList, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useStore, useColors } from '../store/useStore';
 import { MiniPlayer } from '../components/MiniPlayer';
+import { player } from '../services/audioPlayer';
 import { spacing, fontSize, radius } from '../theme';
 import { searchPodcasts, getTrendingPodcasts, Podcast } from '../services/itunesAPI';
-import { podcastManager } from '../services/podcastManager';
+import { fetchPodcast, episodeToTrack } from '../services/podcastService';
+import { PodcastEpisode } from '../types';
+
+function fmtTime(s: number): string {
+  if (!Number.isFinite(s) || s <= 0) return '';
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = Math.floor(s % 60);
+  if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
 
 export function PodcastsScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { podcastSubscriptions, addPodcastSubscription, removePodcastSubscription } = useStore();
+  const {
+    podcastSubscriptions, addPodcastSubscription, removePodcastSubscription,
+    playTrack, getPodcastResume, podcastResumes,
+  } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Podcast[]>([]);
   const [trending, setTrending] = useState<Podcast[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'search' | 'subscribed' | 'trending'>('trending');
+
+  // Episode browsing state
+  const [openPodcast, setOpenPodcast] = useState<{ title: string; feedUrl: string } | null>(null);
+  const [episodes, setEpisodes] = useState<PodcastEpisode[]>([]);
+  const [loadingEpisodes, setLoadingEpisodes] = useState(false);
 
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) return;
@@ -46,7 +66,6 @@ export function PodcastsScreen() {
     const isSubscribed = podcastSubscriptions.some(p => p.id === podcast.id);
     if (isSubscribed) {
       removePodcastSubscription(podcast.id);
-      Alert.alert('Unsubscribed', `Removed ${podcast.title}`);
     } else {
       addPodcastSubscription({
         id: podcast.id,
@@ -57,16 +76,48 @@ export function PodcastsScreen() {
         subscribedAt: Date.now(),
         episodeCount: podcast.episodeCount,
       });
-      Alert.alert('Subscribed', `Added ${podcast.title}`);
     }
   };
 
-  const PodcastRow = ({ podcast }: { podcast: Podcast | (Podcast & { subscribed?: boolean }) }) => {
+  const browseEpisodes = useCallback(async (title: string, feedUrl: string) => {
+    if (!feedUrl) {
+      Alert.alert('Unavailable', 'This podcast has no feed URL.');
+      return;
+    }
+    setOpenPodcast({ title, feedUrl });
+    setEpisodes([]);
+    setLoadingEpisodes(true);
+    try {
+      const data = await fetchPodcast(feedUrl);
+      setEpisodes(data.episodes);
+    } catch (error) {
+      Alert.alert('Could not load episodes', error instanceof Error ? error.message : 'Feed unavailable');
+      setOpenPodcast(null);
+    } finally {
+      setLoadingEpisodes(false);
+    }
+  }, []);
+
+  const playEpisode = useCallback(async (ep: PodcastEpisode) => {
+    try {
+      const track = episodeToTrack(ep);
+      await playTrack(track, episodes.map(episodeToTrack));
+      const resume = getPodcastResume(track.id, track.album);
+      if (resume && resume.position > 5 && resume.position < (ep.duration || Infinity) - 10) {
+        // Give the player a moment to load before seeking to the saved position.
+        setTimeout(() => { player.seekTo(resume.position).catch(() => {}); }, 400);
+      }
+    } catch (error) {
+      Alert.alert('Playback Error', error instanceof Error ? error.message : 'Could not play episode');
+    }
+  }, [episodes, playTrack, getPodcastResume]);
+
+  const PodcastRow = ({ podcast }: { podcast: Podcast }) => {
     const isSubscribed = podcastSubscriptions.some(p => p.id === podcast.id);
     return (
       <Pressable
         style={[styles.podcastRow, { borderBottomColor: colors.border, backgroundColor: colors.card }]}
-        onPress={() => handleSubscribe(podcast)}
+        onPress={() => browseEpisodes(podcast.title, podcast.feedUrl)}
       >
         <View style={styles.podcastInfo}>
           <Text style={[styles.podcastTitle, { color: colors.text }]} numberOfLines={2}>
@@ -76,10 +127,12 @@ export function PodcastsScreen() {
             {podcast.artist}
           </Text>
           <Text style={[styles.episodeCount, { color: colors.textSecondary }]}>
-            {podcast.episodeCount} episodes
+            {podcast.episodeCount} episodes · Tap to browse
           </Text>
         </View>
-        <View
+        <Pressable
+          hitSlop={10}
+          onPress={() => handleSubscribe(podcast)}
           style={[
             styles.subscribeBtn,
             {
@@ -91,6 +144,33 @@ export function PodcastsScreen() {
         >
           <Text style={{ color: isSubscribed ? colors.bg : colors.primary, fontWeight: '600' }}>
             {isSubscribed ? '✓' : '+'}
+          </Text>
+        </Pressable>
+      </Pressable>
+    );
+  };
+
+  const EpisodeRow = ({ ep }: { ep: PodcastEpisode }) => {
+    const resume = podcastResumes[`${ep.podcastTitle || 'Podcast'}::${ep.id}`] || null;
+    const isComplete = resume && ep.duration > 0 && resume.position >= ep.duration - 10;
+    const hasResume = resume && resume.position > 5 && !isComplete;
+    return (
+      <Pressable
+        style={[styles.episodeRow, { borderBottomColor: colors.border }]}
+        onPress={() => playEpisode(ep)}
+      >
+        <Ionicons
+          name={hasResume ? 'play-circle' : 'play-circle-outline'}
+          size={32}
+          color={hasResume ? colors.primary : colors.textSecondary}
+          style={{ marginRight: spacing.sm }}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.episodeTitle, { color: colors.text }]} numberOfLines={2}>{ep.title}</Text>
+          <Text style={[styles.episodeMeta, { color: colors.textSecondary }]}>
+            {ep.duration > 0 ? fmtTime(ep.duration) : 'Episode'}
+            {hasResume ? `  ·  Resume from ${fmtTime(resume!.position)}` : ''}
+            {isComplete ? '  ·  ✓ Played' : ''}
           </Text>
         </View>
       </Pressable>
@@ -109,6 +189,7 @@ export function PodcastsScreen() {
               value={searchQuery}
               onChangeText={setSearchQuery}
               onSubmitEditing={handleSearch}
+              autoCapitalize="none"
             />
             <Pressable onPress={handleSearch} style={styles.searchBtn}>
               <Text style={{ color: colors.primary, fontWeight: '600' }}>Search</Text>
@@ -136,7 +217,17 @@ export function PodcastsScreen() {
           data={podcastSubscriptions}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <PodcastRow podcast={{ ...item, episodeCount: item.episodeCount, subscribed: true, description: item.description || 'No description' }} />
+            <PodcastRow
+              podcast={{
+                id: item.id,
+                title: item.title,
+                artist: item.artist,
+                feedUrl: item.feedUrl,
+                artworkUrl: item.artworkUrl,
+                episodeCount: item.episodeCount,
+                description: item.description || '',
+              }}
+            />
           )}
           scrollEnabled={false}
           ListEmptyComponent={
@@ -172,6 +263,38 @@ export function PodcastsScreen() {
     }
   }, [activeTab, trending.length, handleLoadTrending]);
 
+  // Episode browsing view (overlays the tab content when a podcast is open)
+  if (openPodcast) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.bg, paddingTop: insets.top }]}>
+        <View style={[styles.header, { borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center' }]}>
+          <Pressable onPress={() => setOpenPodcast(null)} hitSlop={10} style={{ marginRight: spacing.sm }}>
+            <Ionicons name="chevron-back" size={26} color={colors.primary} />
+          </Pressable>
+          <Text style={[styles.title, { color: colors.text, flex: 1 }]} numberOfLines={1}>{openPodcast.title}</Text>
+        </View>
+        {loadingEpisodes ? (
+          <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+        ) : (
+          <FlatList
+            data={episodes}
+            keyExtractor={(ep) => ep.id}
+            renderItem={({ item }) => <EpisodeRow ep={item} />}
+            initialNumToRender={12}
+            maxToRenderPerBatch={10}
+            windowSize={8}
+            removeClippedSubviews
+            ListEmptyComponent={
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No episodes found</Text>
+            }
+            contentContainerStyle={{ paddingBottom: 120 }}
+          />
+        )}
+        <MiniPlayer />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: colors.bg, paddingTop: insets.top }]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
@@ -206,7 +329,7 @@ export function PodcastsScreen() {
         ))}
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {renderContent()}
         <View style={{ height: spacing.lg }} />
       </ScrollView>
@@ -233,6 +356,9 @@ const styles = StyleSheet.create({
   podcastTitle: { fontSize: fontSize.md, fontWeight: '600' },
   podcastArtist: { fontSize: fontSize.sm, marginTop: spacing.xs },
   episodeCount: { fontSize: fontSize.xs, marginTop: spacing.xs },
-  subscribeBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
+  subscribeBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginLeft: spacing.sm },
+  episodeRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderBottomWidth: StyleSheet.hairlineWidth },
+  episodeTitle: { fontSize: fontSize.md, fontWeight: '500' },
+  episodeMeta: { fontSize: fontSize.xs, marginTop: 2 },
   emptyText: { textAlign: 'center', paddingVertical: spacing.lg, fontSize: fontSize.md },
 });

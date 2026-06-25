@@ -9,7 +9,7 @@ import { fetchSponsorSegments } from '../services/sponsorBlockService';
 import { bluetoothManager, BluetoothRemoteState } from '../services/bluetoothManager';
 import { downloadManager } from '../services/downloadManager';
 import { computeStats, getEmptyStats } from '../services/analyticsEngine';
-import { EQ_PRESET_NAMES } from '../services/eqPresets';
+import { EQ_PRESET_NAMES, EQ_VOLUME_MULTIPLIERS } from '../services/eqPresets';
 import { PodcastSubscription } from '../services/podcastManager';
 
 // Seed data imports
@@ -606,10 +606,13 @@ export const useStore = create<Store>((set, get) => {
       }
     },
 
-    // Set audio EQ preset (Phase 4)
+    // Set audio EQ preset (Phase 4) — applies perceptual volume compensation, non-blocking.
     setEQPreset: (preset: 'flat' | 'rock' | 'pop' | 'podcast') => {
       set({ eqPreset: preset });
-      // TODO: Apply EQ async after player loads (non-blocking)
+      const multiplier = EQ_VOLUME_MULTIPLIERS[preset] ?? 1.0;
+      player.setEqMultiplier(multiplier).catch((e) =>
+        console.warn('Failed to apply EQ preset:', e instanceof Error ? e.message : String(e))
+      );
     },
 
     // Add podcast subscription (Phase 5)
@@ -647,8 +650,13 @@ export const useStore = create<Store>((set, get) => {
 
     // Compute listening statistics from history
     computeListeningStats: () => {
-      const stats = computeStats(get().history);
-      set({ listeningStats: stats });
+      try {
+        const stats = computeStats(get().history);
+        set({ listeningStats: stats });
+      } catch (e) {
+        console.warn('[Analytics] computeStats failed:', e instanceof Error ? e.message : String(e));
+        set({ listeningStats: getEmptyStats() });
+      }
     },
 
     // Bootstrap: Load persisted state and validate it
@@ -735,6 +743,9 @@ export const useStore = create<Store>((set, get) => {
         get().initializeYouTubeAuth().catch((e) => {
           console.warn('[Bootstrap] YouTube auth init failed:', e instanceof Error ? e.message : String(e));
         });
+
+        // Apply persisted EQ preset so it's active from launch (non-blocking).
+        player.setEqMultiplier(EQ_VOLUME_MULTIPLIERS[validEqPreset] ?? 1.0).catch(() => {});
 
         console.log('[Bootstrap] Complete!');
       } catch (error) {
@@ -936,6 +947,12 @@ export const useStore = create<Store>((set, get) => {
 
     // Player actions
     playTrack: async (track, contextQueue) => {
+      // CRASH FIX: Guard against undefined/invalid track (e.g. empty artist/album list).
+      if (!track || !track.id || !track.uri) {
+        console.warn('[PlayTrack] Ignoring invalid track:', track);
+        return;
+      }
+
       // Atomic guard: set immediately to prevent concurrent loads
       const { _isLoadingTrack } = get();
       if (_isLoadingTrack) return;
