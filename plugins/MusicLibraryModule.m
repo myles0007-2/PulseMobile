@@ -32,7 +32,10 @@ RCT_EXPORT_METHOD(getArtwork:(NSString *)trackId
     if (!art) { resolve(nil); return; }
     UIImage *img = [art imageWithSize:CGSizeMake(300, 300)];
     if (!img) { resolve(nil); return; }
-    NSData *data = [img jpegData:0.75f];
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    NSData *data = UIImageJPEGRepresentation(img, 0.75f);
+    #pragma clang diagnostic pop
     dispatch_async(dispatch_get_main_queue(), ^{
       resolve(data ? [data base64EncodedStringWithOptions:0] : nil);
     });
