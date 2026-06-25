@@ -62,22 +62,19 @@ export function AppNavigator() {
   return (
     <ErrorBoundary>
       <NavigationContainer theme={navTheme}>
-        <ErrorBoundary>
-          <NowPlayingScreen />
-        </ErrorBoundary>
         <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: {
-            backgroundColor: colors.card,
-            borderTopColor: 'rgba(255,255,255,0.07)',
-            borderTopWidth: 1,
-          },
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.textMuted,
-          tabBarLabelStyle: { fontSize: 10, fontWeight: '600', marginTop: -2 },
-        }}
-      >
+          screenOptions={{
+            headerShown: false,
+            tabBarStyle: {
+              backgroundColor: colors.card,
+              borderTopColor: 'rgba(255,255,255,0.07)',
+              borderTopWidth: 1,
+            },
+            tabBarActiveTintColor: colors.primary,
+            tabBarInactiveTintColor: colors.textMuted,
+            tabBarLabelStyle: { fontSize: 10, fontWeight: '600', marginTop: -2 },
+          }}
+        >
         <Tab.Screen
           name="Library"
           component={SafeLibrary}
