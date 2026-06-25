@@ -29,9 +29,17 @@ export async function getItunesTracks(): Promise<NativeMusicTrack[]> {
   }
   try {
     console.log('[MusicLibrary] Calling native getTracks...');
+    if (!MusicLibraryModule || typeof MusicLibraryModule.getTracks !== 'function') {
+      console.warn('[MusicLibrary] getTracks method not available');
+      return [];
+    }
     const tracks: NativeMusicTrack[] = await MusicLibraryModule.getTracks();
     console.log(`[MusicLibrary] Native returned ${tracks?.length ?? 0} tracks`);
-    const filtered = tracks?.filter((t) => t.uri && t.uri.length > 0) ?? [];
+    if (!Array.isArray(tracks)) {
+      console.warn('[MusicLibrary] getTracks returned non-array:', typeof tracks);
+      return [];
+    }
+    const filtered = tracks.filter((t) => t && t.uri && t.uri.length > 0);
     console.log(`[MusicLibrary] Filtered to ${filtered.length} tracks with valid URIs`);
     return filtered;
   } catch (e) {

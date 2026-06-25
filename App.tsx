@@ -18,22 +18,9 @@ import { installCrashReporter, getLastCrash, clearLastCrash, CrashRecord } from 
 // so even an early crash is captured and surfaced on the next launch.
 installCrashReporter();
 
-// Log all console.error calls to AsyncStorage for diagnostics (but safely).
+// CRITICAL: Do NOT access AsyncStorage at module load time—it blocks the main thread
+// and can cause silent crashes on iOS. The console.error override is moved to Root useEffect.
 const originalError = console.error;
-console.error = (...args: any[]) => {
-  originalError.apply(console, args);
-  // Fire-and-forget: log error without blocking, and catch any storage errors.
-  try {
-    const msg = args.map((a) => (a instanceof Error ? a.stack : String(a))).join('\n');
-    AsyncStorage.getItem('_debug_errors')
-      .then((e: string | null) => {
-        const errors = e ? JSON.parse(e) : [];
-        errors.push({ time: new Date().toISOString(), msg });
-        return AsyncStorage.setItem('_debug_errors', JSON.stringify(errors.slice(-20)));
-      })
-      .catch(() => {});
-  } catch {}
-};
 
 /**
  * Banner shown on launch when the previous session ended in a fatal JS error.
@@ -63,6 +50,24 @@ function Root() {
   const appStateRef = useRef(AppState.currentState);
   const [lastCrash, setLastCrash] = useState<CrashRecord | null>(null);
   const [debugErrors, setDebugErrors] = useState<any[]>([]);
+
+  // CRASH FIX: Install console.error override in useEffect (not at module load)
+  // so AsyncStorage access doesn't block the main thread during app startup
+  useEffect(() => {
+    console.error = (...args: any[]) => {
+      originalError.apply(console, args);
+      try {
+        const msg = args.map((a) => (a instanceof Error ? a.stack : String(a))).join('\n');
+        AsyncStorage.getItem('_debug_errors')
+          .then((e: string | null) => {
+            const errors = e ? JSON.parse(e) : [];
+            errors.push({ time: new Date().toISOString(), msg });
+            return AsyncStorage.setItem('_debug_errors', JSON.stringify(errors.slice(-20)));
+          })
+          .catch(() => {});
+      } catch {}
+    };
+  }, []);
 
   useEffect(() => {
     persistRef.current = useStore.getState()._persist;

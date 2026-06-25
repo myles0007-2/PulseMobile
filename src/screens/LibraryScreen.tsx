@@ -29,7 +29,11 @@ export function LibraryScreen() {
     console.log('[LibraryScreen] Mounted. isLibraryLoaded:', isLibraryLoaded);
     if (!isLibraryLoaded) {
       console.log('[LibraryScreen] Starting library load...');
-      loadLibrary(false);
+      try {
+        loadLibrary(false);
+      } catch (e) {
+        console.error('[LibraryScreen] Mount error:', e instanceof Error ? e.stack : String(e));
+      }
     }
   }, []);
 
@@ -42,34 +46,65 @@ export function LibraryScreen() {
   }, [isLibraryLoaded, tracks.length, restorePlayback]);
 
   const loadLibrary = useCallback(async (forceRescan: boolean) => {
-    if (!forceRescan) {
-      const cached = await loadCachedLibrary();
-      if (cached) { setLibrary(cached.tracks, cached.albums); return; }
-    } else {
-      await clearLibraryCache();
-    }
-
-    // Ask for iTunes/Music library permission if the native module is present
-    if (isMusicModuleAvailable()) {
-      const granted = await requestMusicPermission();
-      if (!granted) {
-        Alert.alert(
-          'Music Library Access',
-          'Allow PulseMobile to access your Music library so it can find your iTunes songs.\n\nGo to Settings → PulseMobile → Media & Apple Music → Allow.',
-          [{ text: 'OK' }]
-        );
-        // Still scan Documents even without permission
-      }
-    }
-
-    setScanning(true);
     try {
-      const { tracks: t, albums: a } = await scanLibrary((loaded, _total) => setScanProgress(loaded));
-      setLibrary(t, a);
-    } catch (e: any) {
-      Alert.alert('Scan Error', e.message);
-    } finally {
-      setScanning(false);
+      if (!forceRescan) {
+        try {
+          const cached = await loadCachedLibrary();
+          if (cached) {
+            console.log('[LibraryScreen] Loaded from cache:', cached.tracks.length, 'tracks');
+            setLibrary(cached.tracks, cached.albums);
+            return;
+          }
+        } catch (cacheErr) {
+          console.warn('[LibraryScreen] Cache load failed:', cacheErr instanceof Error ? cacheErr.message : String(cacheErr));
+        }
+      } else {
+        try {
+          await clearLibraryCache();
+          console.log('[LibraryScreen] Cache cleared');
+        } catch (clearErr) {
+          console.warn('[LibraryScreen] Cache clear failed:', clearErr instanceof Error ? clearErr.message : String(clearErr));
+        }
+      }
+
+      // Ask for iTunes/Music library permission if the native module is present
+      if (isMusicModuleAvailable()) {
+        try {
+          console.log('[LibraryScreen] Requesting music permission...');
+          const granted = await requestMusicPermission();
+          if (!granted) {
+            console.log('[LibraryScreen] Permission denied');
+            Alert.alert(
+              'Music Library Access',
+              'Allow PulseMobile to access your Music library so it can find your iTunes songs.\n\nGo to Settings → PulseMobile → Media & Apple Music → Allow.',
+              [{ text: 'OK' }]
+            );
+          } else {
+            console.log('[LibraryScreen] Permission granted');
+          }
+        } catch (permErr) {
+          console.warn('[LibraryScreen] Permission request failed:', permErr instanceof Error ? permErr.message : String(permErr));
+        }
+      }
+
+      setScanning(true);
+      try {
+        console.log('[LibraryScreen] Starting library scan...');
+        const { tracks: t, albums: a } = await scanLibrary((loaded, _total) => {
+          console.log('[LibraryScreen] Scan progress:', loaded);
+          setScanProgress(loaded);
+        });
+        console.log('[LibraryScreen] Scan complete:', t.length, 'tracks');
+        setLibrary(t, a);
+      } catch (scanErr) {
+        console.error('[LibraryScreen] Scan failed:', scanErr instanceof Error ? scanErr.stack : String(scanErr));
+        Alert.alert('Scan Error', scanErr instanceof Error ? scanErr.message : 'Library scan failed');
+      } finally {
+        setScanning(false);
+      }
+    } catch (e) {
+      console.error('[LibraryScreen] loadLibrary outer catch:', e instanceof Error ? e.stack : String(e));
+      Alert.alert('Library Error', 'Failed to load library');
     }
   }, []);
 

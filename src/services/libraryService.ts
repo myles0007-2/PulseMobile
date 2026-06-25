@@ -45,9 +45,14 @@ export async function scanLibrary(
   try {
     console.log('[LibraryScan] Fetching iTunes tracks...');
     itunesTracks = await getItunesTracks();
-    console.log(`[LibraryScan] iTunes returned ${itunesTracks.length} tracks`);
+    console.log(`[LibraryScan] iTunes returned ${itunesTracks?.length ?? 0} tracks`);
+    if (!Array.isArray(itunesTracks)) {
+      console.warn('[LibraryScan] iTunes tracks is not an array:', typeof itunesTracks);
+      itunesTracks = [];
+    }
   } catch (e) {
     console.error('[LibraryScan] iTunes scan failed:', e instanceof Error ? e.stack : String(e));
+    itunesTracks = [];
   }
 
   for (let i = 0; i < itunesTracks.length; i++) {
@@ -116,54 +121,69 @@ export async function scanLibrary(
 
 // PERF FIX: Recursively scan a directory with chunked yielding for better UI responsiveness
 async function scanDirRecursive(dir: string, rootDir: string, depth = 0): Promise<Track[]> {
-  if (depth > 5) return [];
+  if (depth > 5) {
+    console.log(`[LibraryScan] Max depth reached at ${dir}`);
+    return [];
+  }
   const tracks: Track[] = [];
   const BATCH_SIZE = 50; // Yield to UI every 50 files
 
   try {
+    console.log(`[LibraryScan] Scanning directory: ${dir} (depth ${depth})`);
+    if (!dir) {
+      console.warn('[LibraryScan] Empty directory path, skipping');
+      return [];
+    }
     const contents = await FileSystem.readDirectoryAsync(dir);
+    console.log(`[LibraryScan] Found ${contents.length} items in ${dir}`);
     let processedCount = 0;
 
     for (const name of contents) {
-      const fullPath = (dir.endsWith('/') ? dir : dir + '/') + name;
+      try {
+        if (!name || name.length === 0) continue;
+        const fullPath = (dir.endsWith('/') ? dir : dir + '/') + name;
 
-      if (AUDIO_EXT.test(name)) {
-        const parsed = parseFilename(name);
-        const folderName = dir !== rootDir ? dir.split('/').filter(Boolean).pop() ?? '' : '';
-        tracks.push({
-          id: `doc::${fullPath}`,
-          title: parsed.title,
-          artist: parsed.artist,
-          album: parsed.album !== 'Unknown Album' ? parsed.album : (folderName || 'Unknown Album'),
-          duration: 0,
-          uri: fullPath,
-          source: 'local',
-        });
+        if (AUDIO_EXT.test(name)) {
+          const parsed = parseFilename(name);
+          const folderName = dir !== rootDir ? dir.split('/').filter(Boolean).pop() ?? '' : '';
+          tracks.push({
+            id: `doc::${fullPath}`,
+            title: parsed.title,
+            artist: parsed.artist,
+            album: parsed.album !== 'Unknown Album' ? parsed.album : (folderName || 'Unknown Album'),
+            duration: 0,
+            uri: fullPath,
+            source: 'local',
+          });
 
-        processedCount++;
+          processedCount++;
 
-        // BATTERY FIX: Yield to UI every BATCH_SIZE files
-        if (processedCount % BATCH_SIZE === 0) {
-          await new Promise((resolve) => setTimeout(resolve, 0));
-          console.log(`[LibraryScan] Processed ${processedCount} files...`);
-        }
-      } else if (!name.startsWith('.')) {
-        try {
-          const info = await FileSystem.getInfoAsync(fullPath);
-          if (info.isDirectory) {
-            const sub = await scanDirRecursive(fullPath + '/', rootDir, depth + 1);
-            tracks.push(...sub);
-            processedCount += sub.length;
-
-            if (processedCount % BATCH_SIZE < BATCH_SIZE) {
-              await new Promise((resolve) => setTimeout(resolve, 0));
-            }
+          // BATTERY FIX: Yield to UI every BATCH_SIZE files
+          if (processedCount % BATCH_SIZE === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            console.log(`[LibraryScan] Processed ${processedCount} files...`);
           }
-        } catch (e) {
-          console.warn(`[LibraryScan] Subdirectory failed: ${fullPath}:`, e instanceof Error ? e.message : String(e));
+        } else if (!name.startsWith('.')) {
+          try {
+            const info = await FileSystem.getInfoAsync(fullPath);
+            if (info && info.isDirectory) {
+              const sub = await scanDirRecursive(fullPath + '/', rootDir, depth + 1);
+              tracks.push(...sub);
+              processedCount += sub.length;
+
+              if (processedCount % BATCH_SIZE < BATCH_SIZE) {
+                await new Promise((resolve) => setTimeout(resolve, 0));
+              }
+            }
+          } catch (e) {
+            console.warn(`[LibraryScan] Subdirectory failed: ${fullPath}:`, e instanceof Error ? e.message : String(e));
+          }
         }
+      } catch (itemErr) {
+        console.warn(`[LibraryScan] Item processing failed:`, itemErr instanceof Error ? itemErr.message : String(itemErr));
       }
     }
+    console.log(`[LibraryScan] Directory scan complete: ${dir} - found ${tracks.length} audio files`);
   } catch (e) {
     console.warn(`[LibraryScan] Error in ${dir}:`, e instanceof Error ? e.message : String(e));
   }
