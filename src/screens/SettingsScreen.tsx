@@ -8,6 +8,7 @@ import { spacing, fontSize, radius, ThemeName, THEME_LABELS } from '../theme';
 import { clearLibraryCache } from '../services/libraryService';
 import { downloadManager } from '../services/downloadManager';
 import { cacheManager } from '../services/cacheManager';
+import { youtubeMusicAuth } from '../services/youtubeMusicAPI';
 
 function Row({ label, value, onPress, danger }: { label: string; value?: string; onPress?: () => void; danger?: boolean }) {
   const colors = useColors();
@@ -36,9 +37,10 @@ const THEMES: ThemeName[] = ['dark', 'midnight', 'forest', 'rose', 'slate', 'amb
 export function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { tracks, repeat, shuffle, setRepeat, toggleShuffle, themeName, setTheme, clearHistory, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, setAutoDownload, setAutoDownloadLikedSongs, setWifiOnly, youtubeAuthenticated, youtubeAuthInitialized, logoutYouTube, eqPreset, setEQPreset } = useStore();
+  const { tracks, repeat, shuffle, setRepeat, toggleShuffle, themeName, setTheme, clearHistory, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, setAutoDownload, setAutoDownloadLikedSongs, setWifiOnly, youtubeAuthenticated, youtubeAuthInitialized, logoutYouTube, initializeYouTubeAuth, eqPreset, setEQPreset } = useStore();
   const [cacheStats, setCacheStats] = useState({ used: 0, limit: 1024 * 1024 * 1024, count: 0 });
   const [downloadSize, setDownloadSize] = useState(0);
+  const [youtubeAuthLoading, setYoutubeAuthLoading] = useState(false);
 
   useEffect(() => {
     const updateStats = async () => {
@@ -117,19 +119,42 @@ export function SettingsScreen() {
           </Pressable>
         </Section>
 
-        {/* YouTube Music */}
+        {/* YouTube Music (Phase 3) */}
         {youtubeAuthInitialized && (
           <Section title="YOUTUBE MUSIC">
-            <Pressable
-              style={[styles.row, { borderBottomColor: colors.border }]}
-              onPress={youtubeAuthenticated ? logoutYouTube : undefined}
-            >
+            <Pressable style={[styles.row, { borderBottomColor: colors.border }]}>
               <Text style={[styles.rowLabel, { color: colors.text }]}>Status</Text>
               <Text style={[styles.rowValue, { color: youtubeAuthenticated ? colors.primary : colors.textSecondary }]}>
-                {youtubeAuthenticated ? 'Logged In' : 'Not Connected'}
+                {youtubeAuthenticated ? '✓ Logged In' : 'Not Connected'}
               </Text>
             </Pressable>
-            {youtubeAuthenticated && (
+            {!youtubeAuthenticated ? (
+              <Pressable
+                style={[styles.row, { backgroundColor: colors.primary + '11', justifyContent: 'center', paddingVertical: spacing.md }]}
+                onPress={async () => {
+                  try {
+                    setYoutubeAuthLoading(true);
+                    const success = await youtubeMusicAuth.startAuthFlow();
+                    if (success) {
+                      await initializeYouTubeAuth();
+                      Alert.alert('Success', 'YouTube Music connected!');
+                    } else {
+                      Alert.alert('Error', 'YouTube Music login failed. Falling back to Invidious/Piped.');
+                    }
+                  } catch (error) {
+                    Alert.alert('Error', 'YouTube Music login error');
+                    console.error(error);
+                  } finally {
+                    setYoutubeAuthLoading(false);
+                  }
+                }}
+                disabled={youtubeAuthLoading}
+              >
+                <Text style={[styles.rowLabel, { color: colors.primary, textAlign: 'center', fontWeight: '600' }]}>
+                  {youtubeAuthLoading ? 'Signing in...' : 'Sign in with YouTube Music'}
+                </Text>
+              </Pressable>
+            ) : (
               <Row label="Logout YouTube" onPress={logoutYouTube} danger />
             )}
           </Section>

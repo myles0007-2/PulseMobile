@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/Pulse.png",
     "userInterfaceStyle": "dark",
+    "scheme": "pulsemobile",
     "splash": {
       "image": "./assets/Pulse.png",
       "resizeMode": "contain",
@@ -38,6 +39,22 @@
         ],
         "ITSAppUsesNonExemptEncryption": false
       }
+    },
+    "android": {
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "pulsemobile.app",
+              "pathPrefix": "/auth/youtube"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "plugins": [
       "./plugins/withMusicLibrary",
