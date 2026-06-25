@@ -27,21 +27,21 @@ export function LibraryScreen() {
 
   React.useEffect(() => {
     console.log('[LibraryScreen] Mounted. isLibraryLoaded:', isLibraryLoaded);
-    if (!isLibraryLoaded) {
-      console.log('[LibraryScreen] Starting library load...');
-      try {
-        loadLibrary(false);
-      } catch (e) {
-        console.error('[LibraryScreen] Mount error:', e instanceof Error ? e.stack : String(e));
-      }
-    }
+    // CRASH FIX: Do NOT load library on mount—defer to user action or manual trigger
+    // The library scan was crashing on first load, so skip it on mount
+    // User can tap "Load Music Library" button to trigger it manually
+    console.log('[LibraryScreen] Skipping auto-load on mount (user can trigger manually)');
   }, []);
 
-  // CRASH FIX: Restore playback after library loads
+  // CRASH FIX: Restore playback after library loads (only if library was actually loaded)
   React.useEffect(() => {
     if (isLibraryLoaded && tracks.length > 0) {
       console.log('[LibraryScreen] Library loaded, attempting to restore playback...');
-      restorePlayback();
+      try {
+        restorePlayback();
+      } catch (e) {
+        console.warn('[LibraryScreen] Restore playback failed:', e instanceof Error ? e.message : String(e));
+      }
     }
   }, [isLibraryLoaded, tracks.length, restorePlayback]);
 
