@@ -14,13 +14,17 @@ import { useStore, useColors } from './src/store/useStore';
 import { themes } from './src/theme';
 import { installCrashReporter, getLastCrash, clearLastCrash, CrashRecord } from './src/services/crashReporter';
 
+console.log('[APP-BOOTSTRAP] Starting app initialization at', new Date().toISOString());
+
 // Install the global JS error handler at module-eval time, before ANY rendering,
 // so even an early crash is captured and surfaced on the next launch.
 installCrashReporter();
+console.log('[APP-BOOTSTRAP] Crash reporter installed');
 
 // CRITICAL: Do NOT access AsyncStorage at module load time—it blocks the main thread
 // and can cause silent crashes on iOS. The console.error override is moved to Root useEffect.
 const originalError = console.error;
+console.log('[APP-BOOTSTRAP] Module eval complete');
 
 /**
  * Banner shown on launch when the previous session ended in a fatal JS error.
