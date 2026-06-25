@@ -232,6 +232,72 @@ class AudioPlayer {
     if (status.isLoaded) return (status.positionMillis ?? 0) / 1000;
     return 0;
   }
+
+  /**
+   * PHASE 6: Crossfade to next track (gapless playback workaround)
+   *
+   * Expo Audio does not support simultaneous sound playback for seamless gapless.
+   * This method implements a 3-second fade-out/fade-in crossfade between tracks,
+   * which hides the gap while minimizing CPU usage compared to full queuing.
+   *
+   * Future: When Expo Audio supports sound pooling, implement queue-based gapless.
+   */
+  async crossfadeToTrack(nextTrack: Track): Promise<void> {
+    try {
+      if (!nextTrack?.uri) {
+        throw new Error('Invalid next track');
+      }
+
+      // Load next track without playing
+      const nextSoundPromise = Audio.Sound.createAsync(
+        { uri: nextTrack.uri },
+        { shouldPlay: false, volume: 0 }
+      );
+
+      const timeoutPromise: Promise<any> = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('[Crossfade] Load timeout')), 15000)
+      );
+
+      const [nextSound] = await Promise.race<any>([nextSoundPromise, timeoutPromise]);
+
+      // Start playing next track at volume 0
+      await nextSound.playAsync();
+
+      // Crossfade: 3 seconds = 30 steps × 100ms
+      const crossfadeDuration = 3000;
+      const stepDuration = 100;
+      const stepCount = crossfadeDuration / stepDuration;
+
+      for (let i = 0; i <= stepCount; i++) {
+        const progress = i / stepCount; // 0 to 1
+        const currentVolume = Math.max(0, 1 - progress);
+        const nextVolume = Math.min(1, progress);
+
+        // Update volumes
+        if (this.sound) {
+          await this.sound.setVolumeAsync(currentVolume);
+        }
+        await nextSound.setVolumeAsync(nextVolume);
+
+        // Wait for next step (skip wait on last iteration)
+        if (i < stepCount) {
+          await new Promise(resolve => setTimeout(resolve, stepDuration));
+        }
+      }
+
+      // Unload old sound and replace with new
+      await this.unload();
+      this.sound = nextSound;
+      this.isUnloaded = false;
+      this.startPolling();
+      this.lastPlayingState = true;
+
+      console.log('[AudioPlayer] Crossfade complete:', nextTrack.id);
+    } catch (error) {
+      console.error('[AudioPlayer] Crossfade failed:', error instanceof Error ? error.message : String(error));
+      throw error;
+    }
+  }
 }
 
 export const player = new AudioPlayer();
