@@ -93,7 +93,7 @@ export function AppNavigator() {
           name="Podcasts"
           component={PodcastsScreen}
           options={{
-            tabBarIcon: ({ focused, color }) => tabIcon(focused, 'headphones', 'headphones-outline', color),
+            tabBarIcon: ({ focused, color }) => tabIcon(focused, 'radio', 'radio-outline', color),
           }}
         />
         <Tab.Screen

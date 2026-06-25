@@ -8,7 +8,7 @@ const DOWNLOADS_DIR = `${FileSystem.documentDirectory}PulseMusic/downloads`;
 
 export interface PlaybackSource {
   uri: string;
-  source: 'local' | 'youtube' | 'piped';
+  source: 'local' | 'youtube' | 'piped' | 'podcast';
 }
 
 /**

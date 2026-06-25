@@ -136,7 +136,7 @@ export function PodcastsScreen() {
           data={podcastSubscriptions}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <PodcastRow podcast={{ ...item, episodeCount: item.episodeCount, subscribed: true }} />
+            <PodcastRow podcast={{ ...item, episodeCount: item.episodeCount, subscribed: true, description: item.description || 'No description' }} />
           )}
           scrollEnabled={false}
           ListEmptyComponent={

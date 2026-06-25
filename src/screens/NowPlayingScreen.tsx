@@ -168,7 +168,7 @@ export function NowPlayingScreen() {
           <>
             {/* Album Art - Animated fade in + zoom */}
             <Animated.View
-              style={[styles.artWrapper, { entering: ZoomIn.springify().damping(1.5) }]}
+              style={[styles.artWrapper, { entering: ZoomIn.springify().damping(1.5) } as any]}
             >
               {currentTrack.artwork ? (
                 <Image
@@ -185,7 +185,7 @@ export function NowPlayingScreen() {
 
             {/* Track Info - Animated fade in */}
             <Animated.View
-              style={[styles.trackRow, { entering: FadeIn.delay(100).duration(300) }]}
+              style={[styles.trackRow, { entering: FadeIn.delay(100).duration(300) } as any]}
             >
               <View style={styles.trackInfoFlex}>
                 <Text style={[styles.trackTitle, { color: colors.text }]} numberOfLines={2}>

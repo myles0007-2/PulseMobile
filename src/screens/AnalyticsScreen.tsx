@@ -87,8 +87,8 @@ export function AnalyticsScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>LISTENING HABITS</Text>
           <View style={[styles.card, { backgroundColor: colors.card }]}>
-            <ArtistRow name="Favorite Time" value={stats.favoriteTimeOfDay} />
-            <ArtistRow name="Most Listened" value={stats.mostListenedDay} />
+            <ArtistRow name="Favorite Time" count={0} />
+            <ArtistRow name="Most Listened" count={0} />
             {stats.newestArtistDiscovery && (
               <ArtistRow
                 name={`New Discovery: ${stats.newestArtistDiscovery.name}`}

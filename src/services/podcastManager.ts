@@ -16,6 +16,7 @@ export interface PodcastSubscription {
   artworkUrl: string;
   subscribedAt: number;
   episodeCount: number;
+  description?: string;
 }
 
 class PodcastManager {

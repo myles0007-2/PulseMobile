@@ -259,7 +259,7 @@ class DownloadManager {
       // Verify file exists and has content
       const result = await FileSystem.getInfoAsync(fileUri);
       if (result.exists && result.isDirectory === false) {
-        const fileSize = 'size' in result ? (result as FileSystem.FileInfo).size : 0;
+        const fileSize = 'size' in result ? (result as any).size : 0;
         task.bytesDownloaded = fileSize;
         task.totalBytes = fileSize;
         task.progress = 100;
@@ -310,7 +310,7 @@ class DownloadManager {
       for (const file of files) {
         const info = await FileSystem.getInfoAsync(`${DOWNLOADS_DIR}/${file}`);
         if (info.exists && info.isDirectory === false) {
-          if ('size' in info) totalSize += (info as FileSystem.FileInfo).size;
+          if ('size' in info) totalSize += (info as any).size;
         }
       }
       return totalSize;
@@ -375,7 +375,7 @@ class DownloadManager {
             fileStats.push({
               name: file,
               modTime: info.modificationTime ?? 0,
-              size: (info as FileSystem.FileInfo).size ?? 0,
+              size: (info as any).size ?? 0,
             });
           }
         }

@@ -51,7 +51,7 @@ class CacheManager {
         const filePath = `${CACHE_DIR}/${file}`;
         const info = await FileSystem.getInfoAsync(filePath);
         if (info.exists && !info.isDirectory && 'size' in info) {
-          totalSize += (info as FileSystem.FileInfo).size ?? 0;
+          totalSize += (info as any).size ?? 0;
         }
       }
 
@@ -145,7 +145,7 @@ class CacheManager {
           fileStats.push({
             name: file,
             mtime: info.modificationTime ?? 0,
-            size: (info as FileSystem.FileInfo).size ?? 0,
+            size: (info as any).size ?? 0,
           });
         }
       }
