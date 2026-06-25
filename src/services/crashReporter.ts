@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 
 /**
  * crashReporter: Captures JS-level fatal errors that React's ErrorBoundary cannot
@@ -46,6 +47,21 @@ export function installCrashReporter(): void {
       // Fire-and-forget; AsyncStorage write is fast and usually completes before teardown.
       AsyncStorage.setItem(LAST_CRASH_KEY, JSON.stringify(record)).catch(() => {});
       console.error('[CrashReporter] Fatal JS error captured:', record.name, record.message);
+
+      // CRASH FIX: Show immediate Alert so user sees fatal error before app dies
+      if (isFatal) {
+        try {
+          const msg = `${record.name}: ${record.message}`.slice(0, 200);
+          Alert.alert(
+            'Fatal Error',
+            msg,
+            [{ text: 'OK' }],
+            { cancelable: false }
+          );
+        } catch {
+          // Alert might not work at this point, but try anyway
+        }
+      }
     } catch {
       // Never let the reporter itself throw.
     }

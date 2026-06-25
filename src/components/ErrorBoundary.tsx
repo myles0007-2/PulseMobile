@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const MAX_RETRY_ATTEMPTS = 3;
 
@@ -63,7 +64,6 @@ export class ErrorBoundary extends React.Component<Props, ErrorBoundaryState> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log error (in dev: console; in prod: could send to logging service)
     console.error('ErrorBoundary caught error:', error);
     console.error('Error info:', errorInfo);
 
@@ -71,6 +71,39 @@ export class ErrorBoundary extends React.Component<Props, ErrorBoundaryState> {
       errorInfo,
       errorCount: prev.errorCount + 1,
     }));
+
+    // CRASH FIX: Show immediate iOS Alert so user sees the error even if this component crashes
+    const errorMsg = `${error.name}: ${error.message}`.slice(0, 300);
+    Alert.alert(
+      'App Error',
+      errorMsg,
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            console.log('[ErrorBoundary] User acknowledged error');
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+
+    // CRASH FIX: Store error to AsyncStorage immediately so it persists across crashes
+    (async () => {
+      try {
+        const errorRecord = {
+          name: error.name,
+          message: error.message,
+          stack: error.stack?.slice(0, 500) ?? '',
+          componentStack: errorInfo?.componentStack?.slice(0, 300) ?? '',
+          timestamp: new Date().toISOString(),
+        };
+        await AsyncStorage.setItem('_ErrorBoundary_lastError', JSON.stringify(errorRecord));
+        console.log('[ErrorBoundary] Error stored to AsyncStorage');
+      } catch (storageErr) {
+        console.error('[ErrorBoundary] Failed to store error:', storageErr);
+      }
+    })();
 
     // Call optional error handler (for analytics, error tracking)
     this.props.onError?.(error, errorInfo);

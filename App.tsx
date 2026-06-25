@@ -75,6 +75,7 @@ function Root() {
 
   // Surface any crash captured on the previous launch, then clear it.
   // Also check for debug errors logged during the session.
+  // Also check for ErrorBoundary errors from the previous crash.
   useEffect(() => {
     (async () => {
       const crash = await getLastCrash();
@@ -86,7 +87,27 @@ function Root() {
         const AsyncStorage = require('@react-native-async-storage/async-storage').default;
         const errs = await AsyncStorage.getItem('_debug_errors');
         if (errs) setDebugErrors(JSON.parse(errs));
-      } catch {}
+
+        // CRASH FIX: Also load ErrorBoundary error from previous crash
+        const boundaryErr = await AsyncStorage.getItem('_ErrorBoundary_lastError');
+        if (boundaryErr) {
+          const parsed = JSON.parse(boundaryErr);
+          console.log('[Root] Found ErrorBoundary error from previous crash:', parsed);
+          // Show as a banner (will be shown in lastCrash if we add it to the record)
+          if (!crash) {
+            setLastCrash({
+              name: parsed.name || 'ErrorBoundary Error',
+              message: parsed.message || 'Unknown error in previous session',
+              stack: parsed.stack || '',
+              isFatal: true,
+              timestamp: parsed.timestamp || new Date().toISOString(),
+            } as any);
+          }
+          await AsyncStorage.removeItem('_ErrorBoundary_lastError');
+        }
+      } catch (e) {
+        console.warn('[Root] Failed to load previous errors:', e);
+      }
     })();
   }, []);
 
