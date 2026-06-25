@@ -9,6 +9,7 @@ export interface NativeMusicTrack {
   album: string;
   duration: number;
   uri: string;
+  artworkBase64?: string;
 }
 
 export function isAvailable(): boolean {

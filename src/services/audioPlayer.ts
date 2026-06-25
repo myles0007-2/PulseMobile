@@ -124,43 +124,42 @@ class AudioPlayer {
       this.lastPlayingState = false;
       this.trackEndFired = false;
 
-      const createWithTimeout = Promise.race<[Audio.Sound, AVPlaybackStatus]>([
-        Audio.Sound.createAsync(
-          { uri: track.uri },
-          { shouldPlay: false, progressUpdateIntervalMillis: 1000 }, // BATTERY: 1s instead of 500ms
-          (status: AVPlaybackStatus) => {
-            if (status.isLoaded) {
-              const position = (status.positionMillis ?? 0) / 1000;
-              const duration = (status.durationMillis ?? 0) / 1000;
+      const soundPromise = Audio.Sound.createAsync(
+        { uri: track.uri },
+        { shouldPlay: false, progressUpdateIntervalMillis: 1000 },
+        (status: AVPlaybackStatus) => {
+          if (status.isLoaded) {
+            const position = (status.positionMillis ?? 0) / 1000;
+            const duration = (status.durationMillis ?? 0) / 1000;
 
-              if (!isNaN(position) && !isNaN(duration) && isFinite(position) && isFinite(duration)) {
-                this.statusCallback?.({
-                  isPlaying: status.isPlaying ?? false,
-                  position: Math.max(0, position),
-                  duration: Math.max(0, duration),
-                  isLoading: status.isBuffering ?? false,
-                });
+            if (!isNaN(position) && !isNaN(duration) && isFinite(position) && isFinite(duration)) {
+              this.statusCallback?.({
+                isPlaying: status.isPlaying ?? false,
+                position: Math.max(0, position),
+                duration: Math.max(0, duration),
+                isLoading: status.isBuffering ?? false,
+              });
 
-                if (duration > 0 && position > 0 && position >= duration - 0.5) {
-                  if (!this.trackEndFired) {
-                    this.trackEndFired = true;
-                    this.trackEndCallback?.();
-                  }
-                } else if (position < duration - 1) {
-                  this.trackEndFired = false;
+              if (duration > 0 && position > 0 && position >= duration - 0.5) {
+                if (!this.trackEndFired) {
+                  this.trackEndFired = true;
+                  this.trackEndCallback?.();
                 }
-
-                this.lastPlayingState = status.isPlaying ?? false;
+              } else if (position < duration - 1) {
+                this.trackEndFired = false;
               }
+
+              this.lastPlayingState = status.isPlaying ?? false;
             }
           }
-        ),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('[AudioPlayer] Load timeout (30s)')), 30000)
-        ),
-      ]);
+        }
+      );
 
-      const [sound] = await createWithTimeout;
+      const timeoutPromise: Promise<any> = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('[AudioPlayer] Load timeout (30s)')), 30000)
+      );
+
+      const [sound] = await Promise.race<any>([soundPromise, timeoutPromise]);
       this.sound = sound;
       this.startPolling();
       console.log('[AudioPlayer] Sound loaded:', track.id);

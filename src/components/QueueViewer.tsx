@@ -13,7 +13,7 @@ interface QueueViewerProps {
   onSelectTrack: (index: number) => void;
 }
 
-export const QueueViewer = React.memo<React.FC<QueueViewerProps>>(({
+const QueueViewerComponent: React.FC<QueueViewerProps> = ({
   visible,
   queue,
   currentIndex,
@@ -90,7 +90,9 @@ export const QueueViewer = React.memo<React.FC<QueueViewerProps>>(({
       </View>
     </Modal>
   );
-});
+};
+
+export const QueueViewer = React.memo(QueueViewerComponent);
 
 const styles = StyleSheet.create({
   header: {

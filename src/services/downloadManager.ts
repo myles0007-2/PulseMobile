@@ -168,7 +168,7 @@ class DownloadManager {
   }
 
   // Main processing loop: serial downloads
-  private async processQueue() {
+  private async processQueue(): Promise<void> {
     if (this.isProcessing) return;
     this.isProcessing = true;
 

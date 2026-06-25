@@ -9,7 +9,8 @@ import { CertExpiryBanner } from './src/components/CertExpiryBanner';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { player } from './src/services/audioPlayer';
 import { downloadManager } from './src/services/downloadManager';
-import { useStore, useColors, themes } from './src/store/useStore';
+import { useStore, useColors } from './src/store/useStore';
+import { themes } from './src/theme';
 
 function Root() {
   const bootstrap = useStore((s) => s.bootstrap);
@@ -37,18 +38,10 @@ function Root() {
 
         if (!isMounted) return;
         console.log('[APP] Initialization complete');
-        useStore.getState().set?.({ _initializationComplete: true });
       } catch (error) {
         if (isMounted) {
           console.error('[APP] Init failed:', error instanceof Error ? error.message : String(error));
-          useStore.getState().set?.({
-            _initializationFailed: true,
-            _initializationError: String(error),
-            themeName: 'dark' as const,
-            colors: themes.dark,
-            tracks: [],
-            _isInitialized: false,
-          });
+          // Initialization error will be handled by ErrorBoundary
         }
       }
     };

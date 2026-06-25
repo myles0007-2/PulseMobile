@@ -41,13 +41,14 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ track, size = 'm
 
     checkDownload();
 
-    const progressListener = downloadManager.onProgress((p) => {
+    // Register listeners (these don't return unsubscribe functions in downloadManager)
+    downloadManager.onProgress((p) => {
       if (p.taskId.includes(track.id)) {
         setProgress(p.progress);
       }
     });
 
-    const completeListener = downloadManager.onComplete((taskId, success) => {
+    downloadManager.onComplete((taskId, success) => {
       if (taskId.includes(track.id)) {
         if (success) {
           setTask({
@@ -68,11 +69,6 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ track, size = 'm
         }
       }
     });
-
-    return () => {
-      progressListener?.();
-      completeListener?.();
-    };
   }, [track.id, showAlert]);
 
   useEffect(() => {
