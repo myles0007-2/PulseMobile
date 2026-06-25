@@ -6,7 +6,7 @@ import { player } from '../services/audioPlayer';
 import { resolveStreamUrl } from '../services/youtubeService';
 import { fetchLyrics, getCurrentLyricIndex } from '../services/lyricsService';
 import { fetchSponsorSegments } from '../services/sponsorBlockService';
-import { bluetoothManager, BluetoothRemoteState } from '../services/bluetoothManager';
+import { getBluetoothManager, BluetoothRemoteState } from '../services/bluetoothManager';
 import { downloadManager } from '../services/downloadManager';
 import { computeStats, getEmptyStats } from '../services/analyticsEngine';
 import { EQ_PRESET_NAMES, EQ_VOLUME_MULTIPLIERS } from '../services/eqPresets';
@@ -95,10 +95,10 @@ async function savePersisted(s: PersistedState) {
   }
 }
 
-// Titles from liked_songs.json that are plain strings (not Spotify URIs)
+// CRASH FIX: Guard against null/undefined likedSongsRaw
 const LIKED_TITLES: Set<string> = new Set(
-  (likedSongsRaw as string[])
-    .filter((s) => !s.startsWith('spotify:'))
+  (Array.isArray(likedSongsRaw) ? likedSongsRaw : [])
+    .filter((s) => typeof s === 'string' && !s.startsWith('spotify:'))
     .map((s) => s.toLowerCase().trim())
 );
 
@@ -480,7 +480,7 @@ export const useStore = create<Store>((set, get) => {
 
     initializeBluetooth: async () => {
       try {
-        const state = await bluetoothManager.initialize();
+        const state = await getBluetoothManager().initialize();
         set({ bluetoothState: state });
 
         if (state.isInitialized) {
@@ -488,7 +488,7 @@ export const useStore = create<Store>((set, get) => {
           if (bluetoothUnsubscribe) bluetoothUnsubscribe();
 
           // Subscribe to remote commands and store unsubscribe function
-          bluetoothUnsubscribe = bluetoothManager.onRemoteCommand((cmd) => {
+          bluetoothUnsubscribe = getBluetoothManager().onRemoteCommand((cmd) => {
             const s = get();
             if (cmd === 'play') s.bluetoothTogglePlay();
             else if (cmd === 'pause') s.bluetoothTogglePlay();
@@ -514,8 +514,8 @@ export const useStore = create<Store>((set, get) => {
         await get().togglePlay();
         // Update Bluetooth metadata after state change
         const { currentTrack, isPlaying: newIsPlaying } = get();
-        if (currentTrack && bluetoothManager) {
-          bluetoothManager.updatePlaybackState(newIsPlaying);
+        if (currentTrack && getBluetoothManager()) {
+          getBluetoothManager().updatePlaybackState(newIsPlaying);
         }
       } finally {
         set({ _bluetoothLock: false });
@@ -530,8 +530,8 @@ export const useStore = create<Store>((set, get) => {
       try {
         await get().nextTrack();
         const { currentTrack } = get();
-        if (currentTrack && bluetoothManager) {
-          bluetoothManager.updateMetadata({
+        if (currentTrack && getBluetoothManager()) {
+          getBluetoothManager().updateMetadata({
             title: currentTrack.title,
             artist: currentTrack.artist,
             album: currentTrack.album,
@@ -551,8 +551,8 @@ export const useStore = create<Store>((set, get) => {
       try {
         await get().prevTrack();
         const { currentTrack } = get();
-        if (currentTrack && bluetoothManager) {
-          bluetoothManager.updateMetadata({
+        if (currentTrack && getBluetoothManager()) {
+          getBluetoothManager().updateMetadata({
             title: currentTrack.title,
             artist: currentTrack.artist,
             album: currentTrack.album,
@@ -1026,7 +1026,7 @@ export const useStore = create<Store>((set, get) => {
         let retries = 0;
         const updateMetadataWithRetry = async () => {
           try {
-            await bluetoothManager.updateMetadata({
+            await getBluetoothManager().updateMetadata({
               title: track.title || 'Unknown',
               artist: track.artist || 'Unknown',
               album: track.album || 'Unknown Album',
@@ -1203,7 +1203,7 @@ export const useStore = create<Store>((set, get) => {
       }
 
       // Sync Bluetooth playback state (non-blocking)
-        bluetoothManager.updatePlaybackState(s.isPlaying, s.position).catch(() => {});
+        getBluetoothManager().updatePlaybackState(s.isPlaying, s.position).catch(() => {});
       } catch (e) {
         console.error('[Store._onStatus] Unhandled error:', e instanceof Error ? e.message : String(e));
       }

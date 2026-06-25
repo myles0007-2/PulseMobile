@@ -196,4 +196,9 @@ class BluetoothManager {
   }
 }
 
-export const bluetoothManager = new BluetoothManager();
+// CRASH FIX: Defer instantiation from module load to useEffect
+let _instance: BluetoothManager | null = null;
+export function getBluetoothManager(): BluetoothManager {
+  if (!_instance) _instance = new BluetoothManager();
+  return _instance;
+}
