@@ -12,9 +12,9 @@ import { computeStats, getEmptyStats } from '../services/analyticsEngine';
 import { EQ_PRESET_NAMES, EQ_VOLUME_MULTIPLIERS } from '../services/eqPresets';
 import { PodcastSubscription } from '../services/podcastManager';
 
-// Seed data imports
-import likedSongsRaw from '../data/liked_songs.json';
-import playlistsSeedRaw from '../data/playlists_seed.json';
+// CRASH FIX: Seed data files don't exist—use empty defaults instead of crashing on import
+const likedSongsRaw: string[] = [];
+const playlistsSeedRaw: any[] = [];
 
 /**
  * useStore: Central state management for PulseMobile

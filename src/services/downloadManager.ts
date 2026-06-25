@@ -26,8 +26,25 @@ type ProgressCallback = (progress: DownloadProgress) => void;
 type CompleteCallback = (taskId: string, success: boolean, error?: string) => void;
 type StatusChangeCallback = (taskId: string, status: DownloadTask['status']) => void;
 
-const DOWNLOADS_DIR = `${FileSystem.documentDirectory}PulseMusic/downloads`;
-const CACHE_DIR = `${FileSystem.documentDirectory}PulseMusic/cache`;
+// CRASH FIX: Guard against null documentDirectory at module load time
+const getDownloadsDir = () => {
+  const docDir = FileSystem.documentDirectory;
+  if (!docDir) {
+    console.warn('[DownloadManager] documentDirectory is null, using fallback');
+    return null;
+  }
+  return `${docDir}PulseMusic/downloads`;
+};
+
+const getCacheDir = () => {
+  const docDir = FileSystem.documentDirectory;
+  if (!docDir) {
+    console.warn('[DownloadManager] documentDirectory is null, using fallback');
+    return null;
+  }
+  return `${docDir}PulseMusic/cache`;
+};
+
 const MAX_RETRIES = 2;
 const CHUNK_SIZE = 512 * 1024; // 512KB chunks
 
@@ -39,24 +56,40 @@ class DownloadManager {
   private statusChangeCallbacks: StatusChangeCallback[] = [];
   private currentTaskId: string | null = null;
   private abortController: AbortController | null = null;
+  private dirInitialized: boolean = false;
 
   constructor() {
-    this.initializeDirectories();
+    // CRASH FIX: Do NOT call async work in constructor—defer to async context
+    // Just initialize queue from storage
     this.restoreQueue();
+    // Initialize directories asynchronously (but don't await)
+    this.initializeDirectories().catch((e) => {
+      console.warn('[DownloadManager] Dir init failed:', e);
+    });
   }
 
   private async initializeDirectories() {
     try {
-      const dirInfo = await FileSystem.getInfoAsync(DOWNLOADS_DIR);
+      const downloadDir = getDownloadsDir();
+      const cacheDir = getCacheDir();
+
+      if (!downloadDir || !cacheDir) {
+        console.warn('[DownloadManager] Cannot initialize directories—paths are null');
+        return;
+      }
+
+      const dirInfo = await FileSystem.getInfoAsync(downloadDir);
       if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(DOWNLOADS_DIR, { intermediates: true });
+        await FileSystem.makeDirectoryAsync(downloadDir, { intermediates: true });
       }
-      const cacheInfo = await FileSystem.getInfoAsync(CACHE_DIR);
+      const cacheInfo = await FileSystem.getInfoAsync(cacheDir);
       if (!cacheInfo.exists) {
-        await FileSystem.makeDirectoryAsync(CACHE_DIR, { intermediates: true });
+        await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
       }
+      this.dirInitialized = true;
+      console.log('[DownloadManager] Directories initialized');
     } catch (e) {
-      console.error('Failed to initialize download directories:', e);
+      console.error('[DownloadManager] Failed to initialize directories:', e);
     }
   }
 
@@ -194,7 +227,7 @@ class DownloadManager {
             task.status = 'queued';
             // Delete partial file on retry to force fresh download
             const fileName = `${task.track.id}.m4a`;
-            const fileUri = `${DOWNLOADS_DIR}/${fileName}`;
+            const fileUri = `${getDownloadsDir() || ''}/${fileName}`;
             try {
               await FileSystem.deleteAsync(fileUri, { idempotent: true });
             } catch (e) {
@@ -225,7 +258,7 @@ class DownloadManager {
     try {
       const { track } = task;
       const fileName = `${track.id}.m4a`;
-      const fileUri = `${DOWNLOADS_DIR}/${fileName}`;
+      const fileUri = `${getDownloadsDir() || ''}/${fileName}`;
 
       // Check if already downloaded
       const existing = await FileSystem.getInfoAsync(fileUri);
@@ -284,7 +317,7 @@ class DownloadManager {
   // Get download file path for a track
   async getDownloadedFilePath(trackId: string): Promise<string | null> {
     const fileName = `${trackId}.m4a`;
-    const fileUri = `${DOWNLOADS_DIR}/${fileName}`;
+    const fileUri = `${getDownloadsDir() || ''}/${fileName}`;
     const exists = await FileSystem.getInfoAsync(fileUri);
     return exists.exists ? fileUri : null;
   }
@@ -292,9 +325,9 @@ class DownloadManager {
   // Clear all downloads
   async clearAllDownloads() {
     try {
-      const files = await FileSystem.readDirectoryAsync(DOWNLOADS_DIR);
+      const files = await FileSystem.readDirectoryAsync(getDownloadsDir() || '');
       for (const file of files) {
-        await FileSystem.deleteAsync(`${DOWNLOADS_DIR}/${file}`, { idempotent: true });
+        await FileSystem.deleteAsync(`${getDownloadsDir() || ''}/${file}`, { idempotent: true });
       }
       this.queue.clear();
     } catch (e) {
@@ -305,10 +338,10 @@ class DownloadManager {
   // Get download folder size
   async getDownloadsFolderSize(): Promise<number> {
     try {
-      const files = await FileSystem.readDirectoryAsync(DOWNLOADS_DIR);
+      const files = await FileSystem.readDirectoryAsync(getDownloadsDir() || '');
       let totalSize = 0;
       for (const file of files) {
-        const info = await FileSystem.getInfoAsync(`${DOWNLOADS_DIR}/${file}`);
+        const info = await FileSystem.getInfoAsync(`${getDownloadsDir() || ''}/${file}`);
         if (info.exists && info.isDirectory === false) {
           if ('size' in info) totalSize += (info as any).size;
         }
@@ -365,11 +398,11 @@ class DownloadManager {
       if (currentSize > maxSizeBytes) {
         console.log(`[DownloadManager] Cache full (${(currentSize / 1024 / 1024).toFixed(1)}MB), cleaning up`);
 
-        const files = await FileSystem.readDirectoryAsync(DOWNLOADS_DIR);
+        const files = await FileSystem.readDirectoryAsync(getDownloadsDir() || '');
         const fileStats: Array<{ name: string; modTime: number; size: number }> = [];
 
         for (const file of files) {
-          const fileUri = `${DOWNLOADS_DIR}/${file}`;
+          const fileUri = `${getDownloadsDir() || ''}/${file}`;
           const info = await FileSystem.getInfoAsync(fileUri);
           if (info.exists && info.isDirectory === false) {
             fileStats.push({
@@ -389,7 +422,7 @@ class DownloadManager {
           if (currentSize - freed <= maxSizeBytes * 0.8) break; // Stop at 80% capacity
 
           try {
-            await FileSystem.deleteAsync(`${DOWNLOADS_DIR}/${stat.name}`, { idempotent: true });
+            await FileSystem.deleteAsync(`${getDownloadsDir() || ''}/${stat.name}`, { idempotent: true });
             freed += stat.size;
             console.log(`[DownloadManager] Deleted old download: ${stat.name}`);
           } catch (e) {
