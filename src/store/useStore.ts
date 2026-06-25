@@ -279,8 +279,25 @@ interface Store {
 }
 
 export const useStore = create<Store>((set, get) => {
-  player.onStatus((s) => get()._onStatus(s));
-  player.onTrackEnd(() => get()._onTrackEnd());
+  // CRASH FIX: Wrap player callbacks in try-catch to prevent store creation failure
+  try {
+    player.onStatus((s) => {
+      try {
+        get()._onStatus(s);
+      } catch (e) {
+        console.error('[Store] _onStatus callback error:', e instanceof Error ? e.message : String(e));
+      }
+    });
+    player.onTrackEnd(() => {
+      try {
+        get()._onTrackEnd();
+      } catch (e) {
+        console.error('[Store] _onTrackEnd callback error:', e instanceof Error ? e.message : String(e));
+      }
+    });
+  } catch (e) {
+    console.error('[Store] Failed to register player callbacks:', e instanceof Error ? e.message : String(e));
+  }
 
   return {
     // Library
@@ -637,7 +654,11 @@ export const useStore = create<Store>((set, get) => {
     // Bootstrap: Load persisted state and validate it
     bootstrap: async () => {
       try {
+        console.log('[Bootstrap] Starting...');
+
         const saved = await loadPersisted();
+        console.log('[Bootstrap] Loaded persisted state');
+
         const themeName: ThemeName = (saved.themeName as ThemeName) ?? 'dark';
 
         // CRASH FIX: Validate saved state structure
@@ -705,13 +726,17 @@ export const useStore = create<Store>((set, get) => {
         });
 
         // Non-blocking async initialization
+        console.log('[Bootstrap] Initializing Bluetooth...');
         get().initializeBluetooth().catch((e) => {
           console.warn('[Bootstrap] Bluetooth init failed:', e instanceof Error ? e.message : String(e));
         });
 
+        console.log('[Bootstrap] Initializing YouTube auth...');
         get().initializeYouTubeAuth().catch((e) => {
           console.warn('[Bootstrap] YouTube auth init failed:', e instanceof Error ? e.message : String(e));
         });
+
+        console.log('[Bootstrap] Complete!');
       } catch (error) {
         console.error('[Bootstrap] Failed:', error instanceof Error ? error.message : String(error));
         // Set safe defaults so app still works
@@ -1112,9 +1137,10 @@ export const useStore = create<Store>((set, get) => {
     },
 
     _onStatus: (s) => {
-      const { sponsorSegments, _skipGuard, sleepTimerEnd, lyrics, currentLyricIndex } = get();
+      try {
+        const { sponsorSegments, _skipGuard, sleepTimerEnd, lyrics, currentLyricIndex } = get();
 
-      let newLyricIndex = 0;
+        let newLyricIndex = 0;
       if (lyrics.length) {
         const calculatedIndex = getCurrentLyricIndex(lyrics, s.position);
         const timeSinceLast = s.position - (lyrics[currentLyricIndex]?.time ?? 0);
@@ -1176,18 +1202,25 @@ export const useStore = create<Store>((set, get) => {
       }
 
       // Sync Bluetooth playback state (non-blocking)
-      bluetoothManager.updatePlaybackState(s.isPlaying, s.position).catch(() => {});
+        bluetoothManager.updatePlaybackState(s.isPlaying, s.position).catch(() => {});
+      } catch (e) {
+        console.error('[Store._onStatus] Unhandled error:', e instanceof Error ? e.message : String(e));
+      }
     },
 
     _onTrackEnd: () => {
-      const { repeat } = get();
-      if (repeat === 'one') {
-        player.seekTo(0)
-          .then(() => player.play())
-          .catch((e) => console.error('Repeat-one restart failed:', e instanceof Error ? e.message : String(e)));
-        return;
+      try {
+        const { repeat } = get();
+        if (repeat === 'one') {
+          player.seekTo(0)
+            .then(() => player.play())
+            .catch((e) => console.error('Repeat-one restart failed:', e instanceof Error ? e.message : String(e)));
+          return;
+        }
+        get().nextTrack();
+      } catch (e) {
+        console.error('[Store._onTrackEnd] Unhandled error:', e instanceof Error ? e.message : String(e));
       }
-      get().nextTrack();
     },
 
     _clearAllTimers: () => {
