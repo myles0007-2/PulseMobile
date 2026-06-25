@@ -26,7 +26,11 @@ export function LibraryScreen() {
   const [search, setSearch] = useState('');
 
   React.useEffect(() => {
-    if (!isLibraryLoaded) loadLibrary(false);
+    console.log('[LibraryScreen] Mounted. isLibraryLoaded:', isLibraryLoaded);
+    if (!isLibraryLoaded) {
+      console.log('[LibraryScreen] Starting library load...');
+      loadLibrary(false);
+    }
   }, []);
 
   // CRASH FIX: Restore playback after library loads

@@ -17,6 +17,23 @@ import { installCrashReporter, getLastCrash, clearLastCrash, CrashRecord } from 
 // so even an early crash is captured and surfaced on the next launch.
 installCrashReporter();
 
+// Also install a console.error override to log ALL errors, even if they slip past handlers.
+const originalError = console.error;
+console.error = (...args: any[]) => {
+  originalError('[CONSOLE.ERROR]', ...args);
+  // Try to log to a persistent store for debugging crashes.
+  try {
+    const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+    const msg = args.map((a) => (a instanceof Error ? a.stack : String(a))).join('\n');
+    AsyncStorage.getItem('_debug_errors').then((e: string | null) => {
+      const errors = e ? JSON.parse(e) : [];
+      errors.push({ time: new Date().toISOString(), msg });
+      AsyncStorage.setItem('_debug_errors', JSON.stringify(errors.slice(-20)));
+    });
+  } catch {}
+  originalError.apply(console, args);
+};
+
 /**
  * Banner shown on launch when the previous session ended in a fatal JS error.
  * Uses hardcoded colors so it renders even if the store/theme is the culprit.

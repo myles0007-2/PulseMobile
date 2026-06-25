@@ -22,11 +22,22 @@ export async function requestMusicPermission(): Promise<boolean> {
 }
 
 export async function getItunesTracks(): Promise<NativeMusicTrack[]> {
-  if (!isAvailable()) return [];
+  console.log('[MusicLibrary] getItunesTracks called');
+  if (!isAvailable()) {
+    console.log('[MusicLibrary] Module not available on this platform');
+    return [];
+  }
   try {
+    console.log('[MusicLibrary] Calling native getTracks...');
     const tracks: NativeMusicTrack[] = await MusicLibraryModule.getTracks();
-    return tracks.filter((t) => t.uri && t.uri.length > 0);
-  } catch { return []; }
+    console.log(`[MusicLibrary] Native returned ${tracks?.length ?? 0} tracks`);
+    const filtered = tracks?.filter((t) => t.uri && t.uri.length > 0) ?? [];
+    console.log(`[MusicLibrary] Filtered to ${filtered.length} tracks with valid URIs`);
+    return filtered;
+  } catch (e) {
+    console.error('[MusicLibrary] getTracks failed:', e instanceof Error ? e.stack : String(e));
+    return [];
+  }
 }
 
 // Fetch artwork for a single track by ID — call lazily, not in bulk.

@@ -36,15 +36,18 @@ export async function requestLibraryPermission(): Promise<boolean> {
 export async function scanLibrary(
   onProgress?: (loaded: number, total: number) => void
 ): Promise<{ tracks: Track[]; albums: Album[] }> {
+  console.log('[LibraryScan] Starting full scan...');
   const allTracks: Track[] = [];
   const albumMap: Record<string, Album> = {};
 
   // ── 1. iTunes / Music app library via MPMediaLibrary (primary source) ──
   let itunesTracks: NativeMusicTrack[] = [];
   try {
+    console.log('[LibraryScan] Fetching iTunes tracks...');
     itunesTracks = await getItunesTracks();
+    console.log(`[LibraryScan] iTunes returned ${itunesTracks.length} tracks`);
   } catch (e) {
-    console.warn('iTunes library scan failed, using Documents only:', e);
+    console.error('[LibraryScan] iTunes scan failed:', e instanceof Error ? e.stack : String(e));
   }
 
   for (let i = 0; i < itunesTracks.length; i++) {
