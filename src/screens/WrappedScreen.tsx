@@ -5,7 +5,7 @@ import { useStore, useColors } from '../store/useStore';
 import { MiniPlayer } from '../components/MiniPlayer';
 import { spacing, fontSize, radius } from '../theme';
 import { ListeningStats, formatDuration } from '../services/analyticsEngine';
-import LinearGradient from 'expo-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export function WrappedScreen() {
   const insets = useSafeAreaInsets();

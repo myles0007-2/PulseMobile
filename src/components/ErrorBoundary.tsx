@@ -1,8 +1,18 @@
 import React from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { useColors } from '../store/useStore';
 
 const MAX_RETRY_ATTEMPTS = 3;
+
+// SELF-CONTAINED palette: the fallback must NOT depend on the store, because the
+// store may itself be the source of the crash. Hardcoded so it always renders.
+const SAFE = {
+  bg: '#0a0a0a',
+  card: '#1a1a1a',
+  text: '#ffffff',
+  textSecondary: '#b0b0b0',
+  textMuted: '#707070',
+  primary: '#1db954',
+};
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -125,8 +135,7 @@ function ErrorFallback({
   retryAttempts,
   maxRetries,
 }: ErrorFallbackProps) {
-  const colors = useColors();
-  const isDev = __DEV__; // __DEV__ is Expo's dev flag
+  const colors = SAFE;
   const retriesExhausted = retryAttempts >= maxRetries;
 
   return (
@@ -166,8 +175,9 @@ function ErrorFallback({
           This isn't your fault. Let's try fixing it.
         </Text>
 
-        {/* Dev-Only Error Details */}
-        {isDev && error && (
+        {/* Error Details — shown in ALL builds (incl. production/Sideloadly)
+            so crashes are self-reporting without Xcode/Mac access */}
+        {error && (
           <View
             style={[
               styles.devDetails,
@@ -177,32 +187,22 @@ function ErrorFallback({
             <Text
               style={[styles.devLabel, { color: colors.text }]}
             >
-              📋 Error Details (Dev Mode)
+              📋 Error Details
             </Text>
-            <Text
-              style={[
-                styles.devText,
-                { color: colors.textSecondary },
-              ]}
-            >
-              {error.message}
+            <Text selectable style={[styles.devText, { color: '#ff8a8a' }]}>
+              {error.name}: {error.message}
             </Text>
-            {errorInfo?.componentStack && (
-              <Text
-                style={[
-                  styles.devStack,
-                  { color: colors.textMuted },
-                ]}
-              >
-                {errorInfo.componentStack.slice(0, 500)}...
+            {error.stack && (
+              <Text selectable style={[styles.devStack, { color: colors.textSecondary }]}>
+                {error.stack.slice(0, 1200)}
               </Text>
             )}
-            <Text
-              style={[
-                styles.devLabel,
-                { color: colors.textMuted },
-              ]}
-            >
+            {errorInfo?.componentStack && (
+              <Text selectable style={[styles.devStack, { color: colors.textMuted }]}>
+                {errorInfo.componentStack.slice(0, 800)}
+              </Text>
+            )}
+            <Text style={[styles.devLabel, { color: colors.textMuted }]}>
               Error count: {errorCount}
             </Text>
           </View>
