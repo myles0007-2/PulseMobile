@@ -67,14 +67,15 @@ export function WrappedScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Card Display */}
         <View style={styles.cardContainer}>
-          <LinearGradient
-            colors={[colors.primary + '20', colors.primary + '05']}
-            style={[styles.card, { borderColor: colors.primary }]}
-          >
-            <Text style={[styles.cardTitle, { color: colors.primary }]}>{card.title}</Text>
-            <Text style={[styles.cardContent, { color: colors.text }]}>{card.content}</Text>
-            <Text style={[styles.cardStat, { color: colors.textSecondary }]}>{card.stat}</Text>
-          </LinearGradient>
+          {React.createElement((LinearGradient as any), {
+            colors: [colors.primary + '20', colors.primary + '05'],
+            style: [styles.card, { borderColor: colors.primary }],
+            children: [
+              React.createElement(Text, { key: 'title', style: [styles.cardTitle, { color: colors.primary }] }, card.title),
+              React.createElement(Text, { key: 'content', style: [styles.cardContent, { color: colors.text }] }, card.content),
+              React.createElement(Text, { key: 'stat', style: [styles.cardStat, { color: colors.textSecondary }] }, card.stat),
+            ],
+          })}
         </View>
 
         {/* Navigation */}
