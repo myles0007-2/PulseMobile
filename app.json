@@ -57,6 +57,7 @@
       ]
     },
     "plugins": [
+      "./plugins/withMusicLibrary",
       [
         "expo-media-library",
         {
