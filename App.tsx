@@ -10,7 +10,7 @@ import { CertExpiryBanner } from './src/components/CertExpiryBanner';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { player } from './src/services/audioPlayer';
 import { downloadManager } from './src/services/downloadManager';
-import { useStore, useColors } from './src/store/useStore';
+import { useStore, useColors, registerPlayerCallbacks } from './src/store/useStore';
 import { themes } from './src/theme';
 import { installCrashReporter, getLastCrash, clearLastCrash, CrashRecord } from './src/services/crashReporter';
 
@@ -123,6 +123,11 @@ function Root() {
       try {
         console.log('[APP] Initializing audio player...');
         await player.init();
+
+        if (!isMounted) return;
+
+        console.log('[APP] Registering player callbacks...');
+        registerPlayerCallbacks();
 
         if (!isMounted) return;
 

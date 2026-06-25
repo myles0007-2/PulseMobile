@@ -278,27 +278,11 @@ interface Store {
   _onTrackEnd: () => void;
 }
 
-export const useStore = create<Store>((set, get) => {
-  // CRASH FIX: Wrap player callbacks in try-catch to prevent store creation failure
-  try {
-    player.onStatus((s) => {
-      try {
-        get()._onStatus(s);
-      } catch (e) {
-        console.error('[Store] _onStatus callback error:', e instanceof Error ? e.message : String(e));
-      }
-    });
-    player.onTrackEnd(() => {
-      try {
-        get()._onTrackEnd();
-      } catch (e) {
-        console.error('[Store] _onTrackEnd callback error:', e instanceof Error ? e.message : String(e));
-      }
-    });
-  } catch (e) {
-    console.error('[Store] Failed to register player callbacks:', e instanceof Error ? e.message : String(e));
-  }
+// CRASH FIX: Defer player callback registration to after store creation
+// Prevents module-level side effects that could cause crashes on iPhone X
+let playerCallbacksRegistered = false;
 
+export const useStore = create<Store>((set, get) => {
   return {
     // Library
     tracks: [], albums: [], isLibraryLoaded: false, isScanning: false, scanProgress: 0,
@@ -1249,5 +1233,32 @@ export const useStore = create<Store>((set, get) => {
     },
   } as Store;
 });
+
+// CRASH FIX: Register player callbacks after store is created, not during module load
+export function registerPlayerCallbacks() {
+  if (playerCallbacksRegistered) return;
+  playerCallbacksRegistered = true;
+
+  try {
+    console.log('[Store] Registering player callbacks...');
+    player.onStatus((s) => {
+      try {
+        useStore.getState()._onStatus(s);
+      } catch (e) {
+        console.error('[Store] _onStatus callback error:', e instanceof Error ? e.message : String(e));
+      }
+    });
+    player.onTrackEnd(() => {
+      try {
+        useStore.getState()._onTrackEnd();
+      } catch (e) {
+        console.error('[Store] _onTrackEnd callback error:', e instanceof Error ? e.message : String(e));
+      }
+    });
+    console.log('[Store] Player callbacks registered successfully');
+  } catch (e) {
+    console.error('[Store] Failed to register player callbacks:', e instanceof Error ? e.message : String(e));
+  }
+}
 
 export const useColors = () => useStore((s) => s.colors);
