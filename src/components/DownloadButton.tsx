@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, View, StyleSheet, Alert } from 'react-native';
 import { Track } from '../types';
 import { downloadManager, DownloadTask } from '../services/downloadManager';
 import { useStore } from '../store/useStore';
@@ -37,9 +37,11 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ track, size = 'm
         if (success) {
           setTask({ id: taskId, track, status: 'completed', progress: 100, bytesDownloaded: 0, totalBytes: 0, retryAttempts: 0 });
           setProgress(100);
+          Alert.alert('Download Complete', `"${track.title}" has been saved offline.`);
         } else {
           setTask(undefined);
           setProgress(0);
+          Alert.alert('Download Failed', `Failed to download "${track.title}".`);
         }
       }
     });

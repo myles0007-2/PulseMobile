@@ -52,6 +52,10 @@ interface PersistedState {
   wifiOnly?: boolean;
   eqPreset?: 'flat' | 'rock' | 'pop' | 'podcast';
   podcastSubscriptions?: PodcastSubscription[];
+  // Playback persistence (resume feature)
+  currentTrackId?: string;
+  playbackPosition?: number;
+  lastPlayedTime?: number;
 }
 
 interface SeedPlaylistEntry {
@@ -578,6 +582,18 @@ export const useStore = create<Store>((set, get) => {
         podcastSubscriptions: saved.podcastSubscriptions ?? [],
       });
 
+      // Restore playback state if available and recent (within 30 days)
+      if (saved.currentTrackId && saved.playbackPosition !== undefined && saved.lastPlayedTime) {
+        const daysSincePlayed = (Date.now() - saved.lastPlayedTime) / (1000 * 60 * 60 * 24);
+        if (daysSincePlayed < 30) {
+          const { tracks } = get();
+          const resumeTrack = tracks.find((t) => t.id === saved.currentTrackId);
+          if (resumeTrack) {
+            set({ currentTrack: resumeTrack, position: saved.playbackPosition });
+          }
+        }
+      }
+
       // Initialize Bluetooth (non-blocking, graceful degradation if unavailable)
       // This runs asynchronously and doesn't block the bootstrap
       get().initializeBluetooth().catch((e) => {
@@ -634,7 +650,7 @@ export const useStore = create<Store>((set, get) => {
 
     // Internal persist
     _persist: () => {
-      const { themeName, likedIds, playlists, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, eqPreset, podcastSubscriptions } = get();
+      const { themeName, likedIds, playlists, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, eqPreset, podcastSubscriptions, currentTrack, position } = get();
       savePersisted({
         themeName,
         likedIds: Array.from(likedIds),
@@ -645,6 +661,9 @@ export const useStore = create<Store>((set, get) => {
         wifiOnly,
         eqPreset,
         podcastSubscriptions,
+        currentTrackId: currentTrack?.id,
+        playbackPosition: position,
+        lastPlayedTime: Date.now(),
       });
     },
 
