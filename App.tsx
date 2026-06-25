@@ -61,19 +61,27 @@ function Root() {
   const persistRef = useRef<() => Promise<void>>();
   const appStateRef = useRef(AppState.currentState);
   const [lastCrash, setLastCrash] = useState<CrashRecord | null>(null);
+  const [debugErrors, setDebugErrors] = useState<any[]>([]);
 
   useEffect(() => {
     persistRef.current = useStore.getState()._persist;
   }, []);
 
   // Surface any crash captured on the previous launch, then clear it.
+  // Also check for debug errors logged during the session.
   useEffect(() => {
-    getLastCrash().then((crash) => {
+    (async () => {
+      const crash = await getLastCrash();
       if (crash) {
         setLastCrash(crash);
         clearLastCrash();
       }
-    });
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        const errs = await AsyncStorage.getItem('_debug_errors');
+        if (errs) setDebugErrors(JSON.parse(errs));
+      } catch {}
+    })();
   }, []);
 
   // CRASH FIX: Wrap bootstrap and player.init in try-catch with error recovery
@@ -176,6 +184,18 @@ function Root() {
       <CertExpiryBanner />
       <AppNavigator />
       {lastCrash && <LastCrashBanner crash={lastCrash} onDismiss={() => setLastCrash(null)} />}
+      {debugErrors.length > 0 && (
+        <View style={styles.debugBanner}>
+          <ScrollView style={{ maxHeight: 150 }}>
+            <Text style={styles.debugTitle}>Debug Errors ({debugErrors.length})</Text>
+            {debugErrors.map((e, i) => (
+              <Text key={i} style={styles.debugText} selectable>
+                {e.time}: {e.msg}
+              </Text>
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 }
@@ -220,4 +240,17 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   crashDismissText: { color: '#0a0a0a', fontWeight: 'bold', fontSize: 12 },
+  debugBanner: {
+    position: 'absolute',
+    bottom: 80,
+    left: 8,
+    right: 8,
+    backgroundColor: '#1a1a2e',
+    borderColor: '#16a34a',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+  },
+  debugTitle: { color: '#86efac', fontWeight: 'bold', fontSize: 12, marginBottom: 6 },
+  debugText: { color: '#c6f6d5', fontSize: 10, fontFamily: 'monospace', marginBottom: 3 },
 });
