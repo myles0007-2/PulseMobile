@@ -111,14 +111,19 @@ export async function scanLibrary(
   return { tracks: allTracks, albums };
 }
 
-// Recursively scan a directory for audio files (Documents folder + subfolders)
+// PERF FIX: Recursively scan a directory with chunked yielding for better UI responsiveness
 async function scanDirRecursive(dir: string, rootDir: string, depth = 0): Promise<Track[]> {
   if (depth > 5) return [];
   const tracks: Track[] = [];
+  const BATCH_SIZE = 50; // Yield to UI every 50 files
+
   try {
     const contents = await FileSystem.readDirectoryAsync(dir);
+    let processedCount = 0;
+
     for (const name of contents) {
       const fullPath = (dir.endsWith('/') ? dir : dir + '/') + name;
+
       if (AUDIO_EXT.test(name)) {
         const parsed = parseFilename(name);
         const folderName = dir !== rootDir ? dir.split('/').filter(Boolean).pop() ?? '' : '';
@@ -131,21 +136,35 @@ async function scanDirRecursive(dir: string, rootDir: string, depth = 0): Promis
           uri: fullPath,
           source: 'local',
         });
+
+        processedCount++;
+
+        // BATTERY FIX: Yield to UI every BATCH_SIZE files
+        if (processedCount % BATCH_SIZE === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 0));
+          console.log(`[LibraryScan] Processed ${processedCount} files...`);
+        }
       } else if (!name.startsWith('.')) {
         try {
           const info = await FileSystem.getInfoAsync(fullPath);
           if (info.isDirectory) {
             const sub = await scanDirRecursive(fullPath + '/', rootDir, depth + 1);
             tracks.push(...sub);
+            processedCount += sub.length;
+
+            if (processedCount % BATCH_SIZE < BATCH_SIZE) {
+              await new Promise((resolve) => setTimeout(resolve, 0));
+            }
           }
         } catch (e) {
-          console.warn(`Failed to scan subdirectory ${fullPath}:`, e);
+          console.warn(`[LibraryScan] Subdirectory failed: ${fullPath}:`, e instanceof Error ? e.message : String(e));
         }
       }
     }
   } catch (e) {
-    console.warn(`Library scan error in ${dir}:`, e);
+    console.warn(`[LibraryScan] Error in ${dir}:`, e instanceof Error ? e.message : String(e));
   }
+
   return tracks;
 }
 

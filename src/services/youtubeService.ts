@@ -160,19 +160,38 @@ async function tryInvidious(path: string): Promise<any | null> {
   for (const inst of order) {
     try {
       const res = await timedFetch(`${inst}${path}`);
-      if (!res.ok) continue;
+      if (!res.ok) {
+        console.debug(`[Invidious] ${inst} returned ${res.status}`);
+        continue;
+      }
+
       const data = await safeJson(res);
-      if (!data) continue; // HTML response, skip this instance
+      if (!data) {
+        console.debug(`[Invidious] ${inst} returned invalid JSON`);
+        continue;
+      }
+
+      // Update active instance on success
       const idx = INVIDIOUS.indexOf(inst);
       if (idx !== activeInvidiousIdx) {
         activeInvidiousIdx = idx;
-        await AsyncStorage.setItem(INSTANCE_KEY, inst).catch(() => {});
+        try {
+          await AsyncStorage.setItem(INSTANCE_KEY, inst);
+        } catch (storageError) {
+          console.warn(`[Invidious] Failed to save active instance:`,
+            storageError instanceof Error ? storageError.message : String(storageError));
+        }
       }
+
+      console.log(`[Invidious] Success on ${inst}`);
       return data;
     } catch (error) {
-      console.debug(`Invidious ${inst} failed:`, error instanceof Error ? error.message : String(error));
+      console.debug(`[Invidious] ${inst} failed:`,
+        error instanceof Error ? error.message : String(error));
     }
   }
+
+  console.warn('[Invidious] All instances failed');
   return null;
 }
 
@@ -180,13 +199,23 @@ async function tryPiped(path: string): Promise<any | null> {
   for (const inst of PIPED) {
     try {
       const res = await timedFetch(`${inst}${path}`);
-      if (!res.ok) continue;
+      if (!res.ok) {
+        console.debug(`[Piped] ${inst} returned ${res.status}`);
+        continue;
+      }
+
       const data = await safeJson(res);
-      if (data) return data;
+      if (data) {
+        console.log(`[Piped] Success on ${inst}`);
+        return data;
+      }
     } catch (error) {
-      console.debug(`Piped ${inst} failed:`, error instanceof Error ? error.message : String(error));
+      console.debug(`[Piped] ${inst} failed:`,
+        error instanceof Error ? error.message : String(error));
     }
   }
+
+  console.warn('[Piped] All instances failed');
   return null;
 }
 

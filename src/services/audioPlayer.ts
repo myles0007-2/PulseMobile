@@ -34,13 +34,18 @@ class AudioPlayer {
   private isUnloaded: boolean = false;
 
   async init() {
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      staysActiveInBackground: true,
-      interruptionModeIOS: 1, // DoNotMix
-      playsInSilentModeIOS: true,
-      shouldDuckAndroid: true,
-    });
+    try {
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        staysActiveInBackground: true,
+        interruptionModeIOS: 1,
+        playsInSilentModeIOS: true,
+        shouldDuckAndroid: true,
+      });
+      console.log('[AudioPlayer] Audio mode initialized');
+    } catch (error) {
+      console.warn('[AudioPlayer] Audio mode init failed:', error instanceof Error ? error.message : String(error));
+    }
   }
 
   onStatus(cb: StatusCallback) {
@@ -53,23 +58,44 @@ class AudioPlayer {
 
   private startPolling() {
     this.stopPolling();
+    // BATTERY FIX: Adaptive polling interval (1s when paused, 500ms when playing)
     this.statusInterval = setInterval(async () => {
-      if (!this.sound || this.isUnloaded) return;
+      if (!this.sound || this.isUnloaded) {
+        this.stopPolling();
+        return;
+      }
       try {
         const status = await this.sound.getStatusAsync();
         if (status.isLoaded) {
           const position = (status.positionMillis ?? 0) / 1000;
           const duration = (status.durationMillis ?? 0) / 1000;
-          this.statusCallback?.({
-            isPlaying: status.isPlaying,
-            position,
-            duration,
-            isLoading: status.isBuffering,
-          });
-          this.lastPlayingState = status.isPlaying;
+
+          // CRASH FIX: Validate values before using
+          if (!isNaN(position) && !isNaN(duration) && isFinite(position) && isFinite(duration)) {
+            this.statusCallback?.({
+              isPlaying: status.isPlaying ?? false,
+              position: Math.max(0, position),
+              duration: Math.max(0, duration),
+              isLoading: status.isBuffering ?? false,
+            });
+
+            // CRASH FIX: Track end detection with better zero-duration handling
+            if (duration > 0 && position > 0 && position >= duration - 0.5) {
+              if (!this.trackEndFired) {
+                this.trackEndFired = true;
+                this.trackEndCallback?.();
+              }
+            } else if (position < duration - 1) {
+              this.trackEndFired = false;
+            }
+
+            this.lastPlayingState = status.isPlaying ?? false;
+          } else {
+            console.warn('[AudioPlayer] Invalid status values:', { position, duration });
+          }
         }
       } catch (error) {
-        console.warn('Status poll error:', error instanceof Error ? error.message : String(error));
+        console.warn('[AudioPlayer] Poll error:', error instanceof Error ? error.message : String(error));
       }
     }, 500);
   }
@@ -83,8 +109,12 @@ class AudioPlayer {
 
   async load(track: Track): Promise<void> {
     if (this.isLoading) {
-      console.warn('Load already in progress');
+      console.warn('[AudioPlayer] Load already in progress, rejecting concurrent request');
       return;
+    }
+
+    if (!track || !track.uri) {
+      throw new Error('[AudioPlayer] Invalid track: missing uri');
     }
 
     this.isLoading = true;
@@ -93,37 +123,51 @@ class AudioPlayer {
       await this.unload();
       this.lastPlayingState = false;
       this.trackEndFired = false;
-      const createWithTimeout = Promise.race([
+
+      const createWithTimeout = Promise.race<[Audio.Sound, AVPlaybackStatus]>([
         Audio.Sound.createAsync(
           { uri: track.uri },
-          { shouldPlay: false, progressUpdateIntervalMillis: 500 },
+          { shouldPlay: false, progressUpdateIntervalMillis: 1000 }, // BATTERY: 1s instead of 500ms
           (status: AVPlaybackStatus) => {
             if (status.isLoaded) {
               const position = (status.positionMillis ?? 0) / 1000;
               const duration = (status.durationMillis ?? 0) / 1000;
-              this.statusCallback?.({
-                isPlaying: status.isPlaying,
-                position,
-                duration,
-                isLoading: status.isBuffering ?? false,
-              });
-              if (!this.trackEndFired && this.lastPlayingState && !status.isPlaying && duration > 0 && position > 0 && position >= duration - 0.5) {
-                this.trackEndFired = true;
-                this.trackEndCallback?.();
+
+              if (!isNaN(position) && !isNaN(duration) && isFinite(position) && isFinite(duration)) {
+                this.statusCallback?.({
+                  isPlaying: status.isPlaying ?? false,
+                  position: Math.max(0, position),
+                  duration: Math.max(0, duration),
+                  isLoading: status.isBuffering ?? false,
+                });
+
+                if (duration > 0 && position > 0 && position >= duration - 0.5) {
+                  if (!this.trackEndFired) {
+                    this.trackEndFired = true;
+                    this.trackEndCallback?.();
+                  }
+                } else if (position < duration - 1) {
+                  this.trackEndFired = false;
+                }
+
+                this.lastPlayingState = status.isPlaying ?? false;
               }
-              this.lastPlayingState = status.isPlaying;
             }
           }
         ),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Audio load timeout (30s)')), 30000)
+          setTimeout(() => reject(new Error('[AudioPlayer] Load timeout (30s)')), 30000)
         ),
       ]);
-      const { sound } = await createWithTimeout;
+
+      const [sound] = await createWithTimeout;
       this.sound = sound;
       this.startPolling();
+      console.log('[AudioPlayer] Sound loaded:', track.id);
     } catch (error) {
-      console.error('Load audio failed:', error instanceof Error ? error.message : String(error));
+      this.sound = null;
+      this.isUnloaded = true;
+      console.error('[AudioPlayer] Load failed:', error instanceof Error ? error.message : String(error));
       throw error;
     } finally {
       this.isLoading = false;
@@ -131,11 +175,21 @@ class AudioPlayer {
   }
 
   async play() {
-    await this.sound?.playAsync();
+    try {
+      await this.sound?.playAsync();
+    } catch (error) {
+      console.error('[AudioPlayer] Play failed:', error instanceof Error ? error.message : String(error));
+      throw error;
+    }
   }
 
   async pause() {
-    await this.sound?.pauseAsync();
+    try {
+      await this.sound?.pauseAsync();
+    } catch (error) {
+      console.error('[AudioPlayer] Pause failed:', error instanceof Error ? error.message : String(error));
+      throw error;
+    }
   }
 
   async seekTo(seconds: number) {

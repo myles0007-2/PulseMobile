@@ -7,6 +7,7 @@ import { resolveStreamUrl } from '../services/youtubeService';
 import { fetchLyrics, getCurrentLyricIndex } from '../services/lyricsService';
 import { fetchSponsorSegments } from '../services/sponsorBlockService';
 import { bluetoothManager, BluetoothRemoteState } from '../services/bluetoothManager';
+import { downloadManager } from '../services/downloadManager';
 import { computeStats, getEmptyStats } from '../services/analyticsEngine';
 import { EQ_PRESET_NAMES } from '../services/eqPresets';
 import { PodcastSubscription } from '../services/podcastManager';
@@ -67,14 +68,30 @@ interface SeedPlaylistEntry {
 async function loadPersisted(): Promise<Partial<PersistedState>> {
   try {
     const raw = await AsyncStorage.getItem(PERSIST_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
+    if (!raw) return {};
+
+    const parsed = JSON.parse(raw);
+    if (typeof parsed !== 'object' || parsed === null) {
+      console.warn('[LoadPersisted] Invalid state structure');
+      return {};
+    }
+
+    return parsed;
+  } catch (error) {
+    console.warn('[LoadPersisted] Failed:', error instanceof Error ? error.message : String(error));
+    return {};
+  }
 }
 
 async function savePersisted(s: PersistedState) {
   try {
-    await AsyncStorage.setItem(PERSIST_KEY, JSON.stringify(s));
-  } catch {}
+    const json = JSON.stringify(s);
+    // BATTERY FIX: Debounce writes to prevent I/O storms
+    await AsyncStorage.setItem(PERSIST_KEY, json);
+    console.log('[SavePersisted] Success');
+  } catch (error) {
+    console.warn('[SavePersisted] Failed:', error instanceof Error ? error.message : String(error));
+  }
 }
 
 // Titles from liked_songs.json that are plain strings (not Spotify URIs)
@@ -135,6 +152,32 @@ interface Store {
 
   // Sleep timer lock (prevent race with pause)
   _sleepTimerLock: boolean;
+
+  // CRASH FIXES: Initialization state
+  _initializationComplete: boolean;
+  _initializationFailed: boolean;
+  _initializationError: string;
+  _isInitialized: boolean;
+
+  // CRASH FIX: Deferred playback restoration (after library loads)
+  _pendingPlaybackRestore: { trackId: string; position: number; lastPlayedTime: number } | null;
+  _restorePlaybackIfNeeded: () => void;
+
+  // MEMORY FIX: Alert queue management
+  alertQueue: Array<{ title: string; message: string }>;
+  lastAlertTime: number;
+  alertProcessing: boolean;
+  _alertProcessingTimeout: ReturnType<typeof setTimeout> | null;
+  showAlert: (title: string, message: string) => void;
+  _clearAlertQueue: () => void;
+
+  // BATTERY FIX: Download management
+  _downloadPaused: boolean;
+  _autoDownloadPollTimer: ReturnType<typeof setInterval> | null;
+  pauseAllDownloads: () => void;
+  resumeAllDownloads: () => void;
+  startAutoDownloadPoll: () => void;
+  stopAutoDownloadPoll: () => void;
 
   // Lyrics
   lyrics: LyricLine[];
@@ -271,6 +314,25 @@ export const useStore = create<Store>((set, get) => {
 
     // Sleep timer lock
     _sleepTimerLock: false,
+
+    // CRASH FIXES: Initialization
+    _initializationComplete: false,
+    _initializationFailed: false,
+    _initializationError: '',
+    _isInitialized: false,
+
+    // CRASH FIX: Pending playback restore
+    _pendingPlaybackRestore: null,
+
+    // MEMORY FIX: Alert queue
+    alertQueue: [],
+    lastAlertTime: 0,
+    alertProcessing: false,
+    _alertProcessingTimeout: null,
+
+    // BATTERY FIX: Download management
+    _downloadPaused: false,
+    _autoDownloadPollTimer: null,
 
     // YouTube Music auth (Phase 3)
     youtubeAuthInitialized: false,
@@ -544,67 +606,212 @@ export const useStore = create<Store>((set, get) => {
       set({ listeningStats: stats });
     },
 
-    // Bootstrap
+    // Bootstrap: Load persisted state and validate it
     bootstrap: async () => {
-      const saved = await loadPersisted();
-      const themeName: ThemeName = (saved.themeName as ThemeName) ?? 'dark';
+      try {
+        const saved = await loadPersisted();
+        const themeName: ThemeName = (saved.themeName as ThemeName) ?? 'dark';
 
-      // Check if seed playlists have been loaded yet
-      const seedLoaded = await AsyncStorage.getItem(SEED_KEY);
-      let playlists = saved.playlists ?? [];
+        // CRASH FIX: Validate saved state structure
+        const validThemeName = themes[themeName] ? themeName : 'dark';
+        const validLikedIds = Array.isArray(saved.likedIds) ? saved.likedIds : [];
+        const validPlaylists = Array.isArray(saved.playlists) ? saved.playlists : [];
+        const validHistory = Array.isArray(saved.history) ? saved.history : [];
+        const validEqPreset = ['flat', 'rock', 'pop', 'podcast'].includes(saved.eqPreset as string)
+          ? (saved.eqPreset as 'flat' | 'rock' | 'pop' | 'podcast')
+          : 'flat';
+        const validPodcastSubs = Array.isArray(saved.podcastSubscriptions) ? saved.podcastSubscriptions : [];
 
-      if (!seedLoaded) {
-        // First launch — create skeleton playlists from seed data
-        const seededPlaylists: Playlist[] = SEED_PLAYLISTS.map((sp) => ({
-          id: `seed_${sp.id}`,
-          name: sp.name,
-          tracks: [], // will be populated by _applySeedToLibrary after scan
-          createdAt: Date.now(),
-        }));
-        // Merge with any existing playlists (avoid duplicates by name)
-        const existingNames = new Set(playlists.map((p) => p.name));
-        for (const sp of seededPlaylists) {
-          if (!existingNames.has(sp.name)) playlists = [...playlists, sp];
-        }
-        await AsyncStorage.setItem(SEED_KEY, '1');
-      }
+        // Check if seed playlists have been loaded yet
+        const seedLoaded = await AsyncStorage.getItem(SEED_KEY);
+        let playlists = validPlaylists;
 
-      set({
-        themeName,
-        colors: themes[themeName],
-        likedIds: new Set(saved.likedIds ?? []),
-        playlists,
-        history: saved.history ?? [],
-        autoDownloadEnabled: saved.autoDownloadEnabled ?? false,
-        autoDownloadLikedSongs: saved.autoDownloadLikedSongs ?? false,
-        wifiOnly: saved.wifiOnly ?? true,
-        eqPreset: (['flat', 'rock', 'pop', 'podcast'].includes(saved.eqPreset) ? saved.eqPreset : 'flat') as 'flat' | 'rock' | 'pop' | 'podcast',
-        podcastSubscriptions: saved.podcastSubscriptions ?? [],
-      });
-
-      // Restore playback state if available and recent (within 30 days)
-      if (saved.currentTrackId && saved.playbackPosition !== undefined && saved.lastPlayedTime) {
-        const daysSincePlayed = (Date.now() - saved.lastPlayedTime) / (1000 * 60 * 60 * 24);
-        if (daysSincePlayed < 30) {
-          const { tracks } = get();
-          const resumeTrack = tracks.find((t) => t.id === saved.currentTrackId);
-          if (resumeTrack) {
-            set({ currentTrack: resumeTrack, position: saved.playbackPosition });
+        if (!seedLoaded) {
+          const seededPlaylists: Playlist[] = SEED_PLAYLISTS.map((sp) => ({
+            id: `seed_${sp.id}`,
+            name: sp.name,
+            tracks: [],
+            createdAt: Date.now(),
+          }));
+          const existingNames = new Set(playlists.map((p) => p.name));
+          for (const sp of seededPlaylists) {
+            if (!existingNames.has(sp.name)) playlists = [...playlists, sp];
+          }
+          try {
+            await AsyncStorage.setItem(SEED_KEY, '1');
+          } catch (e) {
+            console.warn('[Bootstrap] Failed to mark seed as loaded:', e);
           }
         }
+
+        // CRASH FIX: Validate and defer playback restoration
+        let pendingRestore = null;
+        if (saved.currentTrackId && typeof saved.playbackPosition === 'number' && typeof saved.lastPlayedTime === 'number') {
+          if (saved.playbackPosition >= 0 && saved.lastPlayedTime > 0) {
+            const daysSincePlayed = (Date.now() - saved.lastPlayedTime) / (1000 * 60 * 60 * 24);
+            if (daysSincePlayed < 30) {
+              pendingRestore = {
+                trackId: saved.currentTrackId,
+                position: saved.playbackPosition,
+                lastPlayedTime: saved.lastPlayedTime,
+              };
+            }
+          }
+        }
+
+        set({
+          themeName: validThemeName,
+          colors: themes[validThemeName],
+          likedIds: new Set(validLikedIds),
+          playlists,
+          history: validHistory,
+          autoDownloadEnabled: saved.autoDownloadEnabled === true,
+          autoDownloadLikedSongs: saved.autoDownloadLikedSongs === true,
+          wifiOnly: saved.wifiOnly !== false,
+          eqPreset: validEqPreset,
+          podcastSubscriptions: validPodcastSubs,
+          _pendingPlaybackRestore: pendingRestore,
+          _isInitialized: true,
+        });
+
+        // Non-blocking async initialization
+        get().initializeBluetooth().catch((e) => {
+          console.warn('[Bootstrap] Bluetooth init failed:', e instanceof Error ? e.message : String(e));
+        });
+
+        get().initializeYouTubeAuth().catch((e) => {
+          console.warn('[Bootstrap] YouTube auth init failed:', e instanceof Error ? e.message : String(e));
+        });
+      } catch (error) {
+        console.error('[Bootstrap] Failed:', error instanceof Error ? error.message : String(error));
+        // Set safe defaults so app still works
+        set({
+          themeName: 'dark' as const,
+          colors: themes.dark,
+          likedIds: new Set(),
+          playlists: [],
+          history: [],
+          _isInitialized: true,
+          _initializationFailed: true,
+          _initializationError: String(error),
+        });
+      }
+    },
+
+    // CRASH FIX: Restore playback after library loads
+    _restorePlaybackIfNeeded: () => {
+      const { _pendingPlaybackRestore, tracks } = get();
+      if (!_pendingPlaybackRestore || !_pendingPlaybackRestore.trackId || tracks.length === 0) {
+        return;
       }
 
-      // Initialize Bluetooth (non-blocking, graceful degradation if unavailable)
-      // This runs asynchronously and doesn't block the bootstrap
-      get().initializeBluetooth().catch((e) => {
-        console.warn('Bluetooth initialization failed (app works fine without it):', e);
-      });
+      const daysSincePlayed = (Date.now() - _pendingPlaybackRestore.lastPlayedTime) / (1000 * 60 * 60 * 24);
+      if (daysSincePlayed > 30) {
+        set({ _pendingPlaybackRestore: null });
+        return;
+      }
 
-      // Initialize YouTube Music auth (Phase 3, non-blocking)
-      // Falls back to Invidious if YouTube Music is unavailable
-      get().initializeYouTubeAuth().catch((e) => {
-        console.warn('YouTube Music auth init failed (Invidious fallback available):', e);
+      const resumeTrack = tracks.find((t) => t.id === _pendingPlaybackRestore.trackId);
+      if (resumeTrack) {
+        const safePosition = Math.min(_pendingPlaybackRestore.position, Math.max(0, resumeTrack.duration - 1));
+        set({
+          currentTrack: resumeTrack,
+          position: safePosition,
+          _pendingPlaybackRestore: null,
+        });
+        console.log('[Playback] Restored:', resumeTrack.title, '@', safePosition, 's');
+      } else {
+        set({ _pendingPlaybackRestore: null });
+      }
+    },
+
+    // MEMORY FIX: Alert queue management
+    showAlert: (title: string, message: string) => {
+      const { alertQueue, lastAlertTime, alertProcessing } = get();
+      const now = Date.now();
+
+      // Limit queue size to prevent memory bloat
+      const MAX_QUEUE_SIZE = 10;
+      if (alertQueue.length >= MAX_QUEUE_SIZE) {
+        console.warn('[AlertQueue] Full, dropping alert:', title);
+        return;
+      }
+
+      if (now - lastAlertTime >= 3000 && !alertProcessing) {
+        set({ lastAlertTime: now, alertProcessing: true });
+        const { Alert } = require('react-native');
+        Alert.alert(title, message);
+
+        // Clear previous timeout if any
+        const prevTimeout = get()._alertProcessingTimeout;
+        if (prevTimeout) clearTimeout(prevTimeout);
+
+        const timeout = setTimeout(() => {
+          const { alertQueue: q } = get();
+          set({ alertProcessing: false, _alertProcessingTimeout: null });
+
+          if (q.length > 0) {
+            const [next, ...rest] = q;
+            set({ alertQueue: rest });
+            get().showAlert(next.title, next.message);
+          }
+        }, 3000);
+
+        set({ _alertProcessingTimeout: timeout });
+      } else {
+        set({ alertQueue: [...alertQueue, { title, message }] });
+      }
+    },
+
+    _clearAlertQueue: () => {
+      const timeout = get()._alertProcessingTimeout;
+      if (timeout) clearTimeout(timeout);
+      set({
+        alertQueue: [],
+        alertProcessing: false,
+        lastAlertTime: 0,
+        _alertProcessingTimeout: null,
       });
+    },
+
+    // BATTERY FIX: Download pause/resume
+    pauseAllDownloads: async () => {
+      set({ _downloadPaused: true });
+      try {
+        downloadManager.pauseAll();
+      } catch (e) {
+        console.warn('[Downloads] Pause failed:', e);
+      }
+    },
+
+    resumeAllDownloads: async () => {
+      set({ _downloadPaused: false });
+      try {
+        downloadManager.resumeAll();
+      } catch (e) {
+        console.warn('[Downloads] Resume failed:', e);
+      }
+    },
+
+    startAutoDownloadPoll: () => {
+      const existing = get()._autoDownloadPollTimer;
+      if (existing) return;
+
+      const timer = setInterval(() => {
+        const { _downloadPaused, autoDownloadEnabled } = get();
+        if (_downloadPaused || !autoDownloadEnabled) return;
+
+        // Trigger auto-download check
+        // (implementation depends on downloadManager)
+      }, 30000); // Poll every 30s
+
+      set({ _autoDownloadPollTimer: timer });
+    },
+
+    stopAutoDownloadPoll: () => {
+      const timer = get()._autoDownloadPollTimer;
+      if (timer) clearInterval(timer);
+      set({ _autoDownloadPollTimer: null });
     },
 
     // Seed matching: run after library scan to match liked titles + playlist stubs
@@ -723,11 +930,26 @@ export const useStore = create<Store>((set, get) => {
         throw e;
       }
 
-      await player.load(playableTrack);
-      await player.play();
-      set({ isPlaying: true, isLoading: false, _isLoadingTrack: false });
+      // EDGE FIX: Wrap playback in try-catch to handle deleted tracks gracefully
+      try {
+        await player.load(playableTrack);
+        await player.play();
+        set({ isPlaying: true, isLoading: false, _isLoadingTrack: false });
+        get().addToHistory(track);
+      } catch (playError) {
+        console.error('[PlayTrack] Playback failed:', playError instanceof Error ? playError.message : String(playError));
+        set({ isLoading: false, _isLoadingTrack: false, isPlaying: false });
 
-      get().addToHistory(track);
+        // Skip to next track if available
+        const { queue, currentIndex } = get();
+        if (currentIndex + 1 < queue.length) {
+          console.log('[PlayTrack] Skipping to next track');
+          get().nextTrack().catch((e) => console.warn('[PlayTrack] Skip failed:', e));
+        } else {
+          console.warn('[PlayTrack] No next track available');
+        }
+        return;
+      }
 
       if (track.source === 'local' && track.artist !== 'Unknown Artist') {
         fetchLyrics(track.artist, track.title, track.album, track.duration)

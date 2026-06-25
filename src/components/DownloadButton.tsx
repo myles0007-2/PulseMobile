@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, Text, View, StyleSheet, Alert } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import { Track } from '../types';
 import { downloadManager, DownloadTask } from '../services/downloadManager';
 import { useStore } from '../store/useStore';
@@ -9,67 +9,77 @@ interface DownloadButtonProps {
   size?: 'small' | 'medium';
 }
 
-// Alert rate limiter: max 1 alert per 3 seconds
-let lastAlertTime = 0;
-const ALERT_COOLDOWN_MS = 3000;
-const alertQueue: Array<{ title: string; message: string }> = [];
-let alertProcessing = false;
-
-async function showRateLimitedAlert(title: string, message: string) {
-  const now = Date.now();
-  if (now - lastAlertTime >= ALERT_COOLDOWN_MS && !alertProcessing) {
-    lastAlertTime = now;
-    alertProcessing = true;
-    Alert.alert(title, message);
-    setTimeout(() => {
-      alertProcessing = false;
-      if (alertQueue.length > 0) {
-        const next = alertQueue.shift();
-        if (next) showRateLimitedAlert(next.title, next.message);
-      }
-    }, ALERT_COOLDOWN_MS);
-  } else {
-    alertQueue.push({ title, message });
-  }
-}
-
 export const DownloadButton: React.FC<DownloadButtonProps> = ({ track, size = 'medium' }) => {
   const [task, setTask] = useState<DownloadTask | undefined>();
   const [progress, setProgress] = useState(0);
+  const showAlert = useStore((s) => s.showAlert);
+  const clearAlertQueueRef = useRef<() => void>();
 
   useEffect(() => {
-    // Check if already downloaded
+    clearAlertQueueRef.current = useStore.getState()._clearAlertQueue;
+  }, []);
+
+  useEffect(() => {
     const checkDownload = async () => {
-      const path = await downloadManager.getDownloadedFilePath(track.id);
-      if (path) {
-        setTask({ id: `${track.id}`, track, status: 'completed', progress: 100, bytesDownloaded: 0, totalBytes: 0, retryAttempts: 0 });
+      try {
+        const path = await downloadManager.getDownloadedFilePath(track.id);
+        if (path) {
+          setTask({
+            id: `${track.id}`,
+            track,
+            status: 'completed',
+            progress: 100,
+            bytesDownloaded: 0,
+            totalBytes: 0,
+            retryAttempts: 0,
+          });
+        }
+      } catch (error) {
+        console.warn('[DownloadButton] Failed to check download:', error);
       }
     };
 
     checkDownload();
 
-    // Listen to download progress
-    downloadManager.onProgress((p) => {
+    const progressListener = downloadManager.onProgress((p) => {
       if (p.taskId.includes(track.id)) {
         setProgress(p.progress);
       }
     });
 
-    // Listen to download completion
-    downloadManager.onComplete((taskId, success) => {
+    const completeListener = downloadManager.onComplete((taskId, success) => {
       if (taskId.includes(track.id)) {
         if (success) {
-          setTask({ id: taskId, track, status: 'completed', progress: 100, bytesDownloaded: 0, totalBytes: 0, retryAttempts: 0 });
+          setTask({
+            id: taskId,
+            track,
+            status: 'completed',
+            progress: 100,
+            bytesDownloaded: 0,
+            totalBytes: 0,
+            retryAttempts: 0,
+          });
           setProgress(100);
-          showRateLimitedAlert('Download Complete', `"${track.title}" has been saved offline.`);
+          showAlert('Download Complete', `"${track.title}" saved offline.`);
         } else {
           setTask(undefined);
           setProgress(0);
-          showRateLimitedAlert('Download Failed', `Failed to download "${track.title}".`);
+          showAlert('Download Failed', `Failed to download "${track.title}".`);
         }
       }
     });
-  }, [track.id]);
+
+    return () => {
+      progressListener?.();
+      completeListener?.();
+    };
+  }, [track.id, showAlert]);
+
+  useEffect(() => {
+    return () => {
+      clearAlertQueueRef.current?.();
+    };
+  }, []);
 
   const handleDownload = async () => {
     if (task?.status === 'completed') return; // Already downloaded

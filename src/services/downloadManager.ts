@@ -81,13 +81,16 @@ class DownloadManager {
     }
   }
 
-  // Save queue to persistent storage
+  // CRASH FIX: Save queue to persistent storage with proper error handling
   private async persistQueue() {
     try {
       const tasks = Array.from(this.queue.values());
-      await AsyncStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(tasks));
+      const json = JSON.stringify(tasks);
+      await AsyncStorage.setItem(QUEUE_STORAGE_KEY, json);
+      console.log(`[DownloadManager] Queue persisted: ${tasks.length} tasks`);
     } catch (e) {
-      console.error('Failed to persist download queue:', e);
+      console.warn('[DownloadManager] Failed to persist queue:',
+        e instanceof Error ? e.message : String(e));
     }
   }
 
@@ -314,6 +317,90 @@ class DownloadManager {
     } catch (e) {
       console.error('Failed to get downloads folder size:', e);
       return 0;
+    }
+  }
+
+  // BATTERY & EDGE FIX: Pause all downloads (called on app background)
+  pauseAll() {
+    console.log('[DownloadManager] Pausing all downloads');
+    this.isProcessing = false;
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+  }
+
+  // BATTERY & EDGE FIX: Resume downloads (called on app foreground)
+  resumeAll() {
+    console.log('[DownloadManager] Resuming downloads');
+    this.processQueue();
+  }
+
+  // EDGE FIX: Handle network loss gracefully
+  async onNetworkLoss() {
+    console.warn('[DownloadManager] Network lost, pausing downloads');
+    this.pauseAll();
+    // Pause current task
+    if (this.currentTaskId) {
+      const task = this.queue.get(this.currentTaskId);
+      if (task && task.status === 'downloading') {
+        task.status = 'paused';
+        await this.persistQueue();
+      }
+    }
+  }
+
+  // EDGE FIX: Resume after network restored
+  async onNetworkRestore() {
+    console.log('[DownloadManager] Network restored, resuming downloads');
+    this.resumeAll();
+  }
+
+  // MEMORY FIX: Cleanup old downloads (LRU cache eviction)
+  async cleanupOldDownloads(maxSizeMB: number = 500) {
+    try {
+      const currentSize = await this.getDownloadsFolderSize();
+      const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+      if (currentSize > maxSizeBytes) {
+        console.log(`[DownloadManager] Cache full (${(currentSize / 1024 / 1024).toFixed(1)}MB), cleaning up`);
+
+        const files = await FileSystem.readDirectoryAsync(DOWNLOADS_DIR);
+        const fileStats: Array<{ name: string; modTime: number; size: number }> = [];
+
+        for (const file of files) {
+          const fileUri = `${DOWNLOADS_DIR}/${file}`;
+          const info = await FileSystem.getInfoAsync(fileUri);
+          if (info.exists && info.isDirectory === false) {
+            fileStats.push({
+              name: file,
+              modTime: info.modificationTime ?? 0,
+              size: (info as FileSystem.FileInfo).size ?? 0,
+            });
+          }
+        }
+
+        // Sort by modification time (oldest first)
+        fileStats.sort((a, b) => a.modTime - b.modTime);
+
+        // Delete oldest files until under limit
+        let freed = 0;
+        for (const stat of fileStats) {
+          if (currentSize - freed <= maxSizeBytes * 0.8) break; // Stop at 80% capacity
+
+          try {
+            await FileSystem.deleteAsync(`${DOWNLOADS_DIR}/${stat.name}`, { idempotent: true });
+            freed += stat.size;
+            console.log(`[DownloadManager] Deleted old download: ${stat.name}`);
+          } catch (e) {
+            console.warn(`[DownloadManager] Failed to delete ${stat.name}:`, e);
+          }
+        }
+
+        console.log(`[DownloadManager] Cleanup freed ${(freed / 1024 / 1024).toFixed(1)}MB`);
+      }
+    } catch (e) {
+      console.warn('[DownloadManager] Cleanup error:', e instanceof Error ? e.message : String(e));
     }
   }
 }

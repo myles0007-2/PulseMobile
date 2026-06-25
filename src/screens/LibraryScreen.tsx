@@ -21,12 +21,21 @@ export function LibraryScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const { tracks, albums, isLibraryLoaded, isScanning, setLibrary, setScanning, setScanProgress, playTrack, currentTrack } = useStore();
+  const restorePlayback = useStore((s) => s._restorePlaybackIfNeeded);
   const [activeTab, setActiveTab] = useState<Tab>('tracks');
   const [search, setSearch] = useState('');
 
   React.useEffect(() => {
     if (!isLibraryLoaded) loadLibrary(false);
   }, []);
+
+  // CRASH FIX: Restore playback after library loads
+  React.useEffect(() => {
+    if (isLibraryLoaded && tracks.length > 0) {
+      console.log('[LibraryScreen] Library loaded, attempting to restore playback...');
+      restorePlayback();
+    }
+  }, [isLibraryLoaded, tracks.length, restorePlayback]);
 
   const loadLibrary = useCallback(async (forceRescan: boolean) => {
     if (!forceRescan) {

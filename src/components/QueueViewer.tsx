@@ -76,12 +76,16 @@ export const QueueViewer = React.memo<React.FC<QueueViewerProps>>(({
           </Pressable>
         </View>
 
-        {/* Queue List */}
+        {/* Queue List with PERF optimizations for large queues */}
         <FlatList
           data={queue}
           renderItem={renderQueueItem}
           keyExtractor={(item, index) => `queue-item-${currentIndex}-${index}-${item.id}`}
           contentContainerStyle={{ paddingBottom: 100 }}
+          maxToRenderPerBatch={50}
+          updateCellsBatchingPeriod={50}
+          initialNumToRender={20}
+          removeClippedSubviews
         />
       </View>
     </Modal>
