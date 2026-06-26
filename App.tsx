@@ -61,16 +61,7 @@ function Root() {
     console.error = (...args: any[]) => {
       originalError.apply(console, args);
       try {
-        let msg = args.map((a) => (a instanceof Error ? a.stack : String(a))).join('\n');
-
-        // PRIVACY FIX: Sanitize sensitive data (tokens, auth data) from error logs
-        msg = msg
-          .replace(/Bearer\s+[a-zA-Z0-9\-_.]+/g, 'Bearer [REDACTED]')
-          .replace(/"access_token"\s*:\s*"[^"]*"/g, '"access_token": "[REDACTED]"')
-          .replace(/"refresh_token"\s*:\s*"[^"]*"/g, '"refresh_token": "[REDACTED]"')
-          .replace(/"token"\s*:\s*"[^"]*"/g, '"token": "[REDACTED]"')
-          .replace(/authorization["\s:]+[a-zA-Z0-9\-_.]+/gi, 'authorization: [REDACTED]');
-
+        const msg = args.map((a) => (a instanceof Error ? a.stack : String(a))).join('\n');
         AsyncStorage.getItem('_debug_errors')
           .then((e: string | null) => {
             const errors = e ? JSON.parse(e) : [];
