@@ -53,27 +53,6 @@ console.log('[APP-BOOTSTRAP] theme imported');
 const originalError = console.error;
 console.log('[APP-BOOTSTRAP] Module eval complete');
 
-// CRITICAL: Wrap global error handler to ensure ALL exceptions are visible in Console
-const originalConsoleError = console.error;
-console.error = function(...args: any[]) {
-  originalConsoleError.apply(console, args);
-  // Ensure error is also logged to system console
-  const msg = args.map((a) => {
-    if (a instanceof Error) return `${a.name}: ${a.message}\n${a.stack}`;
-    return String(a);
-  }).join(' ');
-  originalConsoleError('[CONSOLE-ERROR-CAPTURE]', msg);
-};
-
-const originalWarn = console.warn;
-console.warn = function(...args: any[]) {
-  originalWarn.apply(console, args);
-  const msg = args.map((a) => String(a)).join(' ');
-  originalWarn('[CONSOLE-WARN-CAPTURE]', msg);
-};
-
-console.log('[APP-BOOTSTRAP] Global error capture installed');
-
 /**
  * Banner shown on launch when the previous session ended in a fatal JS error.
  * Uses hardcoded colors so it renders even if the store/theme is the culprit.
