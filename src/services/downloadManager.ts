@@ -60,12 +60,17 @@ class DownloadManager {
 
   constructor() {
     // CRASH FIX: Do NOT call async work in constructor—defer to async context
-    // Just initialize queue from storage
-    this.restoreQueue();
-    // Initialize directories asynchronously (but don't await)
-    this.initializeDirectories().catch((e) => {
-      console.warn('[DownloadManager] Dir init failed:', e);
-    });
+    // Fire-and-forget both async operations without calling them synchronously
+    const restoreAndInit = async () => {
+      try {
+        await this.restoreQueue();
+        await this.initializeDirectories();
+      } catch (e) {
+        console.warn('[DownloadManager] Async init failed:', e);
+      }
+    };
+    // Don't await, let it run in background
+    restoreAndInit().catch(() => {});
   }
 
   private async initializeDirectories() {
