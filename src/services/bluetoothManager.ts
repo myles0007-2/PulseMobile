@@ -115,8 +115,9 @@ class BluetoothManager {
 
     console.log(`🎧 Bluetooth command received: ${command}`);
 
-    // Notify all listeners
-    for (const listener of this.commandListeners) {
+    // RACE CONDITION FIX: Copy listeners array to prevent crash if listeners modified during iteration
+    const listenersCopy = [...this.commandListeners];
+    for (const listener of listenersCopy) {
       try {
         listener(command);
       } catch (error) {

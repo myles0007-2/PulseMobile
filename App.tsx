@@ -61,7 +61,16 @@ function Root() {
     console.error = (...args: any[]) => {
       originalError.apply(console, args);
       try {
-        const msg = args.map((a) => (a instanceof Error ? a.stack : String(a))).join('\n');
+        let msg = args.map((a) => (a instanceof Error ? a.stack : String(a))).join('\n');
+
+        // PRIVACY FIX: Sanitize sensitive data (tokens, auth data) from error logs
+        msg = msg
+          .replace(/Bearer\s+[a-zA-Z0-9\-_.]+/g, 'Bearer [REDACTED]')
+          .replace(/"access_token"\s*:\s*"[^"]*"/g, '"access_token": "[REDACTED]"')
+          .replace(/"refresh_token"\s*:\s*"[^"]*"/g, '"refresh_token": "[REDACTED]"')
+          .replace(/"token"\s*:\s*"[^"]*"/g, '"token": "[REDACTED]"')
+          .replace(/authorization["\s:]+[a-zA-Z0-9\-_.]+/gi, 'authorization: [REDACTED]');
+
         AsyncStorage.getItem('_debug_errors')
           .then((e: string | null) => {
             const errors = e ? JSON.parse(e) : [];
@@ -182,6 +191,23 @@ function Root() {
     };
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription.remove();
+  }, []);
+
+  // MEMORY FIX: Handle low-memory warnings from iOS
+  useEffect(() => {
+    const handleMemoryWarning = async () => {
+      console.warn('[APP] Low memory warning received');
+      try {
+        await useStore.getState().pauseAllDownloads?.();
+        const store = useStore.getState();
+        if (store._clearImageCache) await store._clearImageCache();
+      } catch (e) {
+        console.error('[APP] Error handling memory warning:', e);
+      }
+    };
+
+    const subscription = AppState.addEventListener('memoryWarning', handleMemoryWarning as any);
     return () => subscription.remove();
   }, []);
 

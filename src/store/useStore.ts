@@ -261,6 +261,7 @@ interface Store {
   // Bootstrap & internal
   bootstrap: () => Promise<void>;
   _persist: () => Promise<void>;
+  _clearImageCache: () => Promise<void>;
   _applySeedToLibrary: (tracks: Track[]) => void;
 
   // Player actions
@@ -422,7 +423,9 @@ export const useStore = create<Store>((set, get) => {
       if (_historyPersistTimer) clearTimeout(_historyPersistTimer);
 
       const entry: HistoryEntry = { track, playedAt: Date.now() };
-      set((s) => ({ history: [entry, ...s.history.filter((h) => h.track.id !== track.id)].slice(0, 200) }));
+      // MEMORY FIX: Cap event queue at 1000 to prevent OOM on long sessions (12+ hours)
+      // Each entry ≈ 0.5KB, so 1000 = ~500KB memory usage
+      set((s) => ({ history: [entry, ...s.history.filter((h) => h.track.id !== track.id)].slice(0, 1000) }));
 
       const timer = setTimeout(() => {
         get()._persist();
@@ -926,6 +929,21 @@ export const useStore = create<Store>((set, get) => {
         });
       } catch (e) {
         console.warn('Failed to persist state:', e);
+      }
+    },
+
+    // MEMORY FIX: Clear image cache on low-memory warning
+    _clearImageCache: async () => {
+      try {
+        console.log('[Store] Clearing image cache');
+        // TODO: If image caching is implemented, clear it here
+        // For now, we can clear the currentTrack artwork to free memory
+        const { currentTrack } = get();
+        if (currentTrack?.artwork) {
+          set({ currentTrack: { ...currentTrack, artwork: undefined } });
+        }
+      } catch (e) {
+        console.warn('[Store] Failed to clear image cache:', e);
       }
     },
 

@@ -148,11 +148,37 @@ class YouTubeMusicAuth {
 
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
 
-      // Step 3: Open browser for OAuth
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, Linking.createURL('auth/youtube'));
+      // Step 3: Open browser for OAuth with 30s timeout
+      const timeoutPromise = new Promise<any>((_, reject) =>
+        setTimeout(() => reject(new Error('[YouTube] OAuth timeout (30s)')), 30000)
+      );
+
+      let result;
+      try {
+        result = await Promise.race([
+          WebBrowser.openAuthSessionAsync(authUrl, Linking.createURL('auth/youtube')),
+          timeoutPromise
+        ]);
+      } catch (timeoutErr) {
+        const msg = timeoutErr instanceof Error ? timeoutErr.message : String(timeoutErr);
+        console.error('[YouTube] OAuth error:', msg);
+
+        // Network errors are typically "Network request failed" or similar
+        const isNetworkError = msg.toLowerCase().includes('network') || msg.toLowerCase().includes('timeout');
+        if (isNetworkError) {
+          console.warn('[YouTube] Network error during OAuth—check connection');
+        }
+
+        await this.recordAuthFailure();
+        return false;
+      }
 
       if (result.type !== 'success') {
-        console.warn('OAuth cancelled by user');
+        if (result.type === 'cancel') {
+          console.warn('[YouTube] OAuth cancelled by user');
+        } else if (result.type === 'dismiss') {
+          console.warn('[YouTube] OAuth browser closed');
+        }
         await this.recordAuthFailure();
         return false;
       }
