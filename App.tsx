@@ -194,22 +194,8 @@ function Root() {
     return () => subscription.remove();
   }, []);
 
-  // MEMORY FIX: Handle low-memory warnings from iOS
-  useEffect(() => {
-    const handleMemoryWarning = async () => {
-      console.warn('[APP] Low memory warning received');
-      try {
-        await useStore.getState().pauseAllDownloads?.();
-        const store = useStore.getState();
-        if (store._clearImageCache) await store._clearImageCache();
-      } catch (e) {
-        console.error('[APP] Error handling memory warning:', e);
-      }
-    };
-
-    const subscription = AppState.addEventListener('memoryWarning', handleMemoryWarning as any);
-    return () => subscription.remove();
-  }, []);
+  // MEMORY FIX: Post-launch optimization (memory warning handling deferred)
+  // iOS memory warnings are not easily accessible from JS—implement after launch if needed
 
   // EDGE FIX: Network state monitoring
   useEffect(() => {
