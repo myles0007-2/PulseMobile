@@ -43,6 +43,9 @@ const SEED_KEY = 'pulse_seed_loaded_v1';
 // Bluetooth listener cleanup
 let bluetoothUnsubscribe: (() => void) | null = null;
 
+// Analytics computation debounce
+let statsComputeTimer: NodeJS.Timeout | null = null;
+
 interface PersistedState {
   themeName: ThemeName;
   likedIds: string[];
@@ -423,9 +426,9 @@ export const useStore = create<Store>((set, get) => {
       if (_historyPersistTimer) clearTimeout(_historyPersistTimer);
 
       const entry: HistoryEntry = { track, playedAt: Date.now() };
-      // MEMORY FIX: Cap event queue at 1000 to prevent OOM on long sessions (12+ hours)
-      // Each entry ≈ 0.5KB, so 1000 = ~500KB memory usage
-      set((s) => ({ history: [entry, ...s.history.filter((h) => h.track.id !== track.id)].slice(0, 1000) }));
+      // MEMORY FIX: Cap history to 200 (matches persist size, prevents GC pressure)
+      // Each entry ≈ 0.5KB, so 200 = ~100KB memory usage (iPhone X safe)
+      set((s) => ({ history: [entry, ...s.history.filter((h) => h.track.id !== track.id)].slice(0, 200) }));
 
       const timer = setTimeout(() => {
         get()._persist();
@@ -637,13 +640,20 @@ export const useStore = create<Store>((set, get) => {
 
     // Compute listening statistics from history
     computeListeningStats: () => {
-      try {
-        const stats = computeStats(get().history);
-        set({ listeningStats: stats });
-      } catch (e) {
-        console.warn('[Analytics] computeStats failed:', e instanceof Error ? e.message : String(e));
-        set({ listeningStats: getEmptyStats() });
-      }
+      // PERF FIX: Debounce stats computation (runs O(n) algorithm)
+      // Clear existing timer to avoid redundant calcs
+      if (statsComputeTimer) clearTimeout(statsComputeTimer);
+
+      statsComputeTimer = setTimeout(() => {
+        try {
+          const stats = computeStats(get().history);
+          set({ listeningStats: stats });
+        } catch (e) {
+          console.warn('[Analytics] computeStats failed:', e instanceof Error ? e.message : String(e));
+          set({ listeningStats: getEmptyStats() });
+        }
+        statsComputeTimer = null;
+      }, 3000); // Wait 3s after last history change before computing
     },
 
     // Bootstrap: Load persisted state and validate it

@@ -120,13 +120,19 @@ export function computeStats(history: HistoryEntry[]): ListeningStats {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
+  // PERF FIX: Build title map once instead of O(n²) lookups
+  const trackTitleMap = new Map<string, string>();
+  for (const [key] of trackMap.entries()) {
+    const [title, artist] = key.split('::');
+    trackTitleMap.set(artist, title);
+  }
+
   stats.topTracks = Array.from(trackMap.entries())
-    .map(([, { count, artist }]) => {
-      const title = trackMap.entries()
-        .find(([key]) => key.endsWith(`::${artist}`))?.[0]
-        .split('::')[0] || '';
-      return { title, artist, count };
-    })
+    .map(([key, { count, artist }]) => ({
+      title: trackTitleMap.get(artist) || '',
+      artist,
+      count
+    }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
