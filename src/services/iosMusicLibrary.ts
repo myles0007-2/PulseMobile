@@ -12,6 +12,13 @@ export interface NativeMusicTrack {
   artworkBase64?: string;
 }
 
+export interface BatchResult {
+  tracks: NativeMusicTrack[];
+  total: number;
+  offset: number;
+  returned: number;
+}
+
 export function isAvailable(): boolean {
   return Platform.OS === 'ios' && !!MusicLibraryModule;
 }
@@ -21,34 +28,41 @@ export async function requestMusicPermission(): Promise<boolean> {
   try { return await MusicLibraryModule.requestPermission(); } catch { return false; }
 }
 
-export async function getItunesTracks(): Promise<NativeMusicTrack[]> {
-  console.log('[MusicLibrary] getItunesTracks called');
+// Load iTunes library in batches (ONLY on-demand via button, never at startup)
+export async function getItunesTracksBatch(offset: number = 0, limit: number = 50): Promise<BatchResult> {
+  console.log(`[MusicLibrary] Loading batch: offset=${offset}, limit=${limit}`);
   if (!isAvailable()) {
     console.log('[MusicLibrary] Module not available on this platform');
-    return [];
+    return { tracks: [], total: 0, offset, returned: 0 };
   }
   try {
-    console.log('[MusicLibrary] Calling native getTracks...');
-    if (!MusicLibraryModule || typeof MusicLibraryModule.getTracks !== 'function') {
-      console.warn('[MusicLibrary] getTracks method not available');
-      return [];
+    if (!MusicLibraryModule || typeof MusicLibraryModule.getTracksInBatches !== 'function') {
+      console.warn('[MusicLibrary] getTracksInBatches method not available');
+      return { tracks: [], total: 0, offset, returned: 0 };
     }
-    const tracks: NativeMusicTrack[] = await MusicLibraryModule.getTracks();
-    console.log(`[MusicLibrary] Native returned ${tracks?.length ?? 0} tracks`);
-    if (!Array.isArray(tracks)) {
-      console.warn('[MusicLibrary] getTracks returned non-array:', typeof tracks);
-      return [];
-    }
-    const filtered = tracks.filter((t) => t && t.uri && t.uri.length > 0);
-    console.log(`[MusicLibrary] Filtered to ${filtered.length} tracks with valid URIs`);
-    return filtered;
+    const result = await MusicLibraryModule.getTracksInBatches(offset, limit);
+    const filtered = (result.tracks as NativeMusicTrack[])
+      .filter((t) => t && t.uri && t.uri.length > 0);
+
+    console.log(`[MusicLibrary] Batch: returned=${filtered.length}/${result.total}`);
+    return {
+      tracks: filtered,
+      total: result.total || 0,
+      offset: result.offset || offset,
+      returned: filtered.length
+    };
   } catch (e) {
-    console.error('[MusicLibrary] getTracks failed:', e instanceof Error ? e.stack : String(e));
-    return [];
+    console.error('[MusicLibrary] Batch load failed:', e instanceof Error ? e.message : String(e));
+    return { tracks: [], total: 0, offset, returned: 0 };
   }
 }
 
-// Fetch artwork for a single track by ID — call lazily, not in bulk.
+// Legacy fallback (loads all at once—use getItunesTracksBatch instead)
+export async function getItunesTracks(): Promise<NativeMusicTrack[]> {
+  const result = await getItunesTracksBatch(0, 10000);
+  return result.tracks;
+}
+
 export async function getTrackArtwork(trackId: string): Promise<string | null> {
   if (!isAvailable()) return null;
   try {
