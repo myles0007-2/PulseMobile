@@ -286,16 +286,35 @@ function Root() {
 }
 
 export default function App() {
-  return (
-    <GestureHandlerRootView style={styles.root}>
-      <SafeAreaProvider>
-        <ErrorBoundary>
-          <StatusBar style="light" />
-          <Root />
-        </ErrorBoundary>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
-  );
+  try {
+    return (
+      <GestureHandlerRootView style={styles.root}>
+        <SafeAreaProvider>
+          <ErrorBoundary>
+            <StatusBar style="light" />
+            <Root />
+          </ErrorBoundary>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    );
+  } catch (e) {
+    console.error('[App] FATAL RENDER ERROR:', e);
+    return (
+      <View style={{ flex: 1, backgroundColor: '#0a0a0a', justifyContent: 'center', padding: 20 }}>
+        <Text style={{ color: '#ff6b6b', fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
+          ⚠️ App Init Failed
+        </Text>
+        <Text style={{ color: '#ffffff', fontSize: 14, marginBottom: 8 }}>
+          {e instanceof Error ? e.message : String(e)}
+        </Text>
+        {e instanceof Error && (
+          <Text style={{ color: '#b0b0b0', fontSize: 11, fontFamily: 'monospace' }}>
+            {e.stack}
+          </Text>
+        )}
+      </View>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
