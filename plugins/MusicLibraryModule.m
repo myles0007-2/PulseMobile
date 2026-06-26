@@ -20,9 +20,24 @@ RCT_EXPORT_METHOD(requestPermission:(RCTPromiseResolveBlock)resolve
     }
 
     if (status == MPMediaLibraryAuthorizationStatusNotDetermined) {
-      [MPMediaLibrary requestMediaLibraryAccessWithCompletion:^(MPMediaLibraryAuthorizationStatus status) {
-        resolve(@(status == MPMediaLibraryAuthorizationStatusAuthorized));
-      }];
+      // Attempting to query the media library triggers the system permission prompt
+      dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        @try {
+          // Trigger permission prompt by attempting to access library
+          MPMediaQuery *query = [MPMediaQuery songsQuery];
+          NSInteger count = [query.items count];
+
+          dispatch_async(dispatch_get_main_queue(), ^{
+            // Check status again after potential system prompt
+            MPMediaLibraryAuthorizationStatus newStatus = [MPMediaLibrary authorizationStatus];
+            resolve(@(newStatus == MPMediaLibraryAuthorizationStatusAuthorized));
+          });
+        } @catch (NSException *e) {
+          dispatch_async(dispatch_get_main_queue(), ^{
+            resolve(@NO);
+          });
+        }
+      });
       return;
     }
 
