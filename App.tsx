@@ -5,21 +5,48 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, Text, Pressable, ScrollView, AppState, AppStateStatus } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppNavigator } from './src/navigation/AppNavigator';
-import { CertExpiryBanner } from './src/components/CertExpiryBanner';
-import { ErrorBoundary } from './src/components/ErrorBoundary';
-import { player } from './src/services/audioPlayer';
-import { downloadManager } from './src/services/downloadManager';
-import { useStore, useColors, registerPlayerCallbacks } from './src/store/useStore';
-import { themes } from './src/theme';
-import { installCrashReporter, getLastCrash, clearLastCrash, CrashRecord } from './src/services/crashReporter';
 
 console.log('[APP-BOOTSTRAP] Starting app initialization at', new Date().toISOString());
 
-// Install the global JS error handler at module-eval time, before ANY rendering,
-// so even an early crash is captured and surfaced on the next launch.
-installCrashReporter();
-console.log('[APP-BOOTSTRAP] Crash reporter installed');
+// CRASH FIX: Import crash reporter FIRST before anything else
+import { installCrashReporter, getLastCrash, clearLastCrash, CrashRecord } from './src/services/crashReporter';
+console.log('[APP-BOOTSTRAP] crashReporter imported');
+
+try {
+  installCrashReporter();
+  console.log('[APP-BOOTSTRAP] Crash reporter installed');
+} catch (e) {
+  console.error('[APP-BOOTSTRAP] installCrashReporter failed:', e instanceof Error ? e.message : String(e));
+}
+
+// Import remaining modules with detailed logging
+console.log('[APP-BOOTSTRAP] importing AppNavigator...');
+import { AppNavigator } from './src/navigation/AppNavigator';
+console.log('[APP-BOOTSTRAP] AppNavigator imported');
+
+console.log('[APP-BOOTSTRAP] importing CertExpiryBanner...');
+import { CertExpiryBanner } from './src/components/CertExpiryBanner';
+console.log('[APP-BOOTSTRAP] CertExpiryBanner imported');
+
+console.log('[APP-BOOTSTRAP] importing ErrorBoundary...');
+import { ErrorBoundary } from './src/components/ErrorBoundary';
+console.log('[APP-BOOTSTRAP] ErrorBoundary imported');
+
+console.log('[APP-BOOTSTRAP] importing audioPlayer...');
+import { player } from './src/services/audioPlayer';
+console.log('[APP-BOOTSTRAP] audioPlayer imported');
+
+console.log('[APP-BOOTSTRAP] importing downloadManager...');
+import { downloadManager } from './src/services/downloadManager';
+console.log('[APP-BOOTSTRAP] downloadManager imported');
+
+console.log('[APP-BOOTSTRAP] importing useStore...');
+import { useStore, useColors, registerPlayerCallbacks } from './src/store/useStore';
+console.log('[APP-BOOTSTRAP] useStore imported');
+
+console.log('[APP-BOOTSTRAP] importing theme...');
+import { themes } from './src/theme';
+console.log('[APP-BOOTSTRAP] theme imported');
 
 // CRITICAL: Do NOT access AsyncStorage at module load time—it blocks the main thread
 // and can cause silent crashes on iOS. The console.error override is moved to Root useEffect.
