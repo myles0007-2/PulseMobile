@@ -30,28 +30,14 @@ class BluetoothManager {
     try {
       // Try to load react-native-media-session
       // This is optional - if it doesn't exist, app still works
+
+      // SAFETY: Check if module exists before requiring
+      let MediaSession: any = null;
       try {
-        const MediaSession = require('react-native-media-session');
-        this.mediaSession = MediaSession;
-
-        // Set up metadata display on lock screen
-        MediaSession.setPlaybackState({ state: MediaSession.STATE_PAUSED });
-
-        // Register command listeners (will be called when headset buttons pressed)
-        this._setupRemoteCommands();
-
-        this.isInitialized = true;
-        console.log('✓ Bluetooth remote controls initialized (react-native-media-session available)');
-
-        return {
-          isAvailable: true,
-          isInitialized: true,
-          supportedCommands: ['play', 'pause', 'skip_forward', 'skip_back'],
-        };
-      } catch (moduleError) {
-        // react-native-media-session not available - this is OK
-        console.warn('ℹ react-native-media-session not available. Bluetooth remote controls disabled (app works fine without it).');
-
+        MediaSession = require('react-native-media-session');
+      } catch (e) {
+        // Module doesn't exist - that's OK, Bluetooth controls are optional
+        console.warn('ℹ react-native-media-session not installed. Bluetooth remote controls disabled.');
         return {
           isAvailable: false,
           isInitialized: false,
@@ -59,6 +45,32 @@ class BluetoothManager {
           supportedCommands: [],
         };
       }
+
+      if (!MediaSession) {
+        return {
+          isAvailable: false,
+          isInitialized: false,
+          errorMessage: 'react-native-media-session not available',
+          supportedCommands: [],
+        };
+      }
+
+      this.mediaSession = MediaSession;
+
+      // Set up metadata display on lock screen
+      MediaSession.setPlaybackState({ state: MediaSession.STATE_PAUSED });
+
+      // Register command listeners (will be called when headset buttons pressed)
+      this._setupRemoteCommands();
+
+      this.isInitialized = true;
+      console.log('✓ Bluetooth remote controls initialized (react-native-media-session available)');
+
+      return {
+        isAvailable: true,
+        isInitialized: true,
+        supportedCommands: ['play', 'pause', 'skip_forward', 'skip_back'],
+      };
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error';
       console.error('✗ Bluetooth initialization failed:', msg);
