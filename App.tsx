@@ -1,10 +1,16 @@
+// CRITICAL: First line of code to catch any pre-module errors
+console.log('[ENTRY] App.tsx loading...');
+
 import React, { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, Text, Pressable, ScrollView, AppState, AppStateStatus } from 'react-native';
+console.log('[ENTRY] React Native core imports complete');
+
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+console.log('[ENTRY] NetInfo and AsyncStorage imported');
 
 console.log('[APP-BOOTSTRAP] Starting app initialization at', new Date().toISOString());
 
@@ -320,6 +326,7 @@ function Root() {
 
 export default function App() {
   try {
+    console.log('[App] Rendering app...');
     return (
       <GestureHandlerRootView style={styles.root}>
         <SafeAreaProvider>
@@ -331,11 +338,19 @@ export default function App() {
       </GestureHandlerRootView>
     );
   } catch (e) {
-    console.error('[App] FATAL RENDER ERROR:', e);
+    console.error('[App] FATAL RENDER ERROR:', e instanceof Error ? `${e.name}: ${e.message}` : String(e));
+    if (e instanceof Error && e.stack) console.error('[App] Stack:', e.stack);
+
+    // Try to save error immediately
+    try {
+      const msg = e instanceof Error ? `${e.name}: ${e.message}\n${e.stack}` : String(e);
+      AsyncStorage.setItem('_app_render_crash', msg).catch(() => {});
+    } catch {}
+
     return (
       <View style={{ flex: 1, backgroundColor: '#0a0a0a', justifyContent: 'center', padding: 20 }}>
         <Text style={{ color: '#ff6b6b', fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
-          ⚠️ App Init Failed
+          ⚠️ App Render Failed
         </Text>
         <Text style={{ color: '#ffffff', fontSize: 14, marginBottom: 8 }}>
           {e instanceof Error ? e.message : String(e)}
