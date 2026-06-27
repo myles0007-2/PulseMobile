@@ -78,16 +78,21 @@ export const DownloadButton: React.FC<DownloadButtonProps> = ({ track, size = 'm
   }, []);
 
   const handleDownload = async () => {
-    if (task?.status === 'completed') return; // Already downloaded
-    if (task?.status === 'downloading') {
-      await downloadManager.pauseDownload();
-      setTask(undefined);
-      return;
-    }
+    try {
+      if (task?.status === 'completed') return; // Already downloaded
+      if (task?.status === 'downloading') {
+        await downloadManager.pauseDownload();
+        setTask(undefined);
+        return;
+      }
 
-    // Start download
-    const taskId = await downloadManager.queueDownload(track);
-    setTask({ id: taskId, track, status: 'queued', progress: 0, bytesDownloaded: 0, totalBytes: 0, retryAttempts: 0 });
+      // Start download
+      const taskId = await downloadManager.queueDownload(track);
+      setTask({ id: taskId, track, status: 'queued', progress: 0, bytesDownloaded: 0, totalBytes: 0, retryAttempts: 0 });
+    } catch (error) {
+      console.error('[DownloadButton] Download action failed:', error instanceof Error ? error.message : String(error));
+      showAlert('Download Error', 'Failed to start download');
+    }
   };
 
   const styles = StyleSheet.create({

@@ -17,7 +17,9 @@ export async function startAutoDownloadMonitor(
   // Subscribe to network state changes (await state check before queuing)
   const unsubscribe = NetInfo.addEventListener((state) => {
     currentNetworkState = state;
-    checkAndAutoDownload(getLikedSongs, getAutoDownloadEnabled, getAutoDownloadLikedSongs, getWifiOnly);
+    checkAndAutoDownload(getLikedSongs, getAutoDownloadEnabled, getAutoDownloadLikedSongs, getWifiOnly).catch((error) => {
+      console.error('[AutoDownload] Network listener check failed:', error instanceof Error ? error.message : String(error));
+    });
   });
 
   // Check once on start (await network state fetch before queuing)
@@ -63,7 +65,11 @@ async function checkAndAutoDownload(
     // Only queue if not already queued/completed
     const existingTasks = downloadManager.getAllTasks();
     if (!existingTasks.find((t) => t.track.id === track.id && (t.status === 'completed' || t.status === 'downloading' || t.status === 'queued'))) {
-      await downloadManager.queueDownload(track);
+      try {
+        await downloadManager.queueDownload(track);
+      } catch (error) {
+        console.error('[AutoDownload] Failed to queue track:', track.id, error instanceof Error ? error.message : String(error));
+      }
     }
   }
 }
