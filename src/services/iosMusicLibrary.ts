@@ -1,22 +1,27 @@
 import { NativeModules, Platform } from 'react-native';
 
-// CRASH FIX: Lazy-load native module to avoid initialization errors
-// Accessing NativeModules at module load time can cause bridge crashes on iOS
+// CRASH FIX: Completely defer native module access
+// The MusicLibraryModule is optional - if it's not available, app works fine
 let MusicLibraryModule: any = null;
 let moduleLoadAttempted = false;
 
 function ensureModuleLoaded() {
   if (moduleLoadAttempted) return;
   moduleLoadAttempted = true;
-  try {
-    MusicLibraryModule = NativeModules?.MusicLibraryModule || null;
-    if (MusicLibraryModule) {
-      console.log('[MusicLibrary] Native module available');
+
+  // CRITICAL: Do not access NativeModules at module load time
+  // Schedule this for later to avoid bridge initialization crashes
+  setTimeout(() => {
+    try {
+      const mod = NativeModules?.MusicLibraryModule;
+      if (mod && typeof mod === 'object') {
+        MusicLibraryModule = mod;
+        console.log('[MusicLibrary] Native module loaded');
+      }
+    } catch (e) {
+      console.warn('[MusicLibrary] Module load error:', e instanceof Error ? e.message : String(e));
     }
-  } catch (e) {
-    console.warn('[MusicLibrary] Failed to load native module:', e instanceof Error ? e.message : String(e));
-    MusicLibraryModule = null;
-  }
+  }, 100);
 }
 
 export interface NativeMusicTrack {
