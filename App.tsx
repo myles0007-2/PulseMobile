@@ -18,12 +18,9 @@ console.log('[APP-BOOTSTRAP] Starting app initialization at', new Date().toISOSt
 import { installCrashReporter, getLastCrash, clearLastCrash, CrashRecord } from './src/services/crashReporter';
 console.log('[APP-BOOTSTRAP] crashReporter imported');
 
-try {
-  installCrashReporter();
-  console.log('[APP-BOOTSTRAP] Crash reporter installed');
-} catch (e) {
-  console.error('[APP-BOOTSTRAP] installCrashReporter failed:', e instanceof Error ? e.message : String(e));
-}
+// CRITICAL FIX: Defer crash reporter installation to after React initialization
+// Calling it at module load time causes AsyncStorage to be invoked during render, causing Objective-C abort()
+console.log('[APP-BOOTSTRAP] Deferring crash reporter installation (will install in Root useEffect)');
 
 // Import remaining modules with detailed logging
 console.log('[APP-BOOTSTRAP] importing AppNavigator...');
@@ -182,6 +179,15 @@ function Root() {
   // CRASH FIX: Wrap bootstrap and player.init in try-catch with error recovery
   useEffect(() => {
     let isMounted = true;
+
+    // CRITICAL FIX: Install crash reporter after React is ready
+    // This prevents AsyncStorage from being called during the render phase
+    try {
+      installCrashReporter();
+      console.log('[Root] Crash reporter installed (deferred from module load)');
+    } catch (e) {
+      console.warn('[Root] Failed to install crash reporter:', e);
+    }
 
     const initializeApp = async () => {
       try {

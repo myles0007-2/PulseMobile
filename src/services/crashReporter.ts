@@ -44,8 +44,11 @@ export function installCrashReporter(): void {
         isFatal: isFatal === true,
         time: Date.now(),
       };
-      // Fire-and-forget; AsyncStorage write is fast and usually completes before teardown.
-      AsyncStorage.setItem(LAST_CRASH_KEY, JSON.stringify(record)).catch(() => {});
+      // CRITICAL FIX: Schedule AsyncStorage write to next event loop to avoid blocking render
+      // Never call AsyncStorage synchronously from error handler during render phase
+      setImmediate(() => {
+        AsyncStorage.setItem(LAST_CRASH_KEY, JSON.stringify(record)).catch(() => {});
+      });
       console.error('[CrashReporter] Fatal JS error captured:', record.name, record.message);
 
       // CRASH FIX: Show immediate Alert so user sees fatal error before app dies
