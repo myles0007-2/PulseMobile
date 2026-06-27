@@ -1,6 +1,23 @@
 import { NativeModules, Platform } from 'react-native';
 
-const MusicLibraryModule = NativeModules?.MusicLibraryModule || null;
+// CRASH FIX: Lazy-load native module to avoid initialization errors
+// Accessing NativeModules at module load time can cause bridge crashes on iOS
+let MusicLibraryModule: any = null;
+let moduleLoadAttempted = false;
+
+function ensureModuleLoaded() {
+  if (moduleLoadAttempted) return;
+  moduleLoadAttempted = true;
+  try {
+    MusicLibraryModule = NativeModules?.MusicLibraryModule || null;
+    if (MusicLibraryModule) {
+      console.log('[MusicLibrary] Native module available');
+    }
+  } catch (e) {
+    console.warn('[MusicLibrary] Failed to load native module:', e instanceof Error ? e.message : String(e));
+    MusicLibraryModule = null;
+  }
+}
 
 export interface NativeMusicTrack {
   id: string;
@@ -20,16 +37,19 @@ export interface BatchResult {
 }
 
 export function isAvailable(): boolean {
+  ensureModuleLoaded();
   return Platform.OS === 'ios' && !!MusicLibraryModule;
 }
 
 export async function requestMusicPermission(): Promise<boolean> {
+  ensureModuleLoaded();
   if (!isAvailable()) return false;
   try { return await MusicLibraryModule.requestPermission(); } catch { return false; }
 }
 
 // Load iTunes library in batches (ONLY on-demand via button, never at startup)
 export async function getItunesTracksBatch(offset: number = 0, limit: number = 50): Promise<BatchResult> {
+  ensureModuleLoaded();
   console.log(`[MusicLibrary] Loading batch: offset=${offset}, limit=${limit}`);
   if (!isAvailable()) {
     console.log('[MusicLibrary] Module not available on this platform');
@@ -64,6 +84,7 @@ export async function getItunesTracks(): Promise<NativeMusicTrack[]> {
 }
 
 export async function getTrackArtwork(trackId: string): Promise<string | null> {
+  ensureModuleLoaded();
   if (!isAvailable()) return null;
   try {
     const b64: string | null = await MusicLibraryModule.getArtwork(trackId);
