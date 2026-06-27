@@ -57,13 +57,18 @@ if (global.gc) {
  * Uses hardcoded colors so it renders even if the store/theme is the culprit.
  * STAYS VISIBLE until user dismisses - does not auto-hide.
  */
-function LastCrashBanner({ crash, onDismiss }: { crash: CrashRecord; onDismiss: () => void }) {
+function LastCrashBanner({ crash, onDismiss, countdown }: { crash: CrashRecord; onDismiss: () => void; countdown: number | null }) {
   const crashTime = new Date(crash.time).toLocaleTimeString();
   return (
     <View style={styles.crashBanner}>
       <ScrollView style={{ maxHeight: '80%' }}>
         <Text style={styles.crashTitle}>⚠️ CRASH DETECTED</Text>
         <Text style={styles.crashTime}>Time: {crashTime}</Text>
+        {countdown !== null && countdown > 0 && (
+          <Text style={styles.crashCountdown}>
+            App will restart in {countdown}s - READ THIS NOW!
+          </Text>
+        )}
         <Text style={styles.crashLabel}>Error Type:</Text>
         <Text selectable style={styles.crashName}>{crash.name}</Text>
         <Text style={styles.crashLabel}>Message:</Text>
@@ -92,6 +97,7 @@ function Root() {
   const appStateRef = useRef(AppState.currentState);
   const [lastCrash, setLastCrash] = useState<CrashRecord | null>(null);
   const [debugErrors, setDebugErrors] = useState<any[]>([]);
+  const [crashCountdown, setCrashCountdown] = useState<number | null>(null);
 
   // CRASH FIX: Install console.error override in useEffect (not at module load)
   // so AsyncStorage access doesn't block the main thread during app startup
@@ -124,6 +130,14 @@ function Root() {
       if (crash) {
         setLastCrash(crash);
         clearLastCrash();
+
+        // PAUSE FOR 15 SECONDS if there was a crash so user has time to read the banner
+        // before the app tries to initialize again (which might crash immediately)
+        setCrashCountdown(15);
+        for (let i = 15; i > 0; i--) {
+          await new Promise(r => setTimeout(r, 1000));
+          setCrashCountdown(i - 1);
+        }
       }
       try {
         const AsyncStorage = require('@react-native-async-storage/async-storage').default;
@@ -288,7 +302,7 @@ function Root() {
       <View style={[styles.root, { backgroundColor: colors.bg }]}>
         <CertExpiryBanner />
         <AppNavigator />
-        {lastCrash && <LastCrashBanner crash={lastCrash} onDismiss={() => setLastCrash(null)} />}
+        {lastCrash && <LastCrashBanner crash={lastCrash} onDismiss={() => setLastCrash(null)} countdown={crashCountdown} />}
         {debugErrors.length > 0 && (
           <View style={styles.debugBanner}>
             <ScrollView style={{ maxHeight: 150 }}>
@@ -382,6 +396,7 @@ const styles = StyleSheet.create({
   },
   crashTitle: { color: '#ff5555', fontWeight: 'bold', fontSize: 18, marginBottom: 12 },
   crashTime: { color: '#ffaa99', fontSize: 11, marginBottom: 8 },
+  crashCountdown: { color: '#ffff00', fontSize: 14, fontWeight: 'bold', marginBottom: 12, backgroundColor: '#663300', padding: 8, borderRadius: 6 },
   crashLabel: { color: '#ff8a8a', fontWeight: '600', fontSize: 12, marginTop: 10, marginBottom: 3 },
   crashName: { color: '#ffcccc', fontSize: 13, fontWeight: 'bold', marginBottom: 8 },
   crashMsg: { color: '#ffffff', fontSize: 13, marginBottom: 8, lineHeight: 18 },

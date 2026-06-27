@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system';
 import { Alert } from 'react-native';
 
 /**
@@ -64,6 +65,18 @@ export function installCrashReporter(): void {
             return AsyncStorage.setItem('crash_history', JSON.stringify(history.slice(-50)));
           })
           .catch(() => {});
+
+        // ALSO SAVE TO FILE so user can access it via 3uTools even if app keeps crashing
+        const docDir = FileSystem.documentDirectory;
+        if (docDir) {
+          const logPath = `${docDir}PulseMobile_crashes.txt`;
+          const timestamp = new Date(record.time).toISOString();
+          const logEntry = `\n${'='.repeat(80)}\nCRASH at ${timestamp}\nType: ${record.name}\nMessage: ${record.message}\nStack:\n${record.stack}\n${'='.repeat(80)}\n`;
+
+          FileSystem.readAsStringAsync(logPath)
+            .then((existing) => FileSystem.writeAsStringAsync(logPath, existing + logEntry))
+            .catch(() => FileSystem.writeAsStringAsync(logPath, logEntry));
+        }
       });
       console.error('[CrashReporter] Fatal JS error captured:', record.name, record.message);
 
