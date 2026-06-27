@@ -58,20 +58,6 @@
       ]
     },
     "plugins": [
-      [
-        "expo-media-library",
-        {
-          "photosPermission": "Allow PulseMobile to access your music library.",
-          "savePhotosPermission": "Allow PulseMobile to save to your library.",
-          "isAccessMediaLocationEnabled": true
-        }
-      ],
-      [
-        "expo-document-picker",
-        {
-          "iCloudContainerEnvironment": "Production"
-        }
-      ],
       "expo-av"
     ],
     "extra": {
