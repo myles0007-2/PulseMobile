@@ -55,19 +55,31 @@ if (global.gc) {
 /**
  * Banner shown on launch when the previous session ended in a fatal JS error.
  * Uses hardcoded colors so it renders even if the store/theme is the culprit.
+ * STAYS VISIBLE until user dismisses - does not auto-hide.
  */
 function LastCrashBanner({ crash, onDismiss }: { crash: CrashRecord; onDismiss: () => void }) {
+  const crashTime = new Date(crash.time).toLocaleTimeString();
   return (
     <View style={styles.crashBanner}>
-      <ScrollView style={{ maxHeight: 180 }}>
-        <Text style={styles.crashTitle}>⚠️ Previous launch crashed</Text>
-        <Text selectable style={styles.crashMsg}>{crash.name}: {crash.message}</Text>
+      <ScrollView style={{ maxHeight: '80%' }}>
+        <Text style={styles.crashTitle}>⚠️ CRASH DETECTED</Text>
+        <Text style={styles.crashTime}>Time: {crashTime}</Text>
+        <Text style={styles.crashLabel}>Error Type:</Text>
+        <Text selectable style={styles.crashName}>{crash.name}</Text>
+        <Text style={styles.crashLabel}>Message:</Text>
+        <Text selectable style={styles.crashMsg}>{crash.message}</Text>
         {!!crash.stack && (
-          <Text selectable style={styles.crashStack}>{crash.stack.slice(0, 800)}</Text>
+          <>
+            <Text style={styles.crashLabel}>Stack Trace:</Text>
+            <Text selectable style={styles.crashStack}>{crash.stack}</Text>
+          </>
         )}
+        <Text style={styles.crashNote}>
+          {'\n'}This error was saved to crash history. Check Settings → Debug Info to view all crashes.
+        </Text>
       </ScrollView>
       <Pressable onPress={onDismiss} style={styles.crashDismiss}>
-        <Text style={styles.crashDismissText}>Dismiss</Text>
+        <Text style={styles.crashDismissText}>Got it, dismiss</Text>
       </Pressable>
     </View>
   );
@@ -357,27 +369,32 @@ const styles = StyleSheet.create({
   errorContent: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   crashBanner: {
     position: 'absolute',
-    top: 50,
+    top: 40,
     left: 8,
     right: 8,
-    backgroundColor: '#2a1212',
+    bottom: 100,
+    backgroundColor: '#1a0f0f',
     borderColor: '#ff6b6b',
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
+    borderWidth: 2,
+    borderRadius: 12,
+    padding: 16,
+    zIndex: 999,
   },
-  crashTitle: { color: '#ff8a8a', fontWeight: 'bold', fontSize: 14, marginBottom: 6 },
-  crashMsg: { color: '#ffffff', fontSize: 12, marginBottom: 6 },
-  crashStack: { color: '#b0b0b0', fontSize: 10, fontFamily: 'monospace' },
+  crashTitle: { color: '#ff5555', fontWeight: 'bold', fontSize: 18, marginBottom: 12 },
+  crashTime: { color: '#ffaa99', fontSize: 11, marginBottom: 8 },
+  crashLabel: { color: '#ff8a8a', fontWeight: '600', fontSize: 12, marginTop: 10, marginBottom: 3 },
+  crashName: { color: '#ffcccc', fontSize: 13, fontWeight: 'bold', marginBottom: 8 },
+  crashMsg: { color: '#ffffff', fontSize: 13, marginBottom: 8, lineHeight: 18 },
+  crashStack: { color: '#aaaaaa', fontSize: 11, fontFamily: 'monospace', lineHeight: 16, marginBottom: 8 },
+  crashNote: { color: '#888888', fontSize: 10, fontStyle: 'italic', marginTop: 12 },
   crashDismiss: {
-    marginTop: 8,
-    alignSelf: 'flex-end',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    marginTop: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     backgroundColor: '#ff6b6b',
-    borderRadius: 6,
+    borderRadius: 8,
   },
-  crashDismissText: { color: '#0a0a0a', fontWeight: 'bold', fontSize: 12 },
+  crashDismissText: { color: '#0a0a0a', fontWeight: 'bold', fontSize: 13 },
   debugBanner: {
     position: 'absolute',
     bottom: 80,

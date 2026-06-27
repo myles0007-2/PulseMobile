@@ -47,7 +47,23 @@ export function installCrashReporter(): void {
       // CRITICAL FIX: Schedule AsyncStorage write to next event loop to avoid blocking render
       // Never call AsyncStorage synchronously from error handler during render phase
       setImmediate(() => {
+        // Save crash record
         AsyncStorage.setItem(LAST_CRASH_KEY, JSON.stringify(record)).catch(() => {});
+
+        // Also append to crash history for debugging
+        AsyncStorage.getItem('crash_history')
+          .then((hist: string | null) => {
+            const history = hist ? JSON.parse(hist) : [];
+            history.push({
+              name: record.name,
+              message: record.message,
+              timestamp: new Date(record.time).toISOString(),
+              isFatal: record.isFatal
+            });
+            // Keep last 50 crashes
+            return AsyncStorage.setItem('crash_history', JSON.stringify(history.slice(-50)));
+          })
+          .catch(() => {});
       });
       console.error('[CrashReporter] Fatal JS error captured:', record.name, record.message);
 
