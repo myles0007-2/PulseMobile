@@ -62,17 +62,17 @@ export function SettingsScreen() {
 
   const clearLibraryCacheUI = () => Alert.alert('Clear Library Cache', 'Force a fresh scan next time you open the Library tab.', [
     { text: 'Cancel', style: 'cancel' },
-    { text: 'Clear', style: 'destructive', onPress: async () => { await clearLibraryCache(); Alert.alert('Done', 'Reopen the Library tab to rescan.'); } },
+    { text: 'Clear', style: 'destructive', onPress: async () => { try { await clearLibraryCache(); Alert.alert('Done', 'Reopen the Library tab to rescan.'); } catch (e) { Alert.alert('Error', 'Failed to clear cache'); } } },
   ]);
 
   const clearDownloads = () => Alert.alert('Clear Downloads', `Delete ${formatBytes(downloadSize)} of downloaded songs?`, [
     { text: 'Cancel', style: 'cancel' },
-    { text: 'Clear', style: 'destructive', onPress: async () => { await downloadManager.clearAllDownloads(); setDownloadSize(0); } },
+    { text: 'Clear', style: 'destructive', onPress: async () => { try { await downloadManager.clearAllDownloads(); setDownloadSize(0); Alert.alert('Done', 'Downloads cleared'); } catch (e) { Alert.alert('Error', 'Failed to clear downloads'); } } },
   ]);
 
   const clearCache = () => Alert.alert('Clear Cache', `Delete ${formatBytes(cacheStats.used)} of cached songs?`, [
     { text: 'Cancel', style: 'cancel' },
-    { text: 'Clear', style: 'destructive', onPress: async () => { await cacheManager.clearCache(); setCacheStats({ ...cacheStats, used: 0, count: 0 }); } },
+    { text: 'Clear', style: 'destructive', onPress: async () => { try { await cacheManager.clearCache(); setCacheStats({ ...cacheStats, used: 0, count: 0 }); Alert.alert('Done', 'Cache cleared'); } catch (e) { Alert.alert('Error', 'Failed to clear cache'); } } },
   ]);
 
   const clearHistoryConfirm = () => Alert.alert('Clear History', 'Remove all play history?', [
