@@ -59,6 +59,25 @@ console.log('[APP-BOOTSTRAP] theme imported');
 const originalError = console.error;
 console.log('[APP-BOOTSTRAP] Module eval complete');
 
+// CRASH FIX: Catch uncaught Objective-C exceptions from native code
+// The IPS crash log showed abort() being called from JSC - this handler intercepts it
+if (global.ErrorUtils) {
+  const originalHandler = global.ErrorUtils.getGlobalHandler?.();
+  try {
+    global.ErrorUtils.setGlobalHandler?.((error: any, isFatal: boolean) => {
+      console.error('[UNCAUGHT-NATIVE-EXCEPTION]', {
+        name: error?.name,
+        message: error?.message?.substring?.(0, 200),
+        isFatal,
+        ts: Date.now(),
+      });
+      if (originalHandler) originalHandler(error, isFatal);
+    });
+  } catch (e) {
+    console.warn('[APP-BOOTSTRAP] Failed to set error handler:', e);
+  }
+}
+
 // MEMORY FIX: Force garbage collection after module load on low-memory devices
 if (global.gc) {
   try {
