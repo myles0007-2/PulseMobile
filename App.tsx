@@ -53,6 +53,16 @@ console.log('[APP-BOOTSTRAP] theme imported');
 const originalError = console.error;
 console.log('[APP-BOOTSTRAP] Module eval complete');
 
+// MEMORY FIX: Force garbage collection after module load on low-memory devices
+if (global.gc) {
+  try {
+    global.gc();
+    console.log('[APP-BOOTSTRAP] Garbage collection triggered');
+  } catch (e) {
+    console.log('[APP-BOOTSTRAP] gc() not available (expected)');
+  }
+}
+
 /**
  * Banner shown on launch when the previous session ended in a fatal JS error.
  * Uses hardcoded colors so it renders even if the store/theme is the culprit.

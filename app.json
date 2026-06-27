@@ -16,6 +16,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.pulse.mobile",
       "buildNumber": "1",
+      "jsEngine": "jsc",
       "infoPlist": {
         "UIBackgroundModes": ["audio"],
         "NSPhotoLibraryUsageDescription": "PulseMobile accesses your music library to play your songs.",
