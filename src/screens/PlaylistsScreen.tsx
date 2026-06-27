@@ -96,6 +96,9 @@ export function PlaylistsScreen() {
               />
             )}
             contentContainerStyle={{ paddingBottom: 80 }}
+            initialNumToRender={12}
+            maxToRenderPerBatch={8}
+            removeClippedSubviews
           />
         )}
         <MiniPlayer />
@@ -139,6 +142,9 @@ export function PlaylistsScreen() {
             </Pressable>
           )}
           contentContainerStyle={{ paddingBottom: 80 }}
+          initialNumToRender={12}
+          maxToRenderPerBatch={8}
+          removeClippedSubviews
         />
       )}
 

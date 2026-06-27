@@ -52,6 +52,9 @@ export function HistoryScreen() {
             </View>
           )}
           contentContainerStyle={{ paddingBottom: 80 }}
+          initialNumToRender={12}
+          maxToRenderPerBatch={8}
+          removeClippedSubviews
         />
       )}
       <MiniPlayer />

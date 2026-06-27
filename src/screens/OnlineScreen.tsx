@@ -293,6 +293,9 @@ export function OnlineScreen() {
                   />
                 )}
                 contentContainerStyle={{ paddingBottom: 120 }}
+                initialNumToRender={12}
+                maxToRenderPerBatch={8}
+                removeClippedSubviews
               />
             </>
           ) : (
@@ -434,6 +437,9 @@ export function OnlineScreen() {
                   />
                 )}
                 contentContainerStyle={{ paddingBottom: 120 }}
+                initialNumToRender={12}
+                maxToRenderPerBatch={8}
+                removeClippedSubviews
               />
             </>
           )}
