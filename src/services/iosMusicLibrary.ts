@@ -43,6 +43,7 @@ export interface BatchResult {
 
 export function isAvailable(): boolean {
   ensureModuleLoaded();
+  // Music library is optional - if not available, just return false
   return Platform.OS === 'ios' && !!MusicLibraryModule;
 }
 

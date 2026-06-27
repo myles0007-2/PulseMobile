@@ -64,8 +64,7 @@
         {
           "iCloudContainerEnvironment": "Production"
         }
-      ],
-      "./plugins/withMusicLibrary"
+      ]
     ],
     "extra": {
       "eas": {
