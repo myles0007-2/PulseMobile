@@ -1,60 +1,27 @@
-// CRITICAL: First line of code to catch any pre-module errors
-console.log('[ENTRY] App.tsx loading...');
-
 import React, { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, View, Text, Pressable, ScrollView, AppState, AppStateStatus } from 'react-native';
-console.log('[ENTRY] React Native core imports complete');
 
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-console.log('[ENTRY] NetInfo and AsyncStorage imported');
-
-console.log('[APP-BOOTSTRAP] Starting app initialization at', new Date().toISOString());
 
 // CRASH FIX: Import crash reporter FIRST before anything else
 import { installCrashReporter, getLastCrash, clearLastCrash, CrashRecord } from './src/services/crashReporter';
-console.log('[APP-BOOTSTRAP] crashReporter imported');
 
-// CRITICAL FIX: Defer crash reporter installation to after React initialization
-// Calling it at module load time causes AsyncStorage to be invoked during render, causing Objective-C abort()
-console.log('[APP-BOOTSTRAP] Deferring crash reporter installation (will install in Root useEffect)');
-
-// Import remaining modules with detailed logging
-console.log('[APP-BOOTSTRAP] importing AppNavigator...');
+// Import remaining modules
 import { AppNavigator } from './src/navigation/AppNavigator';
-console.log('[APP-BOOTSTRAP] AppNavigator imported');
-
-console.log('[APP-BOOTSTRAP] importing CertExpiryBanner...');
 import { CertExpiryBanner } from './src/components/CertExpiryBanner';
-console.log('[APP-BOOTSTRAP] CertExpiryBanner imported');
-
-console.log('[APP-BOOTSTRAP] importing ErrorBoundary...');
 import { ErrorBoundary } from './src/components/ErrorBoundary';
-console.log('[APP-BOOTSTRAP] ErrorBoundary imported');
-
-console.log('[APP-BOOTSTRAP] importing audioPlayer...');
 import { player } from './src/services/audioPlayer';
-console.log('[APP-BOOTSTRAP] audioPlayer imported');
-
-console.log('[APP-BOOTSTRAP] importing downloadManager...');
 import { downloadManager } from './src/services/downloadManager';
-console.log('[APP-BOOTSTRAP] downloadManager imported');
-
-console.log('[APP-BOOTSTRAP] importing useStore...');
 import { useStore, useColors, registerPlayerCallbacks } from './src/store/useStore';
-console.log('[APP-BOOTSTRAP] useStore imported');
-
-console.log('[APP-BOOTSTRAP] importing theme...');
 import { themes } from './src/theme';
-console.log('[APP-BOOTSTRAP] theme imported');
 
 // CRITICAL: Do NOT access AsyncStorage at module load time—it blocks the main thread
 // and can cause silent crashes on iOS. The console.error override is moved to Root useEffect.
 const originalError = console.error;
-console.log('[APP-BOOTSTRAP] Module eval complete');
 
 // CRASH FIX: Catch uncaught Objective-C exceptions from native code
 // The IPS crash log showed abort() being called from JSC - this handler intercepts it
@@ -107,10 +74,8 @@ function LastCrashBanner({ crash, onDismiss }: { crash: CrashRecord; onDismiss: 
 }
 
 function Root() {
-  console.log('[Root] Initializing...');
   const bootstrap = useStore((s) => s.bootstrap);
   const colors = useColors();
-  console.log('[Root] Hooks initialized successfully');
   const persistRef = useRef<() => Promise<void>>();
   const appStateRef = useRef(AppState.currentState);
   const [lastCrash, setLastCrash] = useState<CrashRecord | null>(null);
@@ -184,14 +149,12 @@ function Root() {
     // This prevents AsyncStorage from being called during the render phase
     try {
       installCrashReporter();
-      console.log('[Root] Crash reporter installed (deferred from module load)');
     } catch (e) {
       console.warn('[Root] Failed to install crash reporter:', e);
     }
 
     const initializeApp = async () => {
       try {
-        console.log('[APP] Initializing audio player...');
         try {
           await player.init();
         } catch (playerErr) {
@@ -201,7 +164,6 @@ function Root() {
 
         if (!isMounted) return;
 
-        console.log('[APP] Registering player callbacks...');
         try {
           registerPlayerCallbacks();
         } catch (cbErr) {
@@ -211,7 +173,6 @@ function Root() {
 
         if (!isMounted) return;
 
-        console.log('[APP] Loading persisted state...');
         try {
           await bootstrap();
         } catch (bootstrapErr) {
@@ -220,7 +181,6 @@ function Root() {
         }
 
         if (!isMounted) return;
-        console.log('[APP] Initialization complete');
       } catch (error) {
         if (isMounted) {
           console.error('[APP] FATAL: Init failed:', error instanceof Error ? `${error.name}: ${error.message}` : String(error));
@@ -353,7 +313,6 @@ function Root() {
 
 export default function App() {
   try {
-    console.log('[App] Rendering app...');
     return (
       <GestureHandlerRootView style={styles.root}>
         <SafeAreaProvider>
