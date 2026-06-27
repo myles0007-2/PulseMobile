@@ -922,7 +922,8 @@ export const useStore = create<Store>((set, get) => {
     _persist: async () => {
       const { themeName, likedIds, playlists, history, autoDownloadEnabled, autoDownloadLikedSongs, wifiOnly, eqPreset, podcastSubscriptions, podcastResumes, currentTrack, position } = get();
       try {
-        await savePersisted({
+        // Defensive serialization: test stringify before sending to storage
+        const stateToSave = {
           themeName,
           likedIds: Array.from(likedIds),
           playlists,
@@ -936,9 +937,19 @@ export const useStore = create<Store>((set, get) => {
           currentTrackId: currentTrack?.id,
           playbackPosition: position,
           lastPlayedTime: Date.now(),
-        });
+        };
+
+        // Validate can stringify
+        try {
+          JSON.stringify(stateToSave);
+        } catch (serErr) {
+          console.error('[_persist] Serialization failed:', serErr instanceof Error ? serErr.message : String(serErr));
+          return;
+        }
+
+        await savePersisted(stateToSave);
       } catch (e) {
-        console.warn('Failed to persist state:', e);
+        console.warn('[_persist] Failed:', e instanceof Error ? e.message : String(e));
       }
     },
 

@@ -149,24 +149,47 @@ function Root() {
     const initializeApp = async () => {
       try {
         console.log('[APP] Initializing audio player...');
-        await player.init();
+        try {
+          await player.init();
+        } catch (playerErr) {
+          console.error('[APP] Player init failed:', playerErr instanceof Error ? playerErr.message : String(playerErr));
+          throw playerErr;
+        }
 
         if (!isMounted) return;
 
         console.log('[APP] Registering player callbacks...');
-        registerPlayerCallbacks();
+        try {
+          registerPlayerCallbacks();
+        } catch (cbErr) {
+          console.error('[APP] Register callbacks failed:', cbErr instanceof Error ? cbErr.message : String(cbErr));
+          throw cbErr;
+        }
 
         if (!isMounted) return;
 
         console.log('[APP] Loading persisted state...');
-        await bootstrap();
+        try {
+          await bootstrap();
+        } catch (bootstrapErr) {
+          console.error('[APP] Bootstrap failed:', bootstrapErr instanceof Error ? bootstrapErr.message : String(bootstrapErr));
+          throw bootstrapErr;
+        }
 
         if (!isMounted) return;
         console.log('[APP] Initialization complete');
       } catch (error) {
         if (isMounted) {
-          console.error('[APP] Init failed:', error instanceof Error ? error.message : String(error));
-          // Initialization error will be handled by ErrorBoundary
+          console.error('[APP] FATAL: Init failed:', error instanceof Error ? `${error.name}: ${error.message}` : String(error));
+          // Store error for display
+          try {
+            AsyncStorage.setItem('_app_init_error', JSON.stringify({
+              name: error instanceof Error ? error.name : 'Unknown',
+              message: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : '',
+              timestamp: new Date().toISOString(),
+            })).catch(() => {});
+          } catch {}
         }
       }
     };
