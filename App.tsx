@@ -91,8 +91,10 @@ function LastCrashBanner({ crash, onDismiss }: { crash: CrashRecord; onDismiss: 
 }
 
 function Root() {
+  console.log('[Root] Initializing...');
   const bootstrap = useStore((s) => s.bootstrap);
   const colors = useColors();
+  console.log('[Root] Hooks initialized successfully');
   const persistRef = useRef<() => Promise<void>>();
   const appStateRef = useRef(AppState.currentState);
   const [lastCrash, setLastCrash] = useState<CrashRecord | null>(null);
