@@ -286,10 +286,17 @@ interface Store {
 // Prevents module-level side effects that could cause crashes on iPhone X
 let playerCallbacksRegistered = false;
 
+console.log('[USESTORE] Creating Zustand store...');
+
+let storeCreationError: string | null = null;
+
 export const useStore = create<Store>((set, get) => {
-  return {
-    // Library
-    tracks: [], albums: [], isLibraryLoaded: false, isScanning: false, scanProgress: 0,
+  try {
+    console.log('[USESTORE] Store function executing...');
+
+    const state = {
+      // Library
+      tracks: [], albums: [], isLibraryLoaded: false, isScanning: false, scanProgress: 0,
     setLibrary: (tracks, albums) => {
       set({ tracks, albums, isLibraryLoaded: true });
       get()._applySeedToLibrary(tracks);
@@ -1270,8 +1277,21 @@ export const useStore = create<Store>((set, get) => {
       if (_historyPersistTimer) clearTimeout(_historyPersistTimer);
       set({ _volumeDebounceTimer: null, _themeChangeTimer: null, _historyPersistTimer: null });
     },
-  } as Store;
+    };
+
+    console.log('[USESTORE] Store object created successfully');
+    return state;
+  } catch (err) {
+    storeCreationError = err instanceof Error ? err.message : String(err);
+    console.error('[USESTORE] Store creation ERROR:', err instanceof Error ? `${err.name}: ${err.message}` : String(err));
+    if (err instanceof Error) console.error('[USESTORE] Stack:', err.stack);
+    throw err;
+  }
 });
+
+if (storeCreationError) {
+  console.error('[USESTORE] Store failed with:', storeCreationError);
+}
 
 // CRASH FIX: Register player callbacks after store is created, not during module load
 export function registerPlayerCallbacks() {
